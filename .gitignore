@@ -1,4 +1,4 @@
-bnaries for programs and plugins
+Binaries for programs and plugins
 *.exe
 *.dll
 *.so
@@ -11,10 +11,13 @@ bnaries for programs and plugins
 *.out
 
 # goland
-.idea
+.idea/
+*.iml
+*.iws
 
-#
+# OSX
 .DS_Store
 
 # key
 .keys
+.keyRepository/
