@@ -1,4 +1,4 @@
-package auth
+package heimdall
 
 import (
 	"crypto/x509"

@@ -1,4 +1,4 @@
-package auth
+package heimdall
 
 type RSAKeyGenOpts struct {}
 

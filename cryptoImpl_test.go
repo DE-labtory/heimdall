@@ -1,4 +1,4 @@
-package auth
+package heimdall
 
 import (
 	"testing"
@@ -16,7 +16,7 @@ func TestNew(t *testing.T) {
 	_, err := NewCryptoImpl("", &RSAKeyGenOpts{})
 	assert.NoError(t, err)
 
-	defer os.RemoveAll("./KeyRepository")
+	defer os.RemoveAll("./.keyRepository")
 
 }
 
@@ -29,7 +29,7 @@ func TestCollector_RSASign(t *testing.T) {
 	privateKey, publicKey, err := cryp.GetKey()
 	assert.NoError(t, err)
 
-	defer os.RemoveAll("./KeyRepository")
+	defer os.RemoveAll("./.keyRepository")
 
 	rawData := []byte("RSASign Test Data")
 
@@ -77,7 +77,7 @@ func TestCollector_ECDSASign(t *testing.T) {
 	privateKey, publicKey, err := cryp.GetKey()
 	assert.NoError(t, err)
 
-	defer os.RemoveAll("./KeyRepository")
+	defer os.RemoveAll("./.keyRepository")
 
 	rawData := []byte("ECDSA Sign Test")
 
@@ -115,10 +115,10 @@ func TestCollector_ECDSASign(t *testing.T) {
 
 func TestCollector_RSAGenerateKey(t *testing.T) {
 
-	cryp, err := NewCryptoImpl("./RSAKeyGen_Test", &RSAKeyGenOpts{})
+	cryp, err := NewCryptoImpl("./.RSAKeyGen_Test", &RSAKeyGenOpts{})
 	assert.NoError(t, err)
 
-	defer os.RemoveAll("./RSAKeyGen_Test")
+	defer os.RemoveAll("./.RSAKeyGen_Test")
 
 	pri, pub, err := cryp.GetKey()
 	assert.NoError(t, err)
@@ -139,10 +139,10 @@ func TestCollector_RSAGenerateKey(t *testing.T) {
 
 func TestCollector_ECDSAGenerateKey(t *testing.T) {
 
-	cryp, err := NewCryptoImpl("./ECDSAKeyGen_Test", &ECDSAKeyGenOpts{})
+	cryp, err := NewCryptoImpl("./.ECDSAKeyGen_Test", &ECDSAKeyGenOpts{})
 	assert.NoError(t, err)
 
-	defer os.RemoveAll("./ECDSAKeyGen_Test")
+	defer os.RemoveAll("./.ECDSAKeyGen_Test")
 
 	pri, pub, err := cryp.GetKey()
 	assert.NoError(t, err)
@@ -166,7 +166,7 @@ func TestCryptoImpl_LoadKey(t *testing.T) {
 	cryp, err := NewCryptoImpl("", &RSAKeyGenOpts{})
 	assert.NoError(t, err)
 
-	defer os.RemoveAll("./KeyRepository")
+	defer os.RemoveAll("./.keyRepository")
 
 	pri, pub, err := cryp.GetKey()
 	assert.NoError(t, err)

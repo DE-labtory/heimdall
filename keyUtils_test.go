@@ -1,4 +1,4 @@
-package auth
+package heimdall
 
 import (
 	"crypto/rsa"
@@ -80,9 +80,9 @@ func TestPEMToPrivatePublicKey(t *testing.T) {
 	assert.NotNil(t, pri)
 	assert.NotNil(t, pub)
 
-	defer os.RemoveAll("./KeyRepository")
+	defer os.RemoveAll("./.keyRepository")
 
-	path := "./KeyRepository/Keys/" + hex.EncodeToString(pri.SKI()) + "_pri"
+	path := "./.keyRepository/.keys/" + hex.EncodeToString(pri.SKI()) + "_pri"
 
 	data, err := ioutil.ReadFile(path)
 	assert.NoError(t, err)
@@ -92,7 +92,7 @@ func TestPEMToPrivatePublicKey(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, key)
 
-	path = "./KeyRepository/Keys/" + hex.EncodeToString(pub.SKI()) + "_pub"
+	path = "./.keyRepository/.keys/" + hex.EncodeToString(pub.SKI()) + "_pub"
 
 	data, err = ioutil.ReadFile(path)
 	assert.NoError(t, err)
