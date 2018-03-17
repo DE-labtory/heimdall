@@ -1,6 +1,6 @@
 # Heimdall
 
-Heimdall is a simple library that helps sign and verify your data written by Golang.
+Heimdall is a simple library that keeps your data secure through signing and verification written by Golang.
 
 ## Getting Started with Heimdall
 
