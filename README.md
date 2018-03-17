@@ -21,10 +21,25 @@ cyrpto := NewCryptoImpl()
 signature, _ : = crypto.Sign(rawData, &RSASigner{})
 
 // Loads both private and public keys
+// If key does not exist, KeyGenerator automatically generates a pair of keys
 priv, pub, _ := crypto.GetKey()
 
 // Verify the received signature and digest data by public key
-ok, err := crypto.Verify(pub, signature, digest, &RSASigner{})
+ok, _ := crypto.Verify(pub, signature, digest, &RSASigner{})
+```
+
+## Features 
+
+### Asymmetric key algorithms
+Currently, only the following algorithms are supported. But, We will provide more options to extend selection range.
+- [RSA](https://en.wikipedia.org/wiki/RSA)
+- [ECDSA](https://en.wikipedia.org/wiki/ECDSA)
+
+### Default key storage path
+If you input empty path such as "", we store a pair of the key in below location.
+
+```
+heimdall/.KeyReposiotry
 ```
 
 ## Lincese
