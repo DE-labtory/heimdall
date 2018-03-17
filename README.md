@@ -39,7 +39,7 @@ Currently, only the following algorithms are supported. But, We will provide mor
 If you input empty path such as "", we store a pair of the key in below location.
 
 ```
-heimdall/.KeyReposiotry
+heimdall/.keyReposiotry
 ```
 
 ## Lincese
