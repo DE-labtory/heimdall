@@ -50,13 +50,13 @@ func (km *keyManager) Store(keys... Key) (err error) {
 
 	for _, key := range keys {
 		switch k := key.(type) {
-		case *rsaPrivateKey:
+		case *RsaPrivateKey:
 			err = km.storeKey(k, PRIVATE_KEY)
 		case *rsaPublicKey:
 			err = km.storeKey(k, PUBLIC_KEY)
-		case *ecdsaPrivateKey:
+		case *EcdsaPrivateKey:
 			err = km.storeKey(k, PRIVATE_KEY)
-		case *ecdsaPublicKey:
+		case *EcdsaPublicKey:
 			err = km.storeKey(k, PUBLIC_KEY)
 		default:
 			return errors.New("Unspported Key Type.")
@@ -126,9 +126,9 @@ func (km *keyManager) Load() (pri, pub Key, err error) {
 
 				switch key.(type) {
 				case *rsa.PrivateKey:
-					pri = &rsaPrivateKey{key.(*rsa.PrivateKey)}
+					pri = &RsaPrivateKey{key.(*rsa.PrivateKey)}
 				case *ecdsa.PrivateKey:
-					pri = &ecdsaPrivateKey{key.(*ecdsa.PrivateKey)}
+					pri = &EcdsaPrivateKey{key.(*ecdsa.PrivateKey)}
 				default:
 					return nil, nil, errors.New("Failed to load Key")
 				}
@@ -143,7 +143,7 @@ func (km *keyManager) Load() (pri, pub Key, err error) {
 				case *rsa.PublicKey:
 					pub = &rsaPublicKey{key.(*rsa.PublicKey)}
 				case *ecdsa.PublicKey:
-					pub = &ecdsaPublicKey{key.(*ecdsa.PublicKey)}
+					pub = &EcdsaPublicKey{key.(*ecdsa.PublicKey)}
 				default:
 					return nil, nil, errors.New("Failed to load Key")
 				}

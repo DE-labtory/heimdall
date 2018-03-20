@@ -14,7 +14,7 @@ func TestRSAKeyGenerator_GenerateKey(t *testing.T) {
 	assert.NotNil(t, pri)
 	assert.NotNil(t, pub)
 
-	rsaPriKey, valid := pri.(*rsaPrivateKey)
+	rsaPriKey, valid := pri.(*RsaPrivateKey)
 	assert.True(t, valid)
 	assert.NotNil(t, rsaPriKey)
 	assert.Equal(t, rsaPriKey.priv.N.BitLen(), 1024)
@@ -34,12 +34,12 @@ func TestECDSAKeyGenerator_GenerateKey(t *testing.T) {
 	assert.NotNil(t, pri)
 	assert.NotNil(t, pub)
 
-	ecdsaPriKey, valid := pri.(*ecdsaPrivateKey)
+	ecdsaPriKey, valid := pri.(*EcdsaPrivateKey)
 	assert.True(t, valid)
 	assert.NotNil(t, ecdsaPriKey)
 	assert.Equal(t, ecdsaPriKey.priv.Curve, elliptic.P256())
 
-	ecdsaPubKey, valid := pub.(*ecdsaPublicKey)
+	ecdsaPubKey, valid := pub.(*EcdsaPublicKey)
 	assert.True(t, valid)
 	assert.NotNil(t, ecdsaPubKey)
 	assert.Equal(t, ecdsaPubKey.pub.Curve, elliptic.P256())

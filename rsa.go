@@ -9,21 +9,21 @@ import (
 	"crypto/sha256"
 )
 
-type rsaSigner struct{}
+type RsaSigner struct{}
 
-func (s *rsaSigner) Sign(key Key, digest []byte, opts SignerOpts) ([]byte, error) {
+func (s *RsaSigner) Sign(key Key, digest []byte, opts SignerOpts) ([]byte, error) {
 
 	if opts == nil {
 		return nil, errors.New("invalid options")
 	}
 
-	return key.(*rsaPrivateKey).priv.Sign(rand.Reader, digest, opts)
+	return key.(*RsaPrivateKey).priv.Sign(rand.Reader, digest, opts)
 
 }
 
-type rsaVerifier struct{}
+type RsaVerifier struct{}
 
-func (v *rsaVerifier) Verify(key Key, signature, digest []byte, opts SignerOpts) (bool, error) {
+func (v *RsaVerifier) Verify(key Key, signature, digest []byte, opts SignerOpts) (bool, error) {
 
 	if opts == nil {
 		return false, errors.New("invalid options")
@@ -51,11 +51,11 @@ type rsaKeyMarshalOpt struct {
 	E int
 }
 
-type rsaPrivateKey struct {
+type RsaPrivateKey struct {
 	priv *rsa.PrivateKey
 }
 
-func (key *rsaPrivateKey) SKI() ([]byte) {
+func (key *RsaPrivateKey) SKI() ([]byte) {
 
 	if key.priv == nil {
 		return nil
@@ -71,11 +71,11 @@ func (key *rsaPrivateKey) SKI() ([]byte) {
 
 }
 
-func (key *rsaPrivateKey) Algorithm() string {
+func (key *RsaPrivateKey) Algorithm() string {
 	return RSA
 }
 
-func (key *rsaPrivateKey) PublicKey() (pub Key, err error) {
+func (key *RsaPrivateKey) PublicKey() (pub Key, err error) {
 	return &rsaPublicKey{&key.priv.PublicKey}, nil
 }
 
