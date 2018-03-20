@@ -92,6 +92,10 @@ func (key *RsaPrivateKey) ToPEM() ([]byte,error) {
 	), nil
 }
 
+func (key *RsaPrivateKey) Type() (keyType){
+	return PRIVATE_KEY
+}
+
 type RsaPublicKey struct {
 	pub *rsa.PublicKey
 }
@@ -128,4 +132,8 @@ func (key *RsaPublicKey) ToPEM() ([]byte,error) {
 			Bytes: keyData,
 		},
 	), nil
+}
+
+func (key *RsaPublicKey) Type() (keyType){
+	return PUBLIC_KEY
 }

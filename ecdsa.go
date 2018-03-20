@@ -118,6 +118,10 @@ func (key *EcdsaPrivateKey) ToPEM() ([]byte,error){
 	), nil
 }
 
+func (key *EcdsaPrivateKey) Type() (keyType){
+	return PRIVATE_KEY
+}
+
 type EcdsaPublicKey struct {
 	pub *ecdsa.PublicKey
 }
@@ -152,4 +156,8 @@ func (key *EcdsaPublicKey) ToPEM() ([]byte,error){
 			Bytes: keyData,
 		},
 	), nil
+}
+
+func (key *EcdsaPublicKey) Type() (keyType){
+	return PUBLIC_KEY
 }

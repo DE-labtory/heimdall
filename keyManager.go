@@ -49,42 +49,25 @@ func (km *keyManager) Store(keys... Key) (err error) {
 	}
 
 	for _, key := range keys {
-		switch k := key.(type) {
-		case *RsaPrivateKey:
-			err = km.storeKey(k, PRIVATE_KEY)
-		case *RsaPublicKey:
-			err = km.storeKey(k, PUBLIC_KEY)
-		case *EcdsaPrivateKey:
-			err = km.storeKey(k, PRIVATE_KEY)
-		case *EcdsaPublicKey:
-			err = km.storeKey(k, PUBLIC_KEY)
-		default:
-			return errors.New("Unspported Key Type.")
-		}
+		km.storeKey(key)
 	}
 
 	return nil
 }
 
-func (km *keyManager) storeKey(key Key, keyType keyType) (error) {
+func (km *keyManager) storeKey(key Key) (error) {
 
 	var data []byte
 	var err error
 
-	switch keyType {
-	case PRIVATE_KEY:
-		data, err = PrivateKeyToPEM(key)
-	case PUBLIC_KEY:
-		data, err = PublicKeyToPEM(key)
-	default:
-		return errors.New("Unsupported Key Type")
-	}
+	data, err = key.ToPEM()
 
 	if err != nil {
 		return err
 	}
 
-	path, err := km.getFullPath(hex.EncodeToString(key.SKI()), string(keyType))
+	path, err := km.getFullPath(hex.EncodeToString(key.SKI()), string(key.Type()))
+
 	if err != nil {
 		return err
 	}
@@ -97,7 +80,6 @@ func (km *keyManager) storeKey(key Key, keyType keyType) (error) {
 	}
 
 	return nil
-
 }
 
 func (km *keyManager) Load() (pri, pub Key, err error) {
