@@ -129,7 +129,7 @@ func TestCollector_RSAGenerateKey(t *testing.T) {
 	assert.True(t, valid)
 	assert.NotNil(t, rsaPriKey)
 
-	rsaPubKey, valid := pub.(*rsaPublicKey)
+	rsaPubKey, valid := pub.(*RsaPublicKey)
 	assert.True(t, valid)
 	assert.NotNil(t, rsaPubKey)
 

@@ -7,6 +7,8 @@ import (
 	"encoding/asn1"
 	"math/big"
 	"crypto/sha256"
+	"crypto/x509"
+	"encoding/pem"
 )
 
 type RsaSigner struct{}
@@ -31,7 +33,7 @@ func (v *RsaVerifier) Verify(key Key, signature, digest []byte, opts SignerOpts)
 
 	switch opts.(type) {
 	case *rsa.PSSOptions:
-		err := rsa.VerifyPSS(key.(*rsaPublicKey).pub,
+		err := rsa.VerifyPSS(key.(*RsaPublicKey).pub,
 			(opts.(*rsa.PSSOptions)).Hash,
 				digest, signature, opts.(*rsa.PSSOptions))
 
@@ -76,14 +78,25 @@ func (key *RsaPrivateKey) Algorithm() string {
 }
 
 func (key *RsaPrivateKey) PublicKey() (pub Key, err error) {
-	return &rsaPublicKey{&key.priv.PublicKey}, nil
+	return &RsaPublicKey{&key.priv.PublicKey}, nil
 }
 
-type rsaPublicKey struct {
+func (key *RsaPrivateKey) ToPEM() ([]byte,error) {
+	keyData := x509.MarshalPKCS1PrivateKey(key.priv)
+
+	return pem.EncodeToMemory(
+		&pem.Block{
+			Type: "RSA PRIVATE KEY",
+			Bytes: keyData,
+		},
+	), nil
+}
+
+type RsaPublicKey struct {
 	pub *rsa.PublicKey
 }
 
-func (key *rsaPublicKey) SKI() ([]byte) {
+func (key *RsaPublicKey) SKI() ([]byte) {
 
 	if key.pub == nil {
 		return nil
@@ -98,6 +111,21 @@ func (key *rsaPublicKey) SKI() ([]byte) {
 	return hash.Sum(nil)
 }
 
-func (key *rsaPublicKey) Algorithm() string {
+func (key *RsaPublicKey) Algorithm() string {
 	return RSA
+}
+
+func (key *RsaPublicKey) ToPEM() ([]byte,error) {
+	keyData, err := x509.MarshalPKIXPublicKey(key.pub)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return pem.EncodeToMemory(
+		&pem.Block{
+			Type: "RSA PUBLIC KEY",
+			Bytes: keyData,
+		},
+	), nil
 }

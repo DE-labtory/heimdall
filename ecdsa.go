@@ -8,6 +8,8 @@ import (
 	"crypto/rand"
 	"crypto/elliptic"
 	"crypto/sha256"
+	"crypto/x509"
+	"encoding/pem"
 )
 
 type EcdsaSignature struct {
@@ -102,6 +104,20 @@ func (key *EcdsaPrivateKey) PublicKey() (Key, error) {
 	return &EcdsaPublicKey{&key.priv.PublicKey}, nil
 }
 
+func (key *EcdsaPrivateKey) ToPEM() ([]byte,error){
+	keyData, err := x509.MarshalECPrivateKey(key.priv)
+	if err != nil {
+		return nil, err
+	}
+
+	return pem.EncodeToMemory(
+		&pem.Block{
+			Type: "ECDSA PRIVATE KEY",
+			Bytes: keyData,
+		},
+	), nil
+}
+
 type EcdsaPublicKey struct {
 	pub *ecdsa.PublicKey
 }
@@ -122,4 +138,18 @@ func (key *EcdsaPublicKey) SKI() ([]byte) {
 
 func (key *EcdsaPublicKey) Algorithm() string {
 	return ECDSA
+}
+
+func (key *EcdsaPublicKey) ToPEM() ([]byte,error){
+	keyData, err := x509.MarshalPKIXPublicKey(key.pub)
+	if err != nil {
+		return nil, err
+	}
+
+	return pem.EncodeToMemory(
+		&pem.Block{
+			Type: "RSA PUBLIC KEY",
+			Bytes: keyData,
+		},
+	), nil
 }

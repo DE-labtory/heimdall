@@ -52,7 +52,7 @@ func (km *keyManager) Store(keys... Key) (err error) {
 		switch k := key.(type) {
 		case *RsaPrivateKey:
 			err = km.storeKey(k, PRIVATE_KEY)
-		case *rsaPublicKey:
+		case *RsaPublicKey:
 			err = km.storeKey(k, PUBLIC_KEY)
 		case *EcdsaPrivateKey:
 			err = km.storeKey(k, PRIVATE_KEY)
@@ -141,7 +141,7 @@ func (km *keyManager) Load() (pri, pub Key, err error) {
 
 				switch key.(type) {
 				case *rsa.PublicKey:
-					pub = &rsaPublicKey{key.(*rsa.PublicKey)}
+					pub = &RsaPublicKey{key.(*rsa.PublicKey)}
 				case *ecdsa.PublicKey:
 					pub = &EcdsaPublicKey{key.(*ecdsa.PublicKey)}
 				default:

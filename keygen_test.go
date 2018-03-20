@@ -19,7 +19,7 @@ func TestRSAKeyGenerator_GenerateKey(t *testing.T) {
 	assert.NotNil(t, rsaPriKey)
 	assert.Equal(t, rsaPriKey.priv.N.BitLen(), 1024)
 
-	rsaPubKey, valid := pub.(*rsaPublicKey)
+	rsaPubKey, valid := pub.(*RsaPublicKey)
 	assert.True(t, valid)
 	assert.NotNil(t, rsaPubKey)
 	assert.Equal(t, rsaPubKey.pub.N.BitLen(), 1024)

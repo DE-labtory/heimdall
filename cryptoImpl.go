@@ -29,7 +29,7 @@ func NewCryptoImpl(path string, keyGenOpts KeyGenOpts) (Crypto, error) {
 	signers[reflect.TypeOf(&EcdsaPrivateKey{})] = &EcdsaSigner{}
 
 	verifiers := make(map[reflect.Type]verifier)
-	verifiers[reflect.TypeOf(&rsaPublicKey{})] = &RsaVerifier{}
+	verifiers[reflect.TypeOf(&RsaPublicKey{})] = &RsaVerifier{}
 	verifiers[reflect.TypeOf(&EcdsaPublicKey{})] = &EcdsaVerifier{}
 
 	keyGenerators := make(map[reflect.Type]keyGenerator)

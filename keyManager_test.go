@@ -24,7 +24,7 @@ func TestKeyManager_StoreKey(t *testing.T) {
 	err = km.Store(rsaPriKey)
 	assert.NoError(t, err)
 
-	rsaPubKey := &rsaPublicKey{&rsaPriKey.priv.PublicKey}
+	rsaPubKey := &RsaPublicKey{&rsaPriKey.priv.PublicKey}
 	err = km.Store(rsaPubKey)
 	assert.NoError(t, err)
 
@@ -69,7 +69,7 @@ func TestKeyManager_StoreInvalidInput(t *testing.T) {
 	err = km.storeKey(rsaPriKey, PUBLIC_KEY)
 	assert.Error(t, err)
 
-	rsaPubKey := &rsaPublicKey{&rsaPriKey.priv.PublicKey}
+	rsaPubKey := &RsaPublicKey{&rsaPriKey.priv.PublicKey}
 	err = km.storeKey(rsaPubKey, PRIVATE_KEY)
 	assert.Error(t, err)
 
@@ -98,7 +98,7 @@ func TestKeyManager_LoadKey(t *testing.T) {
 	err = km.Store(rsaPriKey)
 	assert.NoError(t, err)
 
-	rsaPubKey := &rsaPublicKey{&rsaPriKey.priv.PublicKey}
+	rsaPubKey := &RsaPublicKey{&rsaPriKey.priv.PublicKey}
 	err = km.Store(rsaPubKey)
 	assert.NoError(t, err)
 
@@ -108,6 +108,6 @@ func TestKeyManager_LoadKey(t *testing.T) {
 	assert.NotNil(t, pub)
 
 	assert.Equal(t, rsaPriKey, pri.(*RsaPrivateKey))
-	assert.Equal(t, rsaPubKey, pub.(*rsaPublicKey))
+	assert.Equal(t, rsaPubKey, pub.(*RsaPublicKey))
 
 }

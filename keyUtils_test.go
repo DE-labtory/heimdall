@@ -22,7 +22,7 @@ func TestRSAPublicKeyToPEM(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, pub)
 
-	data, err := PublicKeyToPEM(pub.(*rsaPublicKey))
+	data, err := PublicKeyToPEM(pub.(*RsaPublicKey))
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 

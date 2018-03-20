@@ -13,7 +13,7 @@ func PublicKeyToPEM(pub Key) ([]byte, error) {
 	}
 
 	switch k := pub.(type) {
-	case *rsaPublicKey:
+	case *RsaPublicKey:
 
 		keyData, err := x509.MarshalPKIXPublicKey(k.pub)
 		if err != nil {
