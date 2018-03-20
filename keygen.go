@@ -25,8 +25,8 @@ func (keygen *rsaKeyGenerator) GenerateKey(opts KeyGenOpts) (pri, pub Key, err e
 		return nil, nil, fmt.Errorf("Failed to generate RSA key : %s", err)
 	}
 
-	pri = &rsaPrivateKey{generatedKey}
-	pub, err = pri.(*rsaPrivateKey).PublicKey()
+	pri = &RsaPrivateKey{generatedKey}
+	pub, err = pri.(*RsaPrivateKey).PublicKey()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,8 +51,8 @@ func (keygen *ecdsaKeyGenerator) GenerateKey(opts KeyGenOpts) (pri, pub Key, err
 		return nil, nil, fmt.Errorf("Failed to generate ECDSA key : %s", err)
 	}
 
-	pri = &ecdsaPrivateKey{generatedKey}
-	pub, err = pri.(*ecdsaPrivateKey).PublicKey()
+	pri = &EcdsaPrivateKey{generatedKey}
+	pub, err = pri.(*EcdsaPrivateKey).PublicKey()
 	if err != nil {
 		return nil, nil, err
 	}

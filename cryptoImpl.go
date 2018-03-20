@@ -25,12 +25,12 @@ func NewCryptoImpl(path string, keyGenOpts KeyGenOpts) (Crypto, error) {
 	km.Init(path)
 
 	signers := make(map[reflect.Type]signer)
-	signers[reflect.TypeOf(&rsaPrivateKey{})] = &rsaSigner{}
-	signers[reflect.TypeOf(&ecdsaPrivateKey{})] = &ecdsaSigner{}
+	signers[reflect.TypeOf(&RsaPrivateKey{})] = &RsaSigner{}
+	signers[reflect.TypeOf(&EcdsaPrivateKey{})] = &EcdsaSigner{}
 
 	verifiers := make(map[reflect.Type]verifier)
-	verifiers[reflect.TypeOf(&rsaPublicKey{})] = &rsaVerifier{}
-	verifiers[reflect.TypeOf(&ecdsaPublicKey{})] = &ecdsaVerifier{}
+	verifiers[reflect.TypeOf(&RsaPublicKey{})] = &RsaVerifier{}
+	verifiers[reflect.TypeOf(&EcdsaPublicKey{})] = &EcdsaVerifier{}
 
 	keyGenerators := make(map[reflect.Type]keyGenerator)
 	keyGenerators[reflect.TypeOf(&RSAKeyGenOpts{})] = &rsaKeyGenerator{2048}
