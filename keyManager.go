@@ -49,7 +49,11 @@ func (km *keyManager) Store(keys... Key) (err error) {
 	}
 
 	for _, key := range keys {
-		km.storeKey(key)
+		err := km.storeKey(key)
+
+		if err != nil{
+			return err
+		}
 	}
 
 	return nil
@@ -59,6 +63,10 @@ func (km *keyManager) storeKey(key Key) (error) {
 
 	var data []byte
 	var err error
+
+	if key == nil{
+		return errors.New("No Key Errors")
+	}
 
 	data, err = key.ToPEM()
 

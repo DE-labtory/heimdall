@@ -8,7 +8,7 @@ import (
 
 func TestRSAKeyGenerator_GenerateKey(t *testing.T) {
 
-	keygen := &rsaKeyGenerator{1024}
+	keygen := &RsaKeyGenerator{1024}
 	pri, pub, err := keygen.GenerateKey(nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, pri)
@@ -28,7 +28,7 @@ func TestRSAKeyGenerator_GenerateKey(t *testing.T) {
 
 func TestECDSAKeyGenerator_GenerateKey(t *testing.T) {
 
-	keygen := &ecdsaKeyGenerator{elliptic.P256()}
+	keygen := &EcdsaKeyGenerator{elliptic.P256()}
 	pri, pub, err := keygen.GenerateKey(nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, pri)
@@ -48,7 +48,7 @@ func TestECDSAKeyGenerator_GenerateKey(t *testing.T) {
 
 func TestRSAKeyGenerator_InvalidInput(t *testing.T) {
 
-	keygen := &rsaKeyGenerator{-1}
+	keygen := &RsaKeyGenerator{-1}
 
 	_, _, err := keygen.GenerateKey(nil)
 	assert.Error(t, err)
@@ -57,7 +57,7 @@ func TestRSAKeyGenerator_InvalidInput(t *testing.T) {
 
 func TestECDSAKeyGenerator_NilInput(t *testing.T) {
 
-	keygen := &ecdsaKeyGenerator{nil}
+	keygen := &EcdsaKeyGenerator{nil}
 
 	_, _, err := keygen.GenerateKey(nil)
 	assert.Error(t, err)
