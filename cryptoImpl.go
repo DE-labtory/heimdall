@@ -33,8 +33,8 @@ func NewCryptoImpl(path string, keyGenOpts KeyGenOpts) (Crypto, error) {
 	verifiers[reflect.TypeOf(&EcdsaPublicKey{})] = &EcdsaVerifier{}
 
 	keyGenerators := make(map[reflect.Type]keyGenerator)
-	keyGenerators[reflect.TypeOf(&RSAKeyGenOpts{})] = &rsaKeyGenerator{2048}
-	keyGenerators[reflect.TypeOf(&ECDSAKeyGenOpts{})] = &ecdsaKeyGenerator{elliptic.P521()}
+	keyGenerators[reflect.TypeOf(&RSAKeyGenOpts{})] = &RsaKeyGenerator{2048}
+	keyGenerators[reflect.TypeOf(&ECDSAKeyGenOpts{})] = &EcdsaKeyGenerator{elliptic.P521()}
 
 	ci := &cryptoImpl{
 		keyManager:		*km,

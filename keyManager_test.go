@@ -56,6 +56,7 @@ func TestKeyManager_StoreKey(t *testing.T) {
 	assert.Error(t, err)
 }
 
+//test fail 이유?!!
 func TestKeyManager_StoreInvalidInput(t *testing.T) {
 
 	km := &keyManager{}
@@ -66,23 +67,22 @@ func TestKeyManager_StoreInvalidInput(t *testing.T) {
 	rsaRawKey, err := rsa.GenerateKey(rand.Reader, 1024)
 
 	rsaPriKey := &RsaPrivateKey{rsaRawKey}
-	err = km.storeKey(rsaPriKey, PUBLIC_KEY)
+	err = km.storeKey(rsaPriKey)
 	assert.Error(t, err)
 
 	rsaPubKey := &RsaPublicKey{&rsaPriKey.priv.PublicKey}
-	err = km.storeKey(rsaPubKey, PRIVATE_KEY)
+	err = km.storeKey(rsaPubKey)
 	assert.Error(t, err)
 
 	ecdsaRawKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 
 	ecdsaPriKey := &EcdsaPrivateKey{ecdsaRawKey}
-	err = km.storeKey(ecdsaPriKey, PUBLIC_KEY)
+	err = km.storeKey(ecdsaPriKey)
 	assert.Error(t, err)
 
 	ecdsaPubKey := &EcdsaPublicKey{&ecdsaPriKey.priv.PublicKey}
-	err = km.storeKey(ecdsaPubKey, PRIVATE_KEY)
+	err = km.storeKey(ecdsaPubKey)
 	assert.Error(t, err)
-
 }
 
 func TestKeyManager_LoadKey(t *testing.T) {
