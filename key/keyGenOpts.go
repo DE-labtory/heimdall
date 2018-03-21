@@ -1,0 +1,14 @@
+package key
+
+type KeyGenOpts string
+
+const (
+	RSA1024  	= "RSA1024"
+	RSA2048 	= "RSA2048"
+	RSA4096 	= "RSA4096"
+
+	ECDSA224 	= "ECDSA224"
+	ECDSA256 	= "ECDSA256"
+	ECDSA384 	= "ECDSA384"
+	ECDSA521 	= "ECDSA521"
+)
