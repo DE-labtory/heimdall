@@ -14,6 +14,7 @@ type Key interface {
 	ToPEM() ([]byte,error)
 
 	Type() (keyType)
+
 }
 
 type Crypto interface {
