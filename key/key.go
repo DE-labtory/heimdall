@@ -18,3 +18,11 @@ type Key interface {
 	Type() (keyType)
 
 }
+
+type PriKey interface {
+
+	PublicKey() PubKey
+
+}
+
+type PubKey interface {}

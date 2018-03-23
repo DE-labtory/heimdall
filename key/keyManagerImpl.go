@@ -3,6 +3,7 @@ package key
 import (
 	"crypto/elliptic"
 	"errors"
+	"os"
 )
 
 type keyManagerImpl struct {
@@ -11,7 +12,10 @@ type keyManagerImpl struct {
 	pubKey 				Key
 
 	path 				string
-	keyGenerators		map[KeyGenOpts]keyGenerator
+	generators			map[KeyGenOpts]keyGenerator
+
+	loader				keyLoader
+	storer				keyStorer
 
 }
 
@@ -27,9 +31,19 @@ func NewKeyManager(path string) (KeyManager, error) {
 	keyGenerators[ECDSA384] = &ECDSAKeyGenerator{elliptic.P384()}
 	keyGenerators[ECDSA521] = &ECDSAKeyGenerator{elliptic.P521()}
 
+	loader := &keyLoader{
+		path: path,
+	}
+
+	storer := &keyStorer{
+		path: path,
+	}
+
 	km := &keyManagerImpl{
 		path: path,
-		keyGenerators: keyGenerators,
+		generators: keyGenerators,
+		loader: loader,
+		storer: storer,
 	}
 
 	return km, nil
@@ -37,7 +51,7 @@ func NewKeyManager(path string) (KeyManager, error) {
 
 func (km *keyManagerImpl) GenerateKey(opts KeyGenOpts) (pri, pub Key, err error) {
 
-	err = ci.keyManager.removeKey()
+	err = km.removeKey()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -46,7 +60,7 @@ func (km *keyManagerImpl) GenerateKey(opts KeyGenOpts) (pri, pub Key, err error)
 		return nil, nil, errors.New("Invalid KeyGen Options")
 	}
 
-	keyGenerator, found := km.keyGenerators[opts]
+	keyGenerator, found := km.generators[opts]
 	if !found {
 		return nil, nil, errors.New("Invalid KeyGen Options")
 	}
@@ -56,7 +70,7 @@ func (km *keyManagerImpl) GenerateKey(opts KeyGenOpts) (pri, pub Key, err error)
 		return nil, nil, errors.New("Failed to generate a Key")
 	}
 
-	err = ci.keyManager.Store(pri, pub)
+	err = km.storer.Store(pri, pub)
 	if err != nil {
 		return nil, nil, errors.New("Failed to store a Key")
 	}
@@ -69,12 +83,25 @@ func (km *keyManagerImpl) GenerateKey(opts KeyGenOpts) (pri, pub Key, err error)
 func (km *keyManagerImpl) GetKey() (pri, pub Key, err error) {
 
 	if km.priKey == nil || km.pubKey == nil {
-		err := km.loadKey()
+		pri, pub, err := km.loader.Load()
 		if err != nil {
 			return nil, nil, err
 		}
+
+		km.priKey, km.pubKey = pri, pub
 	}
 
 	return km.priKey, km.pubKey, nil
+
+}
+
+func (km *keyManagerImpl) removeKey() (error) {
+
+	err := os.RemoveAll(km.path)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
