@@ -56,7 +56,7 @@ func (key *ECDSAPrivateKey) SKI() ([]byte) {
 }
 
 func (key *ECDSAPrivateKey) Algorithm() KeyGenOpts {
-	return convertToKeyGenOpts(key.priv.Curve)
+	return ECDSACurveToKeyGenOpts(key.priv.Curve)
 }
 
 func (key *ECDSAPrivateKey) PublicKey() (Key, error) {
@@ -100,7 +100,7 @@ func (key *ECDSAPublicKey) SKI() ([]byte) {
 }
 
 func (key *ECDSAPublicKey) Algorithm() KeyGenOpts {
-	return convertToKeyGenOpts(key.pub.Curve)
+	return ECDSACurveToKeyGenOpts(key.pub.Curve)
 }
 
 func (key *ECDSAPublicKey) ToPEM() ([]byte,error){
@@ -119,19 +119,4 @@ func (key *ECDSAPublicKey) ToPEM() ([]byte,error){
 
 func (key *ECDSAPublicKey) Type() (keyType){
 	return PUBLIC_KEY
-}
-
-func convertToKeyGenOpts(curve elliptic.Curve) (KeyGenOpts) {
-
-	switch curve {
-	case elliptic.P224():
-		return ECDSA224
-	case elliptic.P256():
-		return ECDSA256
-	case elliptic.P384():
-		return ECDSA384
-	case elliptic.P521():
-		return ECDSA521
-	}
-
 }

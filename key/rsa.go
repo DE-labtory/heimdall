@@ -65,7 +65,7 @@ func (key *RSAPrivateKey) SKI() ([]byte) {
 }
 
 func (key *RSAPrivateKey) Algorithm() KeyGenOpts {
-	return KeyGenOpts(fmt.Sprintf("RSA%d", key.bits))
+	return RSABitsToKeyGenOpts(key.bits)
 }
 
 func (key *RSAPrivateKey) PublicKey() (pub Key, err error) {
@@ -108,7 +108,7 @@ func (key *RSAPublicKey) SKI() ([]byte) {
 }
 
 func (key *RSAPublicKey) Algorithm() KeyGenOpts {
-	return KeyGenOpts(fmt.Sprintf("RSA%d", key.bits))
+	return RSABitsToKeyGenOpts(key.bits)
 }
 
 func (key *RSAPublicKey) ToPEM() ([]byte,error) {
