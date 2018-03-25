@@ -59,9 +59,11 @@ func (storer *keyStorer) storeKey(key Key) (error) {
 	}
 
 	return nil
+
 }
 
 func (storer *keyStorer) getFullPath(alias, suffix string) (string, error) {
+
 	if _, err := os.Stat(storer.path); os.IsNotExist(err) {
 		err = os.MkdirAll(storer.path, 0755)
 		if err != nil {
@@ -70,4 +72,5 @@ func (storer *keyStorer) getFullPath(alias, suffix string) (string, error) {
 	}
 
 	return filepath.Join(storer.path, alias + "_" + suffix), nil
+
 }

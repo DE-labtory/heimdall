@@ -1,10 +1,10 @@
 package key
 
-type keyType string
+type KeyType string
 
 const (
-	PRIVATE_KEY keyType = "pri"
-	PUBLIC_KEY	keyType = "pub"
+	PRIVATE_KEY KeyType = "pri"
+	PUBLIC_KEY	KeyType = "pub"
 )
 
 type Key interface {
@@ -15,14 +15,16 @@ type Key interface {
 
 	ToPEM() ([]byte,error)
 
-	Type() (keyType)
+	Type() (KeyType)
 
 }
 
 type PriKey interface {
 
+	Key
+
 	PublicKey() PubKey
 
 }
 
-type PubKey interface {}
+type PubKey interface { Key }

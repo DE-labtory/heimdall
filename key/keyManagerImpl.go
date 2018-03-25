@@ -4,6 +4,7 @@ import (
 	"crypto/elliptic"
 	"errors"
 	"os"
+	"strings"
 )
 
 type keyManagerImpl struct {
@@ -20,6 +21,22 @@ type keyManagerImpl struct {
 }
 
 func NewKeyManager(path string) (KeyManager, error) {
+
+	if len(path) == 0 {
+		path = "./.keyRepository"
+	} else {
+		if !strings.HasPrefix(path, "./") {
+			path = "./" + path
+		} else {
+			path = path
+		}
+	}
+
+	if strings.HasSuffix(path, "/") {
+		path = path + ".keys"
+	} else {
+		path = path + "/.keys"
+	}
 
 	keyGenerators := make(map[KeyGenOpts]keyGenerator)
 	keyGenerators[RSA1024] = &RSAKeyGenerator{1024}
@@ -42,8 +59,8 @@ func NewKeyManager(path string) (KeyManager, error) {
 	km := &keyManagerImpl{
 		path: path,
 		generators: keyGenerators,
-		loader: loader,
-		storer: storer,
+		loader: *loader,
+		storer: *storer,
 	}
 
 	return km, nil

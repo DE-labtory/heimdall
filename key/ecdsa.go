@@ -38,16 +38,16 @@ func (keygen *ECDSAKeyGenerator) Generate(opts KeyGenOpts) (pri, pub Key, err er
 }
 
 type ECDSAPrivateKey struct {
-	priv *ecdsa.PrivateKey
+	PrivKey *ecdsa.PrivateKey
 }
 
-func (key *ECDSAPrivateKey) SKI() ([]byte) {
+func (key *ECDSAPrivateKey) SKI() (ski []byte) {
 
-	if key.priv == nil {
+	if key.PrivKey == nil {
 		return nil
 	}
 
-	data := elliptic.Marshal(key.priv.Curve, key.priv.PublicKey.X, key.priv.PublicKey.Y)
+	data := elliptic.Marshal(key.PrivKey.Curve, key.PrivKey.PublicKey.X, key.PrivKey.PublicKey.Y)
 
 	hash := sha256.New()
 	hash.Write(data)
@@ -56,15 +56,15 @@ func (key *ECDSAPrivateKey) SKI() ([]byte) {
 }
 
 func (key *ECDSAPrivateKey) Algorithm() KeyGenOpts {
-	return ECDSACurveToKeyGenOpts(key.priv.Curve)
+	return ECDSACurveToKeyGenOpts(key.PrivKey.Curve)
 }
 
 func (key *ECDSAPrivateKey) PublicKey() (Key, error) {
-	return &ECDSAPublicKey{&key.priv.PublicKey}, nil
+	return &ECDSAPublicKey{&key.PrivKey.PublicKey}, nil
 }
 
 func (key *ECDSAPrivateKey) ToPEM() ([]byte,error){
-	keyData, err := x509.MarshalECPrivateKey(key.priv)
+	keyData, err := x509.MarshalECPrivateKey(key.PrivKey)
 	if err != nil {
 		return nil, err
 	}
@@ -77,21 +77,21 @@ func (key *ECDSAPrivateKey) ToPEM() ([]byte,error){
 	), nil
 }
 
-func (key *ECDSAPrivateKey) Type() (keyType){
+func (key *ECDSAPrivateKey) Type() (KeyType){
 	return PRIVATE_KEY
 }
 
 type ECDSAPublicKey struct {
-	pub *ecdsa.PublicKey
+	PubKey *ecdsa.PublicKey
 }
 
-func (key *ECDSAPublicKey) SKI() ([]byte) {
+func (key *ECDSAPublicKey) SKI() (ski []byte) {
 
-	if key.pub == nil {
+	if key.PubKey == nil {
 		return nil
 	}
 
-	data := elliptic.Marshal(key.pub.Curve, key.pub.X, key.pub.Y)
+	data := elliptic.Marshal(key.PubKey.Curve, key.PubKey.X, key.PubKey.Y)
 
 	hash := sha256.New()
 	hash.Write(data)
@@ -100,11 +100,11 @@ func (key *ECDSAPublicKey) SKI() ([]byte) {
 }
 
 func (key *ECDSAPublicKey) Algorithm() KeyGenOpts {
-	return ECDSACurveToKeyGenOpts(key.pub.Curve)
+	return ECDSACurveToKeyGenOpts(key.PubKey.Curve)
 }
 
 func (key *ECDSAPublicKey) ToPEM() ([]byte,error){
-	keyData, err := x509.MarshalPKIXPublicKey(key.pub)
+	keyData, err := x509.MarshalPKIXPublicKey(key.PubKey)
 	if err != nil {
 		return nil, err
 	}
@@ -117,6 +117,6 @@ func (key *ECDSAPublicKey) ToPEM() ([]byte,error){
 	), nil
 }
 
-func (key *ECDSAPublicKey) Type() (keyType){
+func (key *ECDSAPublicKey) Type() (KeyType){
 	return PUBLIC_KEY
 }

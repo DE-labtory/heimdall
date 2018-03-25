@@ -28,7 +28,7 @@ func (keygen *RSAKeyGenerator) Generate(opts KeyGenOpts) (pri, pub Key, err erro
 		return nil, nil, fmt.Errorf("Failed to generate RSA key : %s", err)
 	}
 
-	pri = &RSAPrivateKey{priv:generatedKey, bits:keygen.bits}
+	pri = &RSAPrivateKey{PrivKey:generatedKey, bits:keygen.bits}
 	pub, err = pri.(*RSAPrivateKey).PublicKey()
 	if err != nil {
 		return nil, nil, err
@@ -44,18 +44,18 @@ type rsaKeyMarshalOpt struct {
 }
 
 type RSAPrivateKey struct {
-	priv *rsa.PrivateKey
+	PrivKey *rsa.PrivateKey
 	bits int
 }
 
-func (key *RSAPrivateKey) SKI() ([]byte) {
+func (key *RSAPrivateKey) SKI() (ski []byte) {
 
-	if key.priv == nil {
+	if key.PrivKey == nil {
 		return nil
 	}
 
 	data, _ := asn1.Marshal(rsaKeyMarshalOpt{
-		key.priv.N, key.priv.E,
+		key.PrivKey.N, key.PrivKey.E,
 	})
 
 	hash := sha256.New()
@@ -69,11 +69,11 @@ func (key *RSAPrivateKey) Algorithm() KeyGenOpts {
 }
 
 func (key *RSAPrivateKey) PublicKey() (pub Key, err error) {
-	return &RSAPublicKey{pub: &key.priv.PublicKey, bits: key.bits}, nil
+	return &RSAPublicKey{PubKey: &key.PrivKey.PublicKey, bits: key.bits}, nil
 }
 
 func (key *RSAPrivateKey) ToPEM() ([]byte,error) {
-	keyData := x509.MarshalPKCS1PrivateKey(key.priv)
+	keyData := x509.MarshalPKCS1PrivateKey(key.PrivKey)
 
 	return pem.EncodeToMemory(
 		&pem.Block{
@@ -83,18 +83,18 @@ func (key *RSAPrivateKey) ToPEM() ([]byte,error) {
 	), nil
 }
 
-func (key *RSAPrivateKey) Type() (keyType){
+func (key *RSAPrivateKey) Type() (KeyType) {
 	return PRIVATE_KEY
 }
 
 type RSAPublicKey struct {
-	pub *rsa.PublicKey
+	PubKey *rsa.PublicKey
 	bits int
 }
 
-func (key *RSAPublicKey) SKI() ([]byte) {
+func (key *RSAPublicKey) SKI() (ski []byte) {
 
-	if key.pub == nil {
+	if key.PubKey == nil {
 		return nil
 	}
 
@@ -113,7 +113,7 @@ func (key *RSAPublicKey) Algorithm() KeyGenOpts {
 
 func (key *RSAPublicKey) ToPEM() ([]byte,error) {
 
-	keyData, err := x509.MarshalPKIXPublicKey(key.pub)
+	keyData, err := x509.MarshalPKIXPublicKey(key.PubKey)
 
 	if err != nil {
 		return nil, err
@@ -128,6 +128,6 @@ func (key *RSAPublicKey) ToPEM() ([]byte,error) {
 
 }
 
-func (key *RSAPublicKey) Type() (keyType){
+func (key *RSAPublicKey) Type() (KeyType){
 	return PUBLIC_KEY
 }

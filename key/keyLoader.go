@@ -17,7 +17,7 @@ type keyLoader struct {
 type keyInfos struct {
 	id			string
 	keyGenOpts	KeyGenOpts
-	keyType		keyType
+	keyType		KeyType
 }
 
 func (loader *keyLoader) Load() (pri, pub Key, err error) {
@@ -46,9 +46,9 @@ func (loader *keyLoader) Load() (pri, pub Key, err error) {
 
 				switch key.(type) {
 				case *rsa.PrivateKey:
-					pri = &RSAPrivateKey{priv: key.(*rsa.PrivateKey), bits: KeyGenOptsToRSABits(keyInfos.keyGenOpts)}
+					pri = &RSAPrivateKey{PrivKey: key.(*rsa.PrivateKey), bits: KeyGenOptsToRSABits(keyInfos.keyGenOpts)}
 				case *ecdsa.PrivateKey:
-					pri = &ECDSAPrivateKey{priv: key.(*ecdsa.PrivateKey)}
+					pri = &ECDSAPrivateKey{PrivKey: key.(*ecdsa.PrivateKey)}
 				default:
 					return nil, nil, errors.New("Failed to load Key")
 				}
@@ -61,7 +61,7 @@ func (loader *keyLoader) Load() (pri, pub Key, err error) {
 
 				switch key.(type) {
 				case *rsa.PublicKey:
-					pub = &RSAPublicKey{pub: key.(*rsa.PublicKey), bits: KeyGenOptsToRSABits(keyInfos.keyGenOpts)}
+					pub = &RSAPublicKey{PubKey: key.(*rsa.PublicKey), bits: KeyGenOptsToRSABits(keyInfos.keyGenOpts)}
 				case *ecdsa.PublicKey:
 					pub = &ECDSAPublicKey{key.(*ecdsa.PublicKey)}
 				default:
@@ -79,7 +79,7 @@ func (loader *keyLoader) Load() (pri, pub Key, err error) {
 
 }
 
-func (loader *keyLoader) loadKey(alias string, keyType keyType) (key interface{}, err error) {
+func (loader *keyLoader) loadKey(alias string, keyType KeyType) (key interface{}, err error) {
 
 	if len(alias) == 0 {
 		return nil, errors.New("Input value should not be blank")
@@ -123,7 +123,7 @@ func (loader *keyLoader) getKeyInfos(name string) (*keyInfos, bool) {
 		return nil, false
 	}
 
-	keyType := keyType(datas[2])
+	keyType := KeyType(datas[2])
 	if !(keyType == PRIVATE_KEY || keyType == PUBLIC_KEY) {
 		return nil, false
 	}
