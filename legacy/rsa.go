@@ -77,7 +77,7 @@ func (key *RsaPrivateKey) Algorithm() string {
 	return RSA
 }
 
-func (key *RsaPrivateKey) PublicKey() (pub Key, err error) {
+func (key *RsaPrivateKey) PublicKey() (pub *RsaPublicKey, err error) {
 	return &RsaPublicKey{&key.priv.PublicKey}, nil
 }
 
