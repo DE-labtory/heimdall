@@ -3,6 +3,7 @@ package auth
 import (
 	"crypto"
 	"heimdall"
+	"github.com/it-chain/heimdall/key"
 )
 
 type SignerOpts interface {
@@ -11,18 +12,12 @@ type SignerOpts interface {
 
 type signer interface {
 
-	Sign(key heimdall.Key, digest []byte, opts SignerOpts) ([]byte, error)
+	Sign(key key.Key, digest []byte, opts SignerOpts) ([]byte, error)
 
 }
 
 type verifier interface {
 
-	Verify(key heimdall.Key, signature, digest []byte, opts SignerOpts) (bool, error)
-
-}
-
-type KeyGenOpts interface {
-
-	Algorithm() string
+	Verify(key key.Key, signature, digest []byte, opts SignerOpts) (bool, error)
 
 }

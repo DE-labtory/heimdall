@@ -1,11 +1,14 @@
 package auth
 
-import "heimdall"
+import (
+	"heimdall"
+	"github.com/it-chain/heimdall/key"
+)
 
 type Auth interface {
 
-	Sign(key heimdall.Key, data []byte, opts SignerOpts) ([]byte, error)
+	Sign(priKey key.Key, digest []byte, opts SignerOpts) ([]byte, error)
 
-	Verify(key heimdall.Key, signature, digest []byte, opts SignerOpts) (bool, error)
+	Verify(pubKey key.Key, signature, digest []byte, opts SignerOpts) (bool, error)
 
 }
