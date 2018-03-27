@@ -1,4 +1,4 @@
-package heimdall
+package legacy
 
 import (
 	"crypto/rsa"
@@ -14,6 +14,7 @@ type Key interface {
 	ToPEM() ([]byte,error)
 
 	Type() (keyType)
+
 }
 
 type Crypto interface {

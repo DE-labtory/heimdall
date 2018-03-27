@@ -1,4 +1,4 @@
-package heimdall
+package legacy
 
 type RSAKeyGenOpts struct {}
 
