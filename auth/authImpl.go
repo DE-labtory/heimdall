@@ -3,7 +3,6 @@ package auth
 import (
 	"reflect"
 	"github.com/it-chain/heimdall/key"
-	"crypto/sha256"
 	"errors"
 )
 

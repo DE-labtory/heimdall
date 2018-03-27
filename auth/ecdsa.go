@@ -13,7 +13,7 @@ type ecdsaSignature struct {
 	R, S *big.Int
 }
 
-type ECDSASigner struct{}
+type ECDSASigner struct {}
 
 func marshalECDSASignature(r, s *big.Int) ([]byte, error) {
 	return asn1.Marshal(ecdsaSignature{r, s})
@@ -44,9 +44,9 @@ func unmarshalECDSASignature(signature []byte) (*big.Int, *big.Int, error) {
 
 }
 
-func (signer *ECDSASigner) Sign(key key.Key, digest []byte, opts SignerOpts) ([]byte, error) {
+func (signer *ECDSASigner) Sign(priKey key.Key, digest []byte, opts SignerOpts) ([]byte, error) {
 
-	r, s, err := ecdsa.Sign(rand.Reader, key.(*key.ECDSAPrivateKey).PrivKey, digest)
+	r, s, err := ecdsa.Sign(rand.Reader, priKey.(*key.ECDSAPrivateKey).PrivKey, digest)
 	if err != nil {
 		return nil, err
 	}
@@ -60,16 +60,16 @@ func (signer *ECDSASigner) Sign(key key.Key, digest []byte, opts SignerOpts) ([]
 
 }
 
-type ECDSAVerifier struct{}
+type ECDSAVerifier struct {}
 
-func (v *ECDSAVerifier) Verify(key key.Key, signature, digest []byte, opts SignerOpts) (bool, error) {
+func (v *ECDSAVerifier) Verify(pubKey key.Key, signature, digest []byte, opts SignerOpts) (bool, error) {
 
 	r, s, err := unmarshalECDSASignature(signature)
 	if err != nil {
 		return false, err
 	}
 
-	valid := ecdsa.Verify(key.(*key.ECDSAPublicKey).PubKey, digest, r, s)
+	valid := ecdsa.Verify(pubKey.(*key.ECDSAPublicKey).PubKey, digest, r, s)
 	if !valid {
 		return valid, errors.New("failed to verify")
 	}

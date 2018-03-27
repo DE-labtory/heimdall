@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"heimdall"
 	"github.com/it-chain/heimdall/key"
 )
 
