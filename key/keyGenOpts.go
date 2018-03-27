@@ -15,6 +15,8 @@ const (
 	ECDSA256
 	ECDSA384
 	ECDSA521
+
+	UNKNOWN
 )
 
 var optsArr = [...]string {
@@ -26,13 +28,28 @@ var optsArr = [...]string {
 	"ecdsa256",
 	"ecdsa384",
 	"ecdsa521",
+
+	"unknown",
+}
+
+func (opts KeyGenOpts) ValidCheck() bool {
+
+	if opts < 0 || opts >= KeyGenOpts(len(optsArr)) {
+		return false
+	}
+
+	return true
+
 }
 
 func (opts KeyGenOpts) String() string {
-	if opts < 0 || opts + 1 >= KeyGenOpts(len(optsArr)) {
+
+	if !opts.ValidCheck() {
 		return "unknown"
 	}
+
 	return optsArr[opts]
+
 }
 
 func StringToKeyGenOpts(rawOpts string) (KeyGenOpts, bool) {
@@ -58,6 +75,8 @@ func ECDSACurveToKeyGenOpts(curve elliptic.Curve) (KeyGenOpts) {
 		return ECDSA384
 	case elliptic.P521():
 		return ECDSA521
+	default:
+		return UNKNOWN
 	}
 
 }
@@ -73,6 +92,8 @@ func KeyGenOptsToECDSACurve(opts KeyGenOpts) (elliptic.Curve) {
 		return elliptic.P384()
 	case ECDSA521:
 		return elliptic.P521()
+	default:
+		return nil
 	}
 
 }
@@ -86,6 +107,8 @@ func RSABitsToKeyGenOpts(bits int) (KeyGenOpts) {
 		return RSA2048
 	case 4096:
 		return RSA4096
+	default:
+		return UNKNOWN
 	}
 
 }
@@ -99,6 +122,8 @@ func KeyGenOptsToRSABits(opts KeyGenOpts) (int) {
 		return 2048
 	case RSA4096:
 		return 4096
+	default:
+		return -1
 	}
 
 }

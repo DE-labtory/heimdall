@@ -68,12 +68,12 @@ func NewKeyManager(path string) (KeyManager, error) {
 
 func (km *keyManagerImpl) GenerateKey(opts KeyGenOpts) (pri, pub Key, err error) {
 
-	err = km.removeKey()
+	err = km.RemoveKey()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	if opts == nil {
+	if !opts.ValidCheck() {
 		return nil, nil, errors.New("Invalid KeyGen Options")
 	}
 
@@ -93,7 +93,7 @@ func (km *keyManagerImpl) GenerateKey(opts KeyGenOpts) (pri, pub Key, err error)
 	}
 
 	km.priKey, km.pubKey = pri, pub
-	return nil, nil, nil
+	return km.priKey, km.pubKey, nil
 
 }
 
@@ -112,7 +112,7 @@ func (km *keyManagerImpl) GetKey() (pri, pub Key, err error) {
 
 }
 
-func (km *keyManagerImpl) removeKey() (error) {
+func (km *keyManagerImpl) RemoveKey() (error) {
 
 	err := os.RemoveAll(km.path)
 	if err != nil {

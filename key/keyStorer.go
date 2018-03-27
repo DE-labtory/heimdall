@@ -45,7 +45,7 @@ func (storer *keyStorer) storeKey(key Key) (error) {
 		return err
 	}
 
-	path, err := storer.getFullPath(hex.EncodeToString(key.SKI()), string(key.Algorithm()) + "_" + string(key.Type()))
+	path, err := storer.getFullPath(hex.EncodeToString(key.SKI()), key.Algorithm().String() + "_" + string(key.Type()))
 
 	if err != nil {
 		return err
