@@ -2,6 +2,8 @@
 
 Heimdall is a simple library that keeps your data secure through signing and verification written by Golang.
 
+(In Norse mythology, *Heimdall* guarded the Bifrost, which the Vikings believed rainbows came from)
+
 ## Getting Started with Heimdall
 
 ### Installation
