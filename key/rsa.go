@@ -16,7 +16,7 @@ type RSAKeyGenerator struct {
 	bits int
 }
 
-func (keygen *RSAKeyGenerator) Generate(opts KeyGenOpts) (pri, pub Key, err error) {
+func (keygen *RSAKeyGenerator) Generate(opts KeyGenOpts) (pri PriKey, pub PubKey, err error) {
 
 	if keygen.bits <= 0 {
 		return nil, nil, errors.New("Bits length should be bigger than 0")
