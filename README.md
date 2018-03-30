@@ -6,8 +6,6 @@
 
 In Norse mythology, *Heimdall* guarded the Bifrost, which the Vikings believed rainbows came from
 
-(In Norse mythology, *Heimdall* guarded the Bifrost, which the Vikings believed rainbows came from)
-
 ## Getting Started with Heimdall
 
 ### Installation
