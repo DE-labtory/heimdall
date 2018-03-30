@@ -15,7 +15,7 @@ type ECDSAKeyGenerator struct {
 	curve elliptic.Curve
 }
 
-func (keygen *ECDSAKeyGenerator) Generate(opts KeyGenOpts) (pri, pub Key, err error) {
+func (keygen *ECDSAKeyGenerator) Generate(opts KeyGenOpts) (pri PriKey, pub PubKey, err error) {
 
 	if keygen.curve == nil {
 		return nil, nil, errors.New("Curve value have not to be nil")
@@ -59,7 +59,7 @@ func (key *ECDSAPrivateKey) Algorithm() KeyGenOpts {
 	return ECDSACurveToKeyGenOpts(key.PrivKey.Curve)
 }
 
-func (key *ECDSAPrivateKey) PublicKey() (Key, error) {
+func (key *ECDSAPrivateKey) PublicKey() (PubKey, error) {
 	return &ECDSAPublicKey{&key.PrivKey.PublicKey}, nil
 }
 
