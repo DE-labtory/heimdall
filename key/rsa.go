@@ -68,7 +68,7 @@ func (key *RSAPrivateKey) Algorithm() KeyGenOpts {
 	return RSABitsToKeyGenOpts(key.bits)
 }
 
-func (key *RSAPrivateKey) PublicKey() (pub Key, err error) {
+func (key *RSAPrivateKey) PublicKey() (pub PubKey, err error) {
 	return &RSAPublicKey{PubKey: &key.PrivKey.PublicKey, bits: key.bits}, nil
 }
 
