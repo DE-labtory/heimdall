@@ -20,7 +20,7 @@ type keyInfos struct {
 	keyType		KeyType
 }
 
-func (loader *keyLoader) Load() (pri, pub Key, err error) {
+func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
 
 	if _, err := os.Stat(loader.path); os.IsNotExist(err) {
 
