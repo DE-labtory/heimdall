@@ -9,8 +9,8 @@ import (
 
 type keyManagerImpl struct {
 
-	priKey 				Key
-	pubKey 				Key
+	priKey 				PriKey
+	pubKey 				PubKey
 
 	path 				string
 	generators			map[KeyGenOpts]keyGenerator
