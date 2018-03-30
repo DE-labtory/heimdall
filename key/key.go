@@ -23,7 +23,7 @@ type PriKey interface {
 
 	Key
 
-	PublicKey() PubKey
+	PublicKey() (PubKey, error)
 
 }
 
