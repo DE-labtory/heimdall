@@ -66,7 +66,7 @@ func NewKeyManager(path string) (KeyManager, error) {
 	return km, nil
 }
 
-func (km *keyManagerImpl) GenerateKey(opts KeyGenOpts) (pri, pub Key, err error) {
+func (km *keyManagerImpl) GenerateKey(opts KeyGenOpts) (pri PriKey, pub PubKey, err error) {
 
 	err = km.RemoveKey()
 	if err != nil {
