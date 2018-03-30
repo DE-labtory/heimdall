@@ -97,7 +97,7 @@ func (km *keyManagerImpl) GenerateKey(opts KeyGenOpts) (pri, pub Key, err error)
 
 }
 
-func (km *keyManagerImpl) GetKey() (pri Prikey, pub PubKey, err error) {
+func (km *keyManagerImpl) GetKey() (pri PriKey, pub PubKey, err error) {
 
 	if km.priKey == nil || km.pubKey == nil {
 		pri, pub, err := km.loader.Load()
