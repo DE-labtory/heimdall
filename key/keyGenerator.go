@@ -2,6 +2,6 @@ package key
 
 type keyGenerator interface {
 
-	Generate(opts KeyGenOpts) (pri, pub Key, err error)
+	Generate(opts KeyGenOpts) (pri PriKey, pub PubKey, err error)
 
 }
