@@ -12,7 +12,7 @@ const (
 
 // A Key represents a cryptographic key.
 type Key interface {
-	// SKI ...
+	// SKI provides name of file that will be store a key
 	SKI() (ski []byte)
 
 	// Algorithm returns key generation option such as 'rsa2048'.
