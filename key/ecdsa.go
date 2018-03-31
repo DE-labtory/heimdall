@@ -1,3 +1,5 @@
+// This file implement ECDSA key and its generation.
+
 package key
 
 import (
