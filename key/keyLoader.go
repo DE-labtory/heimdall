@@ -1,25 +1,30 @@
+// This file provides components that is needed for loading key process.
+
 package key
 
 import (
-	"os"
-	"io/ioutil"
-	"strings"
-	"crypto/rsa"
 	"crypto/ecdsa"
+	"crypto/rsa"
 	"errors"
+	"io/ioutil"
+	"os"
 	"path/filepath"
+	"strings"
 )
 
+// keyLoader contains path as a string.
 type keyLoader struct {
 	path string
 }
 
+// keyInfos contains key related information such as id, key generation option and key type.
 type keyInfos struct {
-	id			string
-	keyGenOpts	KeyGenOpts
-	keyType		KeyType
+	id         string
+	keyGenOpts KeyGenOpts
+	keyType    KeyType
 }
 
+// Load loads private key and public key from stored file.
 func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
 
 	if _, err := os.Stat(loader.path); os.IsNotExist(err) {
@@ -79,6 +84,7 @@ func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
 
 }
 
+// loadKey reads key from file and changes the format from PEM to key.
 func (loader *keyLoader) loadKey(alias string, keyType KeyType) (key interface{}, err error) {
 
 	if len(alias) == 0 {
@@ -110,6 +116,7 @@ func (loader *keyLoader) loadKey(alias string, keyType KeyType) (key interface{}
 
 }
 
+// getKeyInfos gets key information that are id, key generation option and key type.
 func (loader *keyLoader) getKeyInfos(name string) (*keyInfos, bool) {
 
 	datas := strings.Split(name, "_")
@@ -129,15 +136,16 @@ func (loader *keyLoader) getKeyInfos(name string) (*keyInfos, bool) {
 	}
 
 	infos := &keyInfos{
-		id:datas[0],
-		keyGenOpts:keyGenOpts,
-		keyType:keyType,
+		id:         datas[0],
+		keyGenOpts: keyGenOpts,
+		keyType:    keyType,
 	}
 
 	return infos, true
 
 }
 
+// getFullPath gets full (absolute) path of a key file.
 func (loader *keyLoader) getFullPath(alias, suffix string) (string, error) {
 	if _, err := os.Stat(loader.path); os.IsNotExist(err) {
 		err = os.MkdirAll(loader.path, 0755)
@@ -146,5 +154,5 @@ func (loader *keyLoader) getFullPath(alias, suffix string) (string, error) {
 		}
 	}
 
-	return filepath.Join(loader.path, alias + "_" + suffix), nil
+	return filepath.Join(loader.path, alias+"_"+suffix), nil
 }
