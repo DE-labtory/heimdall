@@ -19,7 +19,7 @@ go get -u github.com/it-chain/heimdall
 ```Go
 keyManager, err := NewKeyManager(".myKeys")
 
-priv, pub, err := keyManager.Generate(key.RSA4096)
+priv, pub, err := keyManager.GenerateKey(key.RSA4096)
 
 sampleData = []byte("This is the data will be transmitted.")
 
