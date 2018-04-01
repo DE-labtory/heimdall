@@ -4,7 +4,13 @@
 
 ### Definition of Heimdall
 
-In Norse mythology, *Heimdall* guarded the Bifrost, which the Vikings believed rainbows came from
+- In Norse mythology, *[Heimdall](https://en.wikipedia.org/wiki/Heimdallr)* guarded the [*Bifrost*](https://github.com/it-chain/bifrost), which the Vikings believed rainbows came from
+
+- *[Heimdall](http://marvelcinematicuniverse.wikia.com/wiki/Heimdall)* also appears in the Marvel cinematic universe.
+
+  > **Heimdall** is the all-seeing and all-hearing Asgardian and former guard of the Bifrost Bridge.
+
+
 
 ## Getting Started with Heimdall
 
@@ -19,21 +25,27 @@ go get -u github.com/it-chain/heimdall
 ```Go
 keyManager, err := NewKeyManager(".myKeys")
 
+// Generate a pair of key with RSA Algorithm
 priv, pub, err := keyManager.GenerateKey(key.RSA4096)
 
 sampleData = []byte("This is the data will be transmitted.")
 
 hashManager, err := hashing.NewHashManager()
 
+// Convert raw data to hashed data by using SHA512 function
 digest, err := hashManager.Hash(sampleData, nil, hashing.SHA512)
 
 authManager, err := auth.NewAuth()
 
+// The option will be used in signing process in case of using RSA key
 signerOpts := auth.EQUAL_SHA256.SignerOptsToPSSOptions()
+
+// AuthManager make hashed-data(digest) to signature with the generated private key
 signature, err := authManager.Sign(priv, digest, signerOpts)
 
 /* --------- After data transmitted --------- */
 
+// AuthManager verify that received data has any forgery during transmitting process
 ok, err := authManager.Verify(pub, signature, digest, signerOpts)
 
 fmt.println(ok) // true
