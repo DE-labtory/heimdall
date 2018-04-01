@@ -4,7 +4,7 @@
 
 ### Definition of Heimdall
 
-- In Norse mythology, *[Heimdall](https://en.wikipedia.org/wiki/Heimdallr)* guarded the [*Bifrost*](https://github.com/it-chain/bifrost), which the Vikings believed rainbows came from
+- In Norse mythology, *[Heimdall](https://en.wikipedia.org/wiki/Heimdallr)* guarded the [*Bifrost*](https://en.wikipedia.org/wiki/Bifröst), which the Vikings believed rainbows came from
 
 - *[Heimdall](http://marvelcinematicuniverse.wikia.com/wiki/Heimdall)* also appears in the Marvel cinematic universe.
 
