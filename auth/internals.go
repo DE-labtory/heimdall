@@ -1,4 +1,4 @@
-// This file provides
+// This file provides the internal interfaces for signing and verifying process.
 
 package auth
 
