@@ -32,7 +32,7 @@ func (keygen *RSAKeyGenerator) Generate(opts KeyGenOpts) (pri PriKey, pub PubKey
 		return nil, nil, fmt.Errorf("Failed to generate RSA key : %s", err)
 	}
 
-	pri = &RSAPrivateKey{PrivKey: generatedKey, bits: keygen.bits}
+	pri = &RSAPrivateKey{PrivKey: generatedKey, Bits: keygen.bits}
 	pub, err = pri.(*RSAPrivateKey).PublicKey()
 	if err != nil {
 		return nil, nil, err
@@ -48,10 +48,10 @@ type rsaKeyMarshalOpt struct {
 	E int
 }
 
-// RSAPrivateKey contains private key of ECDSA.
+// RSAPrivateKey contains private key of RSA.
 type RSAPrivateKey struct {
 	PrivKey *rsa.PrivateKey
-	bits    int
+	Bits    int
 }
 
 // SKI provides name of file that will be store a RSA private key.
@@ -73,12 +73,12 @@ func (key *RSAPrivateKey) SKI() (ski []byte) {
 
 // Algorithm returns key generation option of RSA.
 func (key *RSAPrivateKey) Algorithm() KeyGenOpts {
-	return RSABitsToKeyGenOpts(key.bits)
+	return RSABitsToKeyGenOpts(key.Bits)
 }
 
 // PublicKey returns RSA public key of key pair.
 func (key *RSAPrivateKey) PublicKey() (pub PubKey, err error) {
-	return &RSAPublicKey{PubKey: &key.PrivKey.PublicKey, bits: key.bits}, nil
+	return &RSAPublicKey{PubKey: &key.PrivKey.PublicKey, Bits: key.Bits}, nil
 }
 
 // ToPEM makes a RSA private key to PEM format.
@@ -101,7 +101,7 @@ func (key *RSAPrivateKey) Type() KeyType {
 // RSAPublicKey contains components of a public key.
 type RSAPublicKey struct {
 	PubKey *rsa.PublicKey
-	bits   int
+	Bits   int
 }
 
 // SKI provides name of file that will be store a RSA public key.
@@ -122,7 +122,7 @@ func (key *RSAPublicKey) SKI() (ski []byte) {
 
 // Algorithm returns RSA public key generation option.
 func (key *RSAPublicKey) Algorithm() KeyGenOpts {
-	return RSABitsToKeyGenOpts(key.bits)
+	return RSABitsToKeyGenOpts(key.Bits)
 }
 
 // ToPEM makes a RSA public key to PEM format.
