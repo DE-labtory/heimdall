@@ -21,7 +21,7 @@ func TestNewAuth(t *testing.T) {
 
 func TestAuth_RSASignVerify(t *testing.T) {
 
-	var rsaKeyBits = 4096
+	rsaKeyBits := 4096
 
 	generatedKey, err := rsa.GenerateKey(rand.Reader, rsaKeyBits)
 	assert.NoError(t, err)
@@ -98,7 +98,7 @@ func TestAuth_RSASignVerify(t *testing.T) {
 
 func TestAuth_ECDSASignVerify(t *testing.T) {
 
-	var ecdsaCurve = elliptic.P521()
+	ecdsaCurve := elliptic.P521()
 
 	generatedKey, err := ecdsa.GenerateKey(ecdsaCurve, rand.Reader)
 	assert.NoError(t, err)
