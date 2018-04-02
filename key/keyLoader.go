@@ -51,7 +51,7 @@ func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
 
 				switch key.(type) {
 				case *rsa.PrivateKey:
-					pri = &RSAPrivateKey{PrivKey: key.(*rsa.PrivateKey), bits: KeyGenOptsToRSABits(keyInfos.keyGenOpts)}
+					pri = &RSAPrivateKey{PrivKey: key.(*rsa.PrivateKey), Bits: KeyGenOptsToRSABits(keyInfos.keyGenOpts)}
 				case *ecdsa.PrivateKey:
 					pri = &ECDSAPrivateKey{PrivKey: key.(*ecdsa.PrivateKey)}
 				default:
@@ -66,7 +66,7 @@ func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
 
 				switch key.(type) {
 				case *rsa.PublicKey:
-					pub = &RSAPublicKey{PubKey: key.(*rsa.PublicKey), bits: KeyGenOptsToRSABits(keyInfos.keyGenOpts)}
+					pub = &RSAPublicKey{PubKey: key.(*rsa.PublicKey), Bits: KeyGenOptsToRSABits(keyInfos.keyGenOpts)}
 				case *ecdsa.PublicKey:
 					pub = &ECDSAPublicKey{key.(*ecdsa.PublicKey)}
 				default:
