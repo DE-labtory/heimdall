@@ -44,7 +44,7 @@ func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
 		if ok {
 			switch keyInfos.keyType {
 			case PRIVATE_KEY:
-				key, err := loader.loadKey(keyInfos.id, keyInfos.keyType)
+				key, err := loader.loadKey(keyInfos.id, keyInfos.keyGenOpts, keyInfos.keyType)
 				if err != nil {
 					return nil, nil, err
 				}
@@ -59,7 +59,7 @@ func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
 				}
 
 			case PUBLIC_KEY:
-				key, err := loader.loadKey(keyInfos.id, keyInfos.keyType)
+				key, err := loader.loadKey(keyInfos.id, keyInfos.keyGenOpts, keyInfos.keyType)
 				if err != nil {
 					return nil, nil, err
 				}
@@ -85,13 +85,13 @@ func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
 }
 
 // loadKey reads key from file and changes the format from PEM to key.
-func (loader *keyLoader) loadKey(alias string, keyType KeyType) (key interface{}, err error) {
+func (loader *keyLoader) loadKey(alias string, keyGenOpt KeyGenOpts, keyType KeyType) (key interface{}, err error) {
 
 	if len(alias) == 0 {
 		return nil, errors.New("Input value should not be blank")
 	}
 
-	path, err := loader.getFullPath(alias, string(keyType))
+	path, err := loader.getFullPath(alias, keyGenOpt.String(), string(keyType))
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (loader *keyLoader) getKeyInfos(name string) (*keyInfos, bool) {
 }
 
 // getFullPath gets full (absolute) path of a key file.
-func (loader *keyLoader) getFullPath(alias, suffix string) (string, error) {
+func (loader *keyLoader) getFullPath(alias, keyGenOpt string, suffix string) (string, error) {
 	if _, err := os.Stat(loader.path); os.IsNotExist(err) {
 		err = os.MkdirAll(loader.path, 0755)
 		if err != nil {
@@ -154,5 +154,5 @@ func (loader *keyLoader) getFullPath(alias, suffix string) (string, error) {
 		}
 	}
 
-	return filepath.Join(loader.path, alias+"_"+suffix), nil
+	return filepath.Join(loader.path, alias+"_"+keyGenOpt+"_"+suffix), nil
 }
