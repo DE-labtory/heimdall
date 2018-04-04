@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/it-chain/heimdall/auth"
-	"github.com/it-chain/heimdall/key"
-	"github.com/it-chain/heimdall/hashing"
-	"log"
 	"fmt"
+	"log"
 	"os"
+
+	"github.com/it-chain/heimdall/auth"
+	"github.com/it-chain/heimdall/hashing"
+	"github.com/it-chain/heimdall/key"
 )
 
 /*
@@ -19,10 +20,18 @@ func main() {
 	keyManager, err := key.NewKeyManager("")
 	errorCheck(err)
 
-	pri, pub, err := keyManager.GenerateKey(key.ECDSA521)
+	keyPath := keyManager.GetPath()
+
+	// defer os.RemoveAll("./.keyRepository")
+
+	pri, pub, err := keyManager.GetKey()
 	errorCheck(err)
 
-	defer os.RemoveAll("./.keyRepository")
+	// if there is no key file in default key directory, then generate key.
+	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
+		pri, pub, err = keyManager.GenerateKey(key.ECDSA384)
+		errorCheck(err)
+	}
 
 	sampleData := []byte("This is sample data from heimdall.")
 

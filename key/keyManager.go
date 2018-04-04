@@ -12,4 +12,7 @@ type KeyManager interface {
 
 	// RemoveKey removes key files.
 	RemoveKey() error
+
+	// GetPath returns path of key files
+	GetPath() string
 }

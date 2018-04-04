@@ -127,3 +127,8 @@ func (km *keyManagerImpl) RemoveKey() error {
 	return nil
 
 }
+
+// GetPath returns path of key files
+func (km *keyManagerImpl) GetPath() string {
+	return km.path
+}
