@@ -3,7 +3,9 @@
 package key
 
 import (
+	"crypto/ecdsa"
 	"crypto/elliptic"
+	"crypto/rsa"
 	"errors"
 	"os"
 	"strings"
@@ -100,7 +102,8 @@ func (km *keyManagerImpl) GenerateKey(opts KeyGenOpts) (pri PriKey, pub PubKey, 
 
 }
 
-// GetKey gets the key pair from stored key files.
+// GetKey gets the key pair from keyManagerImpl struct.
+// if the keyManagerImpl doesn't have any key, then get keys from stored key files.
 func (km *keyManagerImpl) GetKey() (pri PriKey, pub PubKey, err error) {
 
 	if km.priKey == nil || km.pubKey == nil {
@@ -125,6 +128,54 @@ func (km *keyManagerImpl) RemoveKey() error {
 	}
 
 	return nil
+
+}
+
+// Reconstruct key from bytes.
+func (km *keyManagerImpl) ByteToKey(byteKey []byte, keyGenOpt KeyGenOpts, keyType KeyType) (err error) {
+
+	switch keyType {
+	case PRIVATE_KEY:
+		key, err := PEMToPrivateKey(byteKey)
+		if err != nil {
+			return err
+		}
+
+		switch key.(type) {
+		case *rsa.PrivateKey:
+			pri := &RSAPrivateKey{PrivKey: key.(*rsa.PrivateKey), Bits: KeyGenOptsToRSABits(keyGenOpt)}
+			km.priKey = pri
+			return nil
+		case *ecdsa.PrivateKey:
+			pri := &ECDSAPrivateKey{PrivKey: key.(*ecdsa.PrivateKey)}
+			km.priKey = pri
+			return nil
+		default:
+			return errors.New("failed to convert byte to key - not right keyGenOpt")
+		}
+
+	case PUBLIC_KEY:
+		key, err := PEMToPublicKey(byteKey)
+		if err != nil {
+			return err
+		}
+
+		switch key.(type) {
+		case *rsa.PublicKey:
+			pub := &RSAPublicKey{PubKey: key.(*rsa.PublicKey), Bits: KeyGenOptsToRSABits(keyGenOpt)}
+			km.pubKey = pub
+			return nil
+		case *ecdsa.PublicKey:
+			pub := &ECDSAPublicKey{key.(*ecdsa.PublicKey)}
+			km.pubKey = pub
+			return nil
+		default:
+			return errors.New("failed to convert byte to key - not right keyGenOpt")
+		}
+
+	default:
+		return errors.New("failed to convert byte to key - not right keyType")
+	}
 
 }
 
