@@ -71,7 +71,7 @@ You can make hash data by using `SHA` Algorithm with various type.
 If you input empty path such as "", we store a pair of the key in below location.
 
 ```
-currentDirectory/.keyRepository
+(Current Directory)/.keyRepository
 ```
 
 ## Lincese
