@@ -1,6 +1,6 @@
 # Heimdall
 
-<img src="./logo.png" width="50" height="50">
+<img src="./logo.png" width="427" height="426">
 
 *Heimdall* is a simple library that keeps your data secure through signing and verification written by Golang.
 
