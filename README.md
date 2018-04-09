@@ -2,7 +2,7 @@
 <img src="./logo.png" width="250" height="250" />
 </p>
 
-<h1 style="margin-top:-30px">Heimdall</h1>
+<h1 align="center" style="margin-top:-50px">Heimdall</h1>
 
 <p align="center"><i>Heimdall</i> is a simple library that keeps your data secure through signing and verification written by Golang.</p>
 
