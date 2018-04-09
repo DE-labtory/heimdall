@@ -2,8 +2,6 @@
 <img src="./logo.png" width="200" height="200" />
 <br>Heimdall</h1>
 
-------
-
 <p align="center">
 
 ​	<a href="https://github.com/it-chain/heimdall/blob/master/LICENSE">
@@ -14,7 +12,7 @@
 
 </p>
 
-<p align="center">*Heimdall* is a simple library that keeps your data secure through signing and verification written by Golang.</p>
+<p align="center"><i>Heimdall</i> is a simple library that keeps your data secure through signing and verification written by Golang.</p>
 
 ### Definition of Heimdall
 
