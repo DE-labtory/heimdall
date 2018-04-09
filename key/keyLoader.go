@@ -3,8 +3,6 @@
 package key
 
 import (
-	"crypto/ecdsa"
-	"crypto/rsa"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -49,13 +47,9 @@ func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
 					return nil, nil, err
 				}
 
-				switch key.(type) {
-				case *rsa.PrivateKey:
-					pri = &RSAPrivateKey{PrivKey: key.(*rsa.PrivateKey), Bits: KeyGenOptsToRSABits(keyInfos.keyGenOpts)}
-				case *ecdsa.PrivateKey:
-					pri = &ECDSAPrivateKey{PrivKey: key.(*ecdsa.PrivateKey)}
-				default:
-					return nil, nil, errors.New("Failed to load Key")
+				pri, err = MatchPrivateKeyOpt(key, keyInfos.keyGenOpts)
+				if err != nil {
+					return nil, nil, err
 				}
 
 			case PUBLIC_KEY:
@@ -64,13 +58,9 @@ func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
 					return nil, nil, err
 				}
 
-				switch key.(type) {
-				case *rsa.PublicKey:
-					pub = &RSAPublicKey{PubKey: key.(*rsa.PublicKey), Bits: KeyGenOptsToRSABits(keyInfos.keyGenOpts)}
-				case *ecdsa.PublicKey:
-					pub = &ECDSAPublicKey{key.(*ecdsa.PublicKey)}
-				default:
-					return nil, nil, errors.New("Failed to load Key")
+				pub, err = MatchPublicKeyOpt(key, keyInfos.keyGenOpts)
+				if err != nil {
+					return nil, nil, err
 				}
 			}
 		}
