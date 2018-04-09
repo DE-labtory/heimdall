@@ -1,9 +1,20 @@
-# Heimdall
-<p align="center"> 
-  <img src="./logo.png" width="300" height="300" align="center" />
+<h1 align="center"> 
+<img src="./logo.png" width="200" height="200" />
+<br>Heimdall</h1>
+
+------
+
+<p align="center">
+
+​	<a href="https://github.com/it-chain/heimdall/blob/master/LICENSE">
+
+​		<img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" />
+
+​	</a>
+
 </p>
 
-*Heimdall* is a simple library that keeps your data secure through signing and verification written by Golang.
+<p align="center">*Heimdall* is a simple library that keeps your data secure through signing and verification written by Golang.</p>
 
 ### Definition of Heimdall
 
