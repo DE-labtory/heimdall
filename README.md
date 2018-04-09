@@ -6,7 +6,7 @@
 
 <p align="center"><i>Heimdall</i> is a simple library that keeps your data secure through signing and verification written by Golang.</p><br>
 
-### Definition of Heimdall
+## Definition of Heimdall
 
 - In Norse mythology, *[Heimdall](https://en.wikipedia.org/wiki/Heimdallr)* guarded the [*Bifrost*](https://en.wikipedia.org/wiki/Bifröst), which the Vikings believed rainbows came from
 
