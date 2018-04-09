@@ -33,6 +33,9 @@ func main() {
 	}
 
 	pri, pub, err := keyManager.GetKey()
+	if err == nil {
+		print("GetKey complete!\n")
+	}
 	errorCheck(err)
 
 	bytePriKey, err := pri.ToPEM()
@@ -48,7 +51,7 @@ func main() {
 
 	// compare reconstructed key pair with original key pair.
 	if reflect.DeepEqual(pri, recPri) && reflect.DeepEqual(pub, recPub) {
-		print("recovoer complete!")
+		print("recovoer complete!\n")
 	}
 
 	sampleData := []byte("This is sample data from heimdall.")
