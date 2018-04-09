@@ -1,4 +1,7 @@
 # Heimdall
+<p align="center"> 
+  <img src="./logo.png" width="300" height="300" align="center" />
+</p>
 
 *Heimdall* is a simple library that keeps your data secure through signing and verification written by Golang.
 
@@ -69,7 +72,7 @@ You can make hash data by using `SHA` Algorithm with various type.
 If you input empty path such as "", we store a pair of the key in below location.
 
 ```
-currentDirectory/.keyRepository
+(Current Directory)/.keyRepository
 ```
 
 ## Lincese
