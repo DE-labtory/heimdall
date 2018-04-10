@@ -100,7 +100,8 @@ func (km *keyManagerImpl) GenerateKey(opts KeyGenOpts) (pri PriKey, pub PubKey, 
 
 }
 
-// GetKey gets the key pair from stored key files.
+// GetKey gets the key pair from keyManagerImpl struct.
+// if the keyManagerImpl doesn't have any key, then get keys from stored key files.
 func (km *keyManagerImpl) GetKey() (pri PriKey, pub PubKey, err error) {
 
 	if km.priKey == nil || km.pubKey == nil {
@@ -126,4 +127,45 @@ func (km *keyManagerImpl) RemoveKey() error {
 
 	return nil
 
+}
+
+// Reconstruct key from bytes.
+func (km *keyManagerImpl) ByteToKey(byteKey []byte, keyGenOpt KeyGenOpts, keyType KeyType) (err error) {
+
+	switch keyType {
+	case PRIVATE_KEY:
+		key, err := PEMToPrivateKey(byteKey)
+		if err != nil {
+			return err
+		}
+
+		pri, err := MatchPrivateKeyOpt(key, keyGenOpt)
+		if err != nil {
+			return err
+		}
+		km.priKey = pri
+
+	case PUBLIC_KEY:
+		key, err := PEMToPublicKey(byteKey)
+		if err != nil {
+			return err
+		}
+
+		pub, err := MatchPublicKeyOpt(key, keyGenOpt)
+		if err != nil {
+			return err
+		}
+		km.pubKey = pub
+
+	default:
+		return errors.New("failed to convert byte to key - not right keyType")
+	}
+
+	return nil
+
+}
+
+// GetPath returns path of key files
+func (km *keyManagerImpl) GetPath() string {
+	return km.path
 }
