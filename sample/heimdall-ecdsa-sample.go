@@ -24,7 +24,7 @@ func main() {
 
 	keyPath := keyManager.GetPath()
 
-	// defer os.RemoveAll("./.keyRepository")
+	defer os.RemoveAll("./.heimdall")
 
 	// if there is no key file in default key directory, then generate key.
 	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
