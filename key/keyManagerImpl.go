@@ -25,7 +25,7 @@ type keyManagerImpl struct {
 func NewKeyManager(path string) (KeyManager, error) {
 
 	if len(path) == 0 {
-		path = "./.keyRepository"
+		path = "./.heimdall"
 	} else {
 		if !strings.HasPrefix(path, "./") {
 			path = "./" + path
