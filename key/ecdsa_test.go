@@ -9,17 +9,17 @@ import (
 )
 
 var ecdsaCurve = ECDSAKeyGenerator{curve: elliptic.P521()}
-var keyGenOption = KeyGenOpts(ECDSA521)
+var ECDSAkeyGenOption = KeyGenOpts(ECDSA521)
 
 func TestECDSAKeyPairGeneration(t *testing.T) {
-	pri, pub, err := ecdsaCurve.Generate(keyGenOption)
+	pri, pub, err := ecdsaCurve.Generate(ECDSAkeyGenOption)
 	assert.NoError(t, err)
 	assert.NotNil(t, pri)
 	assert.NotNil(t, pub)
 }
 
 func TestECDSAKeyPairSKI(t *testing.T) {
-	pri, pub, _ := ecdsaCurve.Generate(keyGenOption)
+	pri, pub, _ := ecdsaCurve.Generate(ECDSAkeyGenOption)
 
 	priSki := pri.SKI()
 	assert.NotNil(t, priSki)
@@ -29,7 +29,7 @@ func TestECDSAKeyPairSKI(t *testing.T) {
 }
 
 func TestECDSAGetAlgorithm(t *testing.T) {
-	pri, pub, _ := ecdsaCurve.Generate(keyGenOption)
+	pri, pub, _ := ecdsaCurve.Generate(ECDSAkeyGenOption)
 
 	priKeyOption := pri.Algorithm()
 	assert.NotNil(t, priKeyOption)
@@ -39,7 +39,7 @@ func TestECDSAGetAlgorithm(t *testing.T) {
 }
 
 func TestECDSAGetPublicKey(t *testing.T) {
-	pri, _, _ := ecdsaCurve.Generate(keyGenOption)
+	pri, _, _ := ecdsaCurve.Generate(ECDSAkeyGenOption)
 
 	pub, err := pri.PublicKey()
 	assert.NoError(t, err)
@@ -47,7 +47,7 @@ func TestECDSAGetPublicKey(t *testing.T) {
 }
 
 func TestECDSAKeyToPEM(t *testing.T) {
-	pri, pub, _ := ecdsaCurve.Generate(keyGenOption)
+	pri, pub, _ := ecdsaCurve.Generate(ECDSAkeyGenOption)
 
 	priPEM, err := pri.ToPEM()
 	assert.NoError(t, err)
@@ -58,8 +58,8 @@ func TestECDSAKeyToPEM(t *testing.T) {
 	assert.NotNil(t, pubPEM)
 }
 
-func TestGetType(t *testing.T) {
-	pri, pub, _ := ecdsaCurve.Generate(keyGenOption)
+func TestGetECDSAKeyType(t *testing.T) {
+	pri, pub, _ := ecdsaCurve.Generate(ECDSAkeyGenOption)
 
 	priType := pri.Type()
 	assert.Equal(t, priType, PRIVATE_KEY, "They should be equal")
