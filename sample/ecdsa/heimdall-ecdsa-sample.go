@@ -14,7 +14,7 @@ import (
 
 /*
 This sample shows data to be transmitted
-is signed and verified by RSA Key.
+is signed and verified by ECDSA Key.
 */
 
 func main() {
@@ -24,8 +24,8 @@ func main() {
 
 	defer os.RemoveAll("./.heimdall")
 
-	// Generate key pair with RSA algorithm.
-	pri, pub, err := keyManager.GenerateKey(key.RSA4096)
+	// Generate key pair with ECDSA algorithm.
+	pri, pub, err := keyManager.GenerateKey(key.ECDSA384)
 	errorCheck(err)
 
 	// Get key from memory of keyManager or from key files in key path of keyManager.
@@ -37,8 +37,8 @@ func main() {
 	bytePubKey, err := pub.ToPEM()
 
 	// Reconstruct key pair from bytes to key.
-	err = keyManager.ByteToKey(bytePriKey, key.RSA4096, key.PRIVATE_KEY)
-	err = keyManager.ByteToKey(bytePubKey, key.RSA4096, key.PUBLIC_KEY)
+	err = keyManager.ByteToKey(bytePriKey, key.ECDSA384, key.PRIVATE_KEY)
+	err = keyManager.ByteToKey(bytePubKey, key.ECDSA384, key.PUBLIC_KEY)
 	errorCheck(err)
 
 	// Get the reconstructed key pair.
@@ -51,32 +51,22 @@ func main() {
 
 	sampleData := []byte("This is sample data from heimdall.")
 
-	hashManager, err := hashing.NewHashManager()
-	errorCheck(err)
-
 	// Convert raw data to digest(hash value) by using SHA512 function.
-	digest, err := hashManager.Hash(sampleData, nil, hashing.SHA512)
+	digest, err := hashing.Hash(sampleData, nil, hashing.SHA512)
 	errorCheck(err)
-
-	authManager, err := auth.NewAuth()
-	errorCheck(err)
-
-	// The option will be used in signing process in case of using RSA key.
-	signerOpts := auth.EQUAL_SHA512.SignerOptsToPSSOptions()
 
 	// AuthManager makes digest(hash value) to signature with private key.
-	signature, err := authManager.Sign(pri, digest, signerOpts)
+	signature, err := auth.Sign(pri, digest, nil)
 	errorCheck(err)
 
 	/* --------- After data transmitted --------- */
 
 	// AuthManager verify that received data has any forgery during transmitting process by digest.
 	// and verify that the received data is surely from the expected sender by public key.
-	ok, err := authManager.Verify(pub, signature, digest, signerOpts)
+	ok, err := auth.Verify(pub, signature, digest, nil)
 	errorCheck(err)
 
 	fmt.Println(ok)
-
 }
 
 func errorCheck(err error) {
