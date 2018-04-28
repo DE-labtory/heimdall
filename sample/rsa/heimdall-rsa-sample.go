@@ -37,12 +37,9 @@ func main() {
 	bytePubKey, err := pub.ToPEM()
 
 	// Reconstruct key pair from bytes to key.
-	err = keyManager.ByteToKey(bytePriKey, key.RSA4096, key.PRIVATE_KEY)
-	err = keyManager.ByteToKey(bytePubKey, key.RSA4096, key.PUBLIC_KEY)
+	recPri, err := key.PEMToPrivateKey(bytePriKey, key.RSA4096)
+	recPub, err := key.PEMToPublicKey(bytePubKey, key.RSA4096)
 	errorCheck(err)
-
-	// Get the reconstructed key pair.
-	recPri, recPub, err := keyManager.GetKey()
 
 	// Compare reconstructed key pair with original key pair.
 	if reflect.DeepEqual(pri, recPri) && reflect.DeepEqual(pub, recPub) {
