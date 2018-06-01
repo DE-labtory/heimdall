@@ -112,7 +112,7 @@ func (key *RSAPublicKey) SKI() (ski []byte) {
 	}
 
 	data, _ := asn1.Marshal(rsaKeyMarshalOpt{
-		big.NewInt(123), 57,
+		key.PubKey.N, key.PubKey.E,
 	})
 
 	hash := sha256.New()
