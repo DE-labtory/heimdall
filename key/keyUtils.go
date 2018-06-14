@@ -8,6 +8,10 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"crypto/aes"
+	"io"
+	"crypto/rand"
+	"crypto/cipher"
 )
 
 // PEMToPublicKey converts PEM to public key format.
@@ -125,4 +129,39 @@ func MatchPrivateKeyOpt(key interface{}, keyGenOpt KeyGenOpts) (privateKey PriKe
 	default:
 		return nil, errors.New("no matched key generation option")
 	}
+}
+
+// EncryptWithAES encrypts plaintext with key by AES encryption algorithm.
+func EncryptWithAES(plaintext []byte, key []byte) (ciphertext []byte, err error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	ciphertext = make([]byte, aes.BlockSize + len(plaintext))
+	iv := ciphertext[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return nil, err
+	}
+
+	stream := cipher.NewCTR(block, iv)
+	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
+
+	return ciphertext, nil
+}
+
+// EncryptWithAES encrypts plaintext with key by AES encryption algorithm.
+func DecryptWithAES(ciphertext []byte, key []byte) (plaintext []byte, err error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	plaintext = make([]byte, len(ciphertext) - aes.BlockSize)
+	iv := ciphertext[:aes.BlockSize]
+
+	stream := cipher.NewCTR(block, iv)
+	stream.XORKeyStream(plaintext, ciphertext[aes.BlockSize:])
+
+	return plaintext, nil
 }
