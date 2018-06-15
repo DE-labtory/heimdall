@@ -12,6 +12,7 @@ import (
 	"io"
 	"crypto/rand"
 	"crypto/cipher"
+	"golang.org/x/crypto/scrypt"
 )
 
 // PEMToPublicKey converts PEM to public key format.
@@ -164,4 +165,15 @@ func DecryptWithAES(ciphertext []byte, key []byte) (plaintext []byte, err error)
 	stream.XORKeyStream(plaintext, ciphertext[aes.BlockSize:])
 
 	return plaintext, nil
+}
+
+// DeriveKeyFromPwd derives a key from input password.
+func DeriveKeyFromPwd(pwd []byte, salt []byte, keyLen int) (dKey []byte, err error) {
+	// The params N, r, p are cost parameters, and 32768, 8, 1 are recommended parameters for interactive login as of 2017.
+	dKey, err = scrypt.Key(pwd, salt, 32768, 8, 1, keyLen)
+	if err != nil {
+		return nil, err
+	}
+
+	return dKey, err
 }
