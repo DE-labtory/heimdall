@@ -162,6 +162,7 @@ func TestEncryptDecryptPriKey(t *testing.T) {
 	decKey, err := DecryptPriKey(encKey, key, keyGenOption)
 	assert.NoError(t, err)
 	assert.NotNil(t, decKey)
+	assert.Equal(t, pri, decKey)
 
 	defer os.RemoveAll("./.testKeys")
 }
