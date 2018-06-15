@@ -8,6 +8,7 @@ import (
 	"encoding/pem"
 
 	"github.com/stretchr/testify/assert"
+	"encoding/hex"
 )
 
 func TestPEMToPrivateKey(t *testing.T) {
@@ -108,4 +109,27 @@ func TestMatchPublicKeyOpt(t *testing.T) {
 	assert.NotNil(t, myPub)
 
 	defer os.RemoveAll("./.testKeys")
+}
+
+func TestEncryptWithAES(t *testing.T) {
+	key, _ := hex.DecodeString("6368616e676520746869732070617373")
+	plaintext := []byte("plaintext for test")
+	plaintext2 := []byte("plaintext for test")
+
+	ciphertext, err := EncryptWithAES(plaintext, key)
+	assert.NoError(t, err)
+	assert.NotNil(t, ciphertext)
+
+	ciphertext2, err := EncryptWithAES(plaintext2, key)
+	assert.NotEqual(t, ciphertext, ciphertext2)
+}
+
+func TestDecryptWithAES(t *testing.T) {
+	key, _ := hex.DecodeString("6368616e676520746869732070617373")
+	plaintext := []byte("plaintext for test")
+
+	ciphertext, _ := EncryptWithAES(plaintext, key)
+	decPlaintext, err := DecryptWithAES(ciphertext, key)
+	assert.NoError(t, err)
+	assert.NotNil(t, decPlaintext)
 }
