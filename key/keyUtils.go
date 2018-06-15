@@ -177,3 +177,33 @@ func DeriveKeyFromPwd(pwd []byte, salt []byte, keyLen int) (dKey []byte, err err
 
 	return dKey, err
 }
+
+// EncryptPriKey encrypts private key.
+func EncryptPriKey(priKey PriKey, key []byte) (encKey []byte, err error) {
+	encKey, err = priKey.ToPEM()
+	if err != nil {
+		return nil, err
+	}
+
+	encKey, err = EncryptWithAES(encKey, key)
+	if err != nil {
+		return nil, err
+	}
+
+	return encKey, nil
+}
+
+// DecryptPriKey decrypts encrypted private key.
+func DecryptPriKey(encKey []byte, key []byte, keyGenOpts KeyGenOpts) (priKey PriKey, err error) {
+	decKey, err := DecryptWithAES(encKey, key)
+	if err != nil {
+		return nil, err
+	}
+
+	priKey, err = PEMToPrivateKey(decKey, keyGenOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	return priKey, nil
+}
