@@ -147,3 +147,21 @@ func TestDeriveKeyFromPwd(t *testing.T) {
 	dKey2, _ := DeriveKeyFromPwd(pwd2, salt, targetLength)
 	assert.Equal(t, dKey, dKey2)
 }
+
+func TestEncryptDecryptPriKey(t *testing.T) {
+	key, _ := hex.DecodeString("6368616e676520746869732070617373")
+	var keyGenOption = KeyGenOpts(RSA2048)
+
+	testKeyManager, _ := NewKeyManager("./.testKeys")
+	pri, _, _ := testKeyManager.GenerateKey(keyGenOption)
+
+	encKey, err := EncryptPriKey(pri, key)
+	assert.NoError(t, err)
+	assert.NotNil(t, encKey)
+
+	decKey, err := DecryptPriKey(encKey, key, keyGenOption)
+	assert.NoError(t, err)
+	assert.NotNil(t, decKey)
+
+	defer os.RemoveAll("./.testKeys")
+}
