@@ -133,3 +133,17 @@ func TestDecryptWithAES(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, decPlaintext)
 }
+
+func TestDeriveKeyFromPwd(t *testing.T) {
+	pwd := []byte("password")
+	salt := []byte{0xc8, 0x28, 0xf2, 0x58, 0xa7, 0x6a, 0xad, 0x7b}
+	pwd2 := []byte("password")
+
+	targetLength := 32
+	dKey, err := DeriveKeyFromPwd(pwd, salt, targetLength)
+	assert.NotNil(t, dKey)
+	assert.NoError(t, err)
+
+	dKey2, _ := DeriveKeyFromPwd(pwd2, salt, targetLength)
+	assert.Equal(t, dKey, dKey2)
+}
