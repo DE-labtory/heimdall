@@ -1,6 +1,6 @@
 // This file provides RSA signing options.
 
-package auth
+package heimdall
 
 import (
 	"crypto"
@@ -20,8 +20,6 @@ const (
 	EQUAL_SHA256
 	EQUAL_SHA384
 	EQUAL_SHA512
-
-	UNKNOWN
 )
 
 // SignerOptsToPSSOptions parse the RSASignerOpts(RSA signer option) to PSS option.
