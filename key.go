@@ -1,6 +1,6 @@
 // This file provides interfaces of Key, Private key and Public key.
 
-package key
+package heimdall
 
 // A KeyType represents key type such as 'public' or 'private'.
 type KeyType string
@@ -15,8 +15,8 @@ type Key interface {
 	// SKI provides name of file that will be store a key
 	SKI() (ski []byte)
 
-	// Algorithm returns key generation option such as 'rsa2048'.
-	Algorithm() KeyGenOpts
+	// GenOpt returns key generation option such as 'rsa2048'.
+	GenOpt() KeyGenOpts
 
 	// ToPEM makes a key to PEM format.
 	ToPEM() ([]byte, error)
@@ -30,7 +30,7 @@ type PriKey interface {
 	Key
 
 	// PublicKey returns public key of key pair
-	PublicKey() (PubKey, error)
+	PublicKey() PubKey
 }
 
 // PubKey represents a public key by implementing Key interface.
