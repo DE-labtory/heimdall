@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"github.com/it-chain/heimdall"
 )
 
 // An RSAKeyGenerator contains RSA key length.
@@ -20,20 +21,20 @@ type RSAKeyGenerator struct {
 }
 
 // Generate returns private key and public key for RSA using key generation option.
-func (keygen *RSAKeyGenerator) Generate(opts KeyGenOpts) (pri PriKey, pub PubKey, err error) {
+func (keygen *RSAKeyGenerator) Generate(opts heimdall.KeyGenOpts) (pri heimdall.PriKey, pub heimdall.PubKey, err error) {
 
 	if keygen.bits <= 0 {
-		return nil, nil, errors.New("Bits length should be bigger than 0")
+		return nil, nil, errors.New("bits length should be bigger than 0")
 	}
 
 	generatedKey, err := rsa.GenerateKey(rand.Reader, keygen.bits)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to generate RSA key : %s", err)
+		return nil, nil, fmt.Errorf("failed to generate RSA key : %s", err)
 	}
 
 	pri = &RSAPrivateKey{PrivKey: generatedKey, Bits: keygen.bits}
-	pub, err = pri.(*RSAPrivateKey).PublicKey()
+	pub = pri.(*RSAPrivateKey).PublicKey()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -72,13 +73,13 @@ func (key *RSAPrivateKey) SKI() (ski []byte) {
 }
 
 // Algorithm returns key generation option of RSA.
-func (key *RSAPrivateKey) Algorithm() KeyGenOpts {
-	return RSABitsToKeyGenOpts(key.Bits)
+func (key *RSAPrivateKey) GenOpt() heimdall.KeyGenOpts {
+	return heimdall.RSABitsToKeyGenOpts(key.Bits)
 }
 
 // PublicKey returns RSA public key of key pair.
-func (key *RSAPrivateKey) PublicKey() (pub PubKey, err error) {
-	return &RSAPublicKey{PubKey: &key.PrivKey.PublicKey, Bits: key.Bits}, nil
+func (key *RSAPrivateKey) PublicKey() heimdall.PubKey {
+	return &RSAPublicKey{PubKey: &key.PrivKey.PublicKey, Bits: key.Bits}
 }
 
 // ToPEM makes a RSA private key to PEM format.
@@ -94,8 +95,8 @@ func (key *RSAPrivateKey) ToPEM() ([]byte, error) {
 }
 
 // Type returns type of the RSA private key.
-func (key *RSAPrivateKey) Type() KeyType {
-	return PRIVATE_KEY
+func (key *RSAPrivateKey) Type() heimdall.KeyType {
+	return heimdall.PRIVATE_KEY
 }
 
 // RSAPublicKey contains components of a public key.
@@ -121,8 +122,8 @@ func (key *RSAPublicKey) SKI() (ski []byte) {
 }
 
 // Algorithm returns RSA public key generation option.
-func (key *RSAPublicKey) Algorithm() KeyGenOpts {
-	return RSABitsToKeyGenOpts(key.Bits)
+func (key *RSAPublicKey) GenOpt() heimdall.KeyGenOpts {
+	return heimdall.RSABitsToKeyGenOpts(key.Bits)
 }
 
 // ToPEM makes a RSA public key to PEM format.
@@ -144,6 +145,6 @@ func (key *RSAPublicKey) ToPEM() ([]byte, error) {
 }
 
 // Type returns type of the RSA public key.
-func (key *RSAPublicKey) Type() KeyType {
-	return PUBLIC_KEY
+func (key *RSAPublicKey) Type() heimdall.KeyType {
+	return heimdall.PUBLIC_KEY
 }

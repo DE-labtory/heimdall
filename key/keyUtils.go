@@ -13,28 +13,29 @@ import (
 	"crypto/rand"
 	"crypto/cipher"
 	"golang.org/x/crypto/scrypt"
+	"github.com/it-chain/heimdall"
 )
 
 // PEMToPublicKey converts PEM to public key format.
-func PEMToPublicKey(data []byte, keyGenOpt KeyGenOpts) (PubKey, error) {
+func PEMToPublicKey(data []byte, keyGenOpt heimdall.KeyGenOpts) (heimdall.PubKey, error) {
 
 	if len(data) == 0 {
-		return nil, errors.New("Input data should not be NIL")
+		return nil, errors.New("input data should not be NIL")
 	}
 
 	block, _ := pem.Decode(data)
 	if block == nil {
-		return nil, errors.New("Failed to decode data")
+		return nil, errors.New("failed to decode data")
 	}
 
 	key, err := DERToPublicKey(block.Bytes)
 	if err != nil {
-		return nil, errors.New("Failed to convert PEM data to public key")
+		return nil, errors.New("failed to convert PEM data to public key")
 	}
 
 	pub, err := MatchPublicKeyOpt(key, keyGenOpt)
 	if err != nil {
-		return nil, errors.New("Failed to convert the key type to matched public key")
+		return nil, errors.New("failed to convert the key type to matched public key")
 	}
 
 	return pub, nil
@@ -42,24 +43,24 @@ func PEMToPublicKey(data []byte, keyGenOpt KeyGenOpts) (PubKey, error) {
 }
 
 // PEMToPrivateKey converts PEM to private key format.
-func PEMToPrivateKey(data []byte, keyGenOpt KeyGenOpts) (PriKey, error) {
+func PEMToPrivateKey(data []byte, keyGenOpt heimdall.KeyGenOpts) (heimdall.PriKey, error) {
 	if len(data) == 0 {
-		return nil, errors.New("Input data should not be NIL")
+		return nil, errors.New("input data should not be NIL")
 	}
 
 	block, _ := pem.Decode(data)
 	if block == nil {
-		return nil, errors.New("Failed to decode data")
+		return nil, errors.New("failed to decode data")
 	}
 
 	key, err := DERToPrivateKey(block.Bytes)
 	if err != nil {
-		return nil, errors.New("Failed to convert PEM data to private key")
+		return nil, errors.New("failed to convert PEM data to private key")
 	}
 
 	pri, err := MatchPrivateKeyOpt(key, keyGenOpt)
 	if err != nil {
-		return nil, errors.New("Failed to convert the key type to matched private key")
+		return nil, errors.New("failed to convert the key type to matched private key")
 	}
 
 	return pri, nil
@@ -70,12 +71,12 @@ func PEMToPrivateKey(data []byte, keyGenOpt KeyGenOpts) (PriKey, error) {
 func DERToPublicKey(data []byte) (interface{}, error) {
 
 	if len(data) == 0 {
-		return nil, errors.New("Input data should not be NIL")
+		return nil, errors.New("input data should not be NIL")
 	}
 
 	key, err := x509.ParsePKIXPublicKey(data)
 	if err != nil {
-		return nil, errors.New("Failed to Parse data")
+		return nil, errors.New("failed to Parse data")
 	}
 
 	return key, nil
@@ -89,7 +90,7 @@ func DERToPrivateKey(data []byte) (interface{}, error) {
 	var err error
 
 	if len(data) == 0 {
-		return nil, errors.New("Input data should not be NIL")
+		return nil, errors.New("input data should not be NIL")
 	}
 
 	if key, err := x509.ParsePKCS1PrivateKey(data); err == nil {
@@ -100,15 +101,15 @@ func DERToPrivateKey(data []byte) (interface{}, error) {
 		return key, err
 	}
 
-	return nil, errors.New("Unspported Private Key Type")
+	return nil, errors.New("unspported Private Key Type")
 
 }
 
 // MatchPublicKeyOpt converts key interface type to public key type using key generation option.
-func MatchPublicKeyOpt(key interface{}, keyGenOpt KeyGenOpts) (publicKey PubKey, err error) {
+func MatchPublicKeyOpt(key interface{}, keyGenOpt heimdall.KeyGenOpts) (publicKey heimdall.PubKey, err error) {
 	switch key.(type) {
 	case *rsa.PublicKey:
-		pub := &RSAPublicKey{PubKey: key.(*rsa.PublicKey), Bits: KeyGenOptsToRSABits(keyGenOpt)}
+		pub := &RSAPublicKey{PubKey: key.(*rsa.PublicKey), Bits: heimdall.KeyGenOptsToRSABits(keyGenOpt)}
 		return pub, nil
 	case *ecdsa.PublicKey:
 		pub := &ECDSAPublicKey{key.(*ecdsa.PublicKey)}
@@ -119,10 +120,10 @@ func MatchPublicKeyOpt(key interface{}, keyGenOpt KeyGenOpts) (publicKey PubKey,
 }
 
 // MatchPrivateKeyOpt converts key interface type to private key type using key generation option.
-func MatchPrivateKeyOpt(key interface{}, keyGenOpt KeyGenOpts) (privateKey PriKey, err error) {
+func MatchPrivateKeyOpt(key interface{}, keyGenOpt heimdall.KeyGenOpts) (privateKey heimdall.PriKey, err error) {
 	switch key.(type) {
 	case *rsa.PrivateKey:
-		pri := &RSAPrivateKey{PrivKey: key.(*rsa.PrivateKey), Bits: KeyGenOptsToRSABits(keyGenOpt)}
+		pri := &RSAPrivateKey{PrivKey: key.(*rsa.PrivateKey), Bits: heimdall.KeyGenOptsToRSABits(keyGenOpt)}
 		return pri, nil
 	case *ecdsa.PrivateKey:
 		pri := &ECDSAPrivateKey{PrivKey: key.(*ecdsa.PrivateKey)}
@@ -179,7 +180,7 @@ func DeriveKeyFromPwd(pwd []byte, salt []byte, keyLen int) (dKey []byte, err err
 }
 
 // EncryptPriKey encrypts private key.
-func EncryptPriKey(priKey PriKey, key []byte) (encKey []byte, err error) {
+func EncryptPriKey(priKey heimdall.PriKey, key []byte) (encKey []byte, err error) {
 	encKey, err = priKey.ToPEM()
 	if err != nil {
 		return nil, err
@@ -194,7 +195,7 @@ func EncryptPriKey(priKey PriKey, key []byte) (encKey []byte, err error) {
 }
 
 // DecryptPriKey decrypts encrypted private key.
-func DecryptPriKey(encKey []byte, key []byte, keyGenOpts KeyGenOpts) (priKey PriKey, err error) {
+func DecryptPriKey(encKey []byte, key []byte, keyGenOpts heimdall.KeyGenOpts) (priKey heimdall.PriKey, err error) {
 	decKey, err := DecryptWithAES(encKey, key)
 	if err != nil {
 		return nil, err

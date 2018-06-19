@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/it-chain/heimdall"
 )
 
 // keyLoader contains path as a string.
@@ -18,56 +19,56 @@ type keyLoader struct {
 // keyInfos contains key related information such as id, key generation option and key type.
 type keyInfos struct {
 	id         string
-	keyGenOpts KeyGenOpts
-	keyType    KeyType
+	keyGenOpts heimdall.KeyGenOpts
+	keyType    heimdall.KeyType
 }
 
 // Load loads private key and public key from stored file.
-func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
+func (loader *keyLoader) Load() (pri heimdall.PriKey, pub heimdall.PubKey, err error) {
 
 	if _, err := os.Stat(loader.path); os.IsNotExist(err) {
 
-		return nil, nil, errors.New("Keys are not exist")
+		return nil, nil, errors.New("keys are not exist")
 	}
 
 	files, err := ioutil.ReadDir(loader.path)
 	if err != nil {
-		return nil, nil, errors.New("Failed to read key repository directory")
+		return nil, nil, errors.New("failed to read key repository directory")
 	}
 
 	for _, file := range files {
 
 		keyInfos, ok := loader.getKeyInfos(file.Name())
 		if !ok {
-			return nil, nil, errors.New("Failed to get key informations")
+			return nil, nil, errors.New("failed to get key informations")
 		}
 
 		keyByte, err := loader.loadKeyBytes(keyInfos.id, keyInfos.keyGenOpts, keyInfos.keyType)
 		if err != nil {
-			return nil, nil, errors.New("Failed to get key bytes by loading key file")
+			return nil, nil, errors.New("failed to get key bytes by loading key file")
 		}
 
 		switch keyInfos.keyType {
-		case PRIVATE_KEY:
+		case heimdall.PRIVATE_KEY:
 			pri, err = PEMToPrivateKey(keyByte, keyInfos.keyGenOpts)
 			if err != nil {
 				return nil, nil, err
 			}
 
-		case PUBLIC_KEY:
+		case heimdall.PUBLIC_KEY:
 			pub, err = PEMToPublicKey(keyByte, keyInfos.keyGenOpts)
 			if err != nil {
 				return nil, nil, err
 			}
 
 		default:
-			return nil, nil, errors.New("Wrog key type entered")
+			return nil, nil, errors.New("wrong key type entered")
 		}
 
 	}
 
 	if pri == nil || pub == nil {
-		return nil, nil, errors.New("Failed to load Key")
+		return nil, nil, errors.New("failed to load Key")
 	}
 
 	return pri, pub, nil
@@ -75,9 +76,9 @@ func (loader *keyLoader) Load() (pri PriKey, pub PubKey, err error) {
 }
 
 // loadKeyBytes reads key bytes from file.
-func (loader *keyLoader) loadKeyBytes(alias string, keyGenOpt KeyGenOpts, keyType KeyType) (keyByte []byte, err error) {
+func (loader *keyLoader) loadKeyBytes(alias string, keyGenOpt heimdall.KeyGenOpts, keyType heimdall.KeyType) (keyByte []byte, err error) {
 	if len(alias) == 0 {
-		return nil, errors.New("Input value should not be blank")
+		return nil, errors.New("input value should not be blank")
 	}
 
 	path, err := loader.getFullPath(alias, keyGenOpt.String(), string(keyType))
@@ -102,13 +103,13 @@ func (loader *keyLoader) getKeyInfos(name string) (*keyInfos, bool) {
 		return nil, false
 	}
 
-	keyGenOpts, ok := StringToKeyGenOpts(datas[1])
+	keyGenOpts, ok := heimdall.StringToKeyGenOpts(datas[1])
 	if !ok {
 		return nil, false
 	}
 
-	keyType := KeyType(datas[2])
-	if !(keyType == PRIVATE_KEY || keyType == PUBLIC_KEY) {
+	keyType := heimdall.KeyType(datas[2])
+	if !(keyType == heimdall.PRIVATE_KEY || keyType == heimdall.PUBLIC_KEY) {
 		return nil, false
 	}
 

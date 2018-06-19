@@ -8,13 +8,14 @@ import (
 	"errors"
 
 	"github.com/it-chain/heimdall/key"
+	"github.com/it-chain/heimdall"
 )
 
 // RSASigner represents subject of RSA signing process.
 type RSASigner struct{}
 
 // Sign signs a digest(hash) using priKey(private key), and returns signature.
-func (s *RSASigner) Sign(priKey key.Key, digest []byte, opts SignerOpts) ([]byte, error) {
+func (s *RSASigner) Sign(priKey heimdall.Key, digest []byte, opts heimdall.SignerOpts) ([]byte, error) {
 
 	if opts == nil {
 		return nil, errors.New("invalid options")
@@ -28,7 +29,7 @@ func (s *RSASigner) Sign(priKey key.Key, digest []byte, opts SignerOpts) ([]byte
 type RSAVerifier struct{}
 
 // Verify verifies the signature using pubKey(public key) and digest of original message, then returns boolean value.
-func (v *RSAVerifier) Verify(pubKey key.Key, signature, digest []byte, opts SignerOpts) (bool, error) {
+func (v *RSAVerifier) Verify(pubKey heimdall.Key, signature, digest []byte, opts heimdall.SignerOpts) (bool, error) {
 
 	if opts == nil {
 		return false, errors.New("invalid options")

@@ -6,10 +6,11 @@ import (
 	"crypto/elliptic"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/it-chain/heimdall"
 )
 
 var ecdsaCurve = ECDSAKeyGenerator{curve: elliptic.P521()}
-var ECDSAkeyGenOption = KeyGenOpts(ECDSA521)
+var ECDSAkeyGenOption = heimdall.KeyGenOpts(heimdall.ECDSA521)
 
 func TestECDSAKeyPairGeneration(t *testing.T) {
 	pri, pub, err := ecdsaCurve.Generate(ECDSAkeyGenOption)
@@ -28,21 +29,20 @@ func TestECDSAKeyPairSKI(t *testing.T) {
 	assert.NotNil(t, pubSki)
 }
 
-func TestECDSAGetAlgorithm(t *testing.T) {
+func TestECDSAGetOpt(t *testing.T) {
 	pri, pub, _ := ecdsaCurve.Generate(ECDSAkeyGenOption)
 
-	priKeyOption := pri.Algorithm()
+	priKeyOption := pri.GenOpt()
 	assert.NotNil(t, priKeyOption)
 
-	pubKeyOption := pub.Algorithm()
+	pubKeyOption := pub.GenOpt()
 	assert.NotNil(t, pubKeyOption)
 }
 
 func TestECDSAGetPublicKey(t *testing.T) {
 	pri, _, _ := ecdsaCurve.Generate(ECDSAkeyGenOption)
 
-	pub, err := pri.PublicKey()
-	assert.NoError(t, err)
+	pub := pri.PublicKey()
 	assert.NotNil(t, pub)
 }
 
@@ -62,8 +62,8 @@ func TestGetECDSAKeyType(t *testing.T) {
 	pri, pub, _ := ecdsaCurve.Generate(ECDSAkeyGenOption)
 
 	priType := pri.Type()
-	assert.Equal(t, priType, PRIVATE_KEY, "They should be equal")
+	assert.Equal(t, priType, heimdall.PRIVATE_KEY, "They should be equal")
 
 	pubType := pub.Type()
-	assert.Equal(t, pubType, PUBLIC_KEY, "They should be equal")
+	assert.Equal(t, pubType, heimdall.PUBLIC_KEY, "They should be equal")
 }

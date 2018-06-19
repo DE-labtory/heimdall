@@ -7,6 +7,7 @@ import (
 	"testing"
 	"crypto/rand"
 	"crypto/rsa"
+	"github.com/it-chain/heimdall"
 )
 
 func TestECDSA_SignVerify(t *testing.T) {
@@ -19,7 +20,7 @@ func TestECDSA_SignVerify(t *testing.T) {
 	assert.NotNil(t, generatedKey)
 
 	pri := &key.RSAPrivateKey{generatedKey, rsaBits}
-	pub, err := pri.PublicKey()
+	pub := pri.PublicKey()
 	assert.NoError(t, err)
 	assert.NotNil(t, pub)
 
@@ -30,12 +31,12 @@ func TestECDSA_SignVerify(t *testing.T) {
 	digest := hash.Sum(nil)
 
 	signer := &RSASigner{}
-	signature, err := signer.Sign(pri, digest, EQUAL_SHA512.SignerOptsToPSSOptions())
+	signature, err := signer.Sign(pri, digest, heimdall.EQUAL_SHA512.SignerOptsToPSSOptions())
 	assert.NoError(t, err)
 	assert.NotNil(t, signature)
 
 	verifier := &RSAVerifier{}
-	ok, err := verifier.Verify(pub, signature, digest, EQUAL_SHA512.SignerOptsToPSSOptions())
+	ok, err := verifier.Verify(pub, signature, digest, heimdall.EQUAL_SHA512.SignerOptsToPSSOptions())
 	assert.NoError(t, err)
 	assert.True(t, ok)
 
