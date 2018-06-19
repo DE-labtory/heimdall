@@ -1,6 +1,6 @@
 // This file provides hash options.
 
-package hashing
+package heimdall
 
 // HashOpts represents hash options with integer.
 type HashOpts int
