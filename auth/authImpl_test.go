@@ -10,6 +10,7 @@ import (
 
 	"github.com/it-chain/heimdall/key"
 	"github.com/stretchr/testify/assert"
+	"github.com/it-chain/heimdall"
 )
 
 func TestAuth_RSASignVerify(t *testing.T) {
@@ -23,14 +24,14 @@ func TestAuth_RSASignVerify(t *testing.T) {
 	pri := &key.RSAPrivateKey{generatedKey, rsaKeyBits}
 	assert.NotNil(t, pri)
 
-	pub, err := pri.PublicKey()
+	pub := pri.PublicKey()
 	assert.NoError(t, err)
 	assert.NotNil(t, pub)
 
 	diffGeneratedKey, err := rsa.GenerateKey(rand.Reader, rsaKeyBits)
 
 	diffPri := &key.RSAPrivateKey{diffGeneratedKey, rsaKeyBits}
-	diffPub, err := diffPri.PublicKey()
+	diffPub := diffPri.PublicKey()
 
 	rawData := []byte("RSA Sign test data!!!")
 
@@ -43,43 +44,43 @@ func TestAuth_RSASignVerify(t *testing.T) {
 	hash.Write(rawData)
 	wrongDigest := hash.Sum(nil)
 
-	signature, err := Sign(pri, digest, EQUAL_SHA512.SignerOptsToPSSOptions())
+	signature, err := Sign(pri, digest, heimdall.EQUAL_SHA512.SignerOptsToPSSOptions())
 	assert.NoError(t, err)
 	assert.NotNil(t, signature)
 
-	diffSignature, err := Sign(diffPri, digest, EQUAL_SHA512.SignerOptsToPSSOptions())
+	diffSignature, err := Sign(diffPri, digest, heimdall.EQUAL_SHA512.SignerOptsToPSSOptions())
 
 	// normal case
-	ok, err := Verify(pub, signature, digest, EQUAL_SHA512.SignerOptsToPSSOptions())
+	ok, err := Verify(pub, signature, digest, heimdall.EQUAL_SHA512.SignerOptsToPSSOptions())
 	assert.NoError(t, err)
 	assert.True(t, ok)
 
 	// passing different signature case
-	_, err = Verify(pub, diffSignature, digest, EQUAL_SHA512.SignerOptsToPSSOptions())
+	_, err = Verify(pub, diffSignature, digest, heimdall.EQUAL_SHA512.SignerOptsToPSSOptions())
 	assert.Error(t, err)
 
 	// public key missing case
-	_, err = Verify(nil, signature, digest, EQUAL_SHA512.SignerOptsToPSSOptions())
+	_, err = Verify(nil, signature, digest, heimdall.EQUAL_SHA512.SignerOptsToPSSOptions())
 	assert.Error(t, err)
 
 	// passing different public key case
-	_, err = Verify(diffPub, signature, digest, EQUAL_SHA512.SignerOptsToPSSOptions())
+	_, err = Verify(diffPub, signature, digest, heimdall.EQUAL_SHA512.SignerOptsToPSSOptions())
 	assert.Error(t, err)
 
 	// signature missing case
-	_, err = Verify(pub, nil, digest, EQUAL_SHA512.SignerOptsToPSSOptions())
+	_, err = Verify(pub, nil, digest, heimdall.EQUAL_SHA512.SignerOptsToPSSOptions())
 	assert.Error(t, err)
 
 	// digest missing case
-	_, err = Verify(pub, signature, nil, EQUAL_SHA512.SignerOptsToPSSOptions())
+	_, err = Verify(pub, signature, nil, heimdall.EQUAL_SHA512.SignerOptsToPSSOptions())
 	assert.Error(t, err)
 
 	// passing wrong digest case
-	_, err = Verify(pub, signature, wrongDigest, EQUAL_SHA256.SignerOptsToPSSOptions())
+	_, err = Verify(pub, signature, wrongDigest, heimdall.EQUAL_SHA256.SignerOptsToPSSOptions())
 	assert.Error(t, err)
 
 	// passing wrong signer option case
-	ok, err = Verify(pub, signature, digest, EQUAL_SHA256.SignerOptsToPSSOptions())
+	ok, err = Verify(pub, signature, digest, heimdall.EQUAL_SHA256.SignerOptsToPSSOptions())
 	assert.Error(t, err)
 	assert.False(t, ok)
 
@@ -96,14 +97,14 @@ func TestAuth_ECDSASignVerify(t *testing.T) {
 	pri := &key.ECDSAPrivateKey{PrivKey: generatedKey}
 	assert.NotNil(t, pri)
 
-	pub, err := pri.PublicKey()
+	pub := pri.PublicKey()
 	assert.NoError(t, err)
 	assert.NotNil(t, pub)
 
 	diffGeneratedKey, err := ecdsa.GenerateKey(ecdsaCurve, rand.Reader)
 
 	diffPri := &key.ECDSAPrivateKey{diffGeneratedKey}
-	diffPub, err := diffPri.PublicKey()
+	diffPub := diffPri.PublicKey()
 
 	rawData := []byte("ECDSA Sign test data!!!")
 

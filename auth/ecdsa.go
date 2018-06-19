@@ -10,6 +10,7 @@ import (
 	"math/big"
 
 	"github.com/it-chain/heimdall/key"
+	"github.com/it-chain/heimdall"
 )
 
 // ecdsaSignature contains ECDSA signature components that are two integers, R and S.
@@ -52,7 +53,7 @@ func unmarshalECDSASignature(signature []byte) (*big.Int, *big.Int, error) {
 }
 
 // Sign signs a digest(hash) using priKey(private key), and returns signature.
-func (signer *ECDSASigner) Sign(priKey key.Key, digest []byte, opts SignerOpts) ([]byte, error) {
+func (signer *ECDSASigner) Sign(priKey heimdall.Key, digest []byte, opts heimdall.SignerOpts) ([]byte, error) {
 
 	r, s, err := ecdsa.Sign(rand.Reader, priKey.(*key.ECDSAPrivateKey).PrivKey, digest)
 	if err != nil {
@@ -72,7 +73,7 @@ func (signer *ECDSASigner) Sign(priKey key.Key, digest []byte, opts SignerOpts) 
 type ECDSAVerifier struct{}
 
 // Verify verifies the signature using pubKey(public key) and digest of original message, then returns boolean value.
-func (v *ECDSAVerifier) Verify(pubKey key.Key, signature, digest []byte, opts SignerOpts) (bool, error) {
+func (v *ECDSAVerifier) Verify(pubKey heimdall.Key, signature, digest []byte, opts heimdall.SignerOpts) (bool, error) {
 
 	r, s, err := unmarshalECDSASignature(signature)
 	if err != nil {

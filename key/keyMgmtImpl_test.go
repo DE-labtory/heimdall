@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/it-chain/heimdall"
 )
 
 func TestNewKeyManager(t *testing.T) {
@@ -15,7 +16,7 @@ func TestNewKeyManager(t *testing.T) {
 }
 
 func TestKeyManagerImpl_GenerateKey(t *testing.T) {
-	var keyGenOption = KeyGenOpts(RSA2048)
+	var keyGenOption = heimdall.KeyGenOpts(heimdall.RSA2048)
 
 	testKeyManager, _ := NewKeyManager("./.testKeys")
 	pri, pub, err := testKeyManager.GenerateKey(keyGenOption)
@@ -27,7 +28,7 @@ func TestKeyManagerImpl_GenerateKey(t *testing.T) {
 }
 
 func TestKeyManagerImpl_GetKey(t *testing.T) {
-	var keyGenOption = KeyGenOpts(RSA2048)
+	var keyGenOption = heimdall.KeyGenOpts(heimdall.RSA2048)
 
 	testKeyManager, _ := NewKeyManager("./.testKeys")
 	testKeyManager.GenerateKey(keyGenOption)
@@ -41,7 +42,7 @@ func TestKeyManagerImpl_GetKey(t *testing.T) {
 }
 
 func TestKeyManagerImpl_RemoveKey(t *testing.T) {
-	var keyGenOption = KeyGenOpts(RSA2048)
+	var keyGenOption = heimdall.KeyGenOpts(heimdall.RSA2048)
 
 	testKeyManager, _ := NewKeyManager("./.testKeys")
 	testKeyManager.GenerateKey(keyGenOption)

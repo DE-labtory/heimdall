@@ -9,10 +9,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"encoding/hex"
+	"github.com/it-chain/heimdall"
 )
 
 func TestPEMToPrivateKey(t *testing.T) {
-	var keyGenOption = KeyGenOpts(RSA2048)
+	var keyGenOption = heimdall.KeyGenOpts(heimdall.RSA2048)
 
 	testKeyManager, _ := NewKeyManager("./.testKeys")
 	pri, _, _ := testKeyManager.GenerateKey(keyGenOption)
@@ -27,7 +28,7 @@ func TestPEMToPrivateKey(t *testing.T) {
 }
 
 func TestPEMToPublicKey(t *testing.T) {
-	var keyGenOption = KeyGenOpts(RSA2048)
+	var keyGenOption = heimdall.KeyGenOpts(heimdall.RSA2048)
 
 	testKeyManager, _ := NewKeyManager("./.testKeys")
 	_, pub, _ := testKeyManager.GenerateKey(keyGenOption)
@@ -42,7 +43,7 @@ func TestPEMToPublicKey(t *testing.T) {
 }
 
 func TestDERToPrivateKey(t *testing.T) {
-	var keyGenOption = KeyGenOpts(RSA2048)
+	var keyGenOption = heimdall.KeyGenOpts(heimdall.RSA2048)
 
 	testKeyManager, _ := NewKeyManager("./.testKeys")
 	pri, _, _ := testKeyManager.GenerateKey(keyGenOption)
@@ -58,7 +59,7 @@ func TestDERToPrivateKey(t *testing.T) {
 }
 
 func TestDERToPublicKey(t *testing.T) {
-	var keyGenOption = KeyGenOpts(RSA2048)
+	var keyGenOption = heimdall.KeyGenOpts(heimdall.RSA2048)
 
 	testKeyManager, _ := NewKeyManager("./.testKeys")
 	_, pub, _ := testKeyManager.GenerateKey(keyGenOption)
@@ -74,7 +75,7 @@ func TestDERToPublicKey(t *testing.T) {
 }
 
 func TestMatchPrivateKeyOpt(t *testing.T) {
-	var keyGenOption = KeyGenOpts(RSA2048)
+	var keyGenOption = heimdall.KeyGenOpts(heimdall.RSA2048)
 
 	testKeyManager, _ := NewKeyManager("./.testKeys")
 	pri, _, _ := testKeyManager.GenerateKey(keyGenOption)
@@ -93,7 +94,7 @@ func TestMatchPrivateKeyOpt(t *testing.T) {
 }
 
 func TestMatchPublicKeyOpt(t *testing.T) {
-	var keyGenOption = KeyGenOpts(RSA2048)
+	var keyGenOption = heimdall.KeyGenOpts(heimdall.RSA2048)
 
 	testKeyManager, _ := NewKeyManager("./.testKeys")
 	_, pub, _ := testKeyManager.GenerateKey(keyGenOption)
@@ -150,7 +151,7 @@ func TestDeriveKeyFromPwd(t *testing.T) {
 
 func TestEncryptDecryptPriKey(t *testing.T) {
 	key, _ := hex.DecodeString("6368616e676520746869732070617373")
-	var keyGenOption = KeyGenOpts(RSA2048)
+	var keyGenOption = heimdall.KeyGenOpts(heimdall.RSA2048)
 
 	testKeyManager, _ := NewKeyManager("./.testKeys")
 	pri, _, _ := testKeyManager.GenerateKey(keyGenOption)

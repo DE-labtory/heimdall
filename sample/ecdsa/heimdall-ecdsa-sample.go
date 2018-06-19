@@ -8,8 +8,9 @@ import (
 	"reflect"
 
 	"github.com/it-chain/heimdall/auth"
-	"github.com/it-chain/heimdall/hashing"
+	"github.com/it-chain/heimdall/hash"
 	"github.com/it-chain/heimdall/key"
+	"github.com/it-chain/heimdall"
 )
 
 /*
@@ -25,7 +26,7 @@ func main() {
 	defer os.RemoveAll("./.heimdall")
 
 	// Generate key pair with ECDSA algorithm.
-	pri, pub, err := keyManager.GenerateKey(key.ECDSA384)
+	pri, pub, err := keyManager.GenerateKey(heimdall.ECDSA384)
 	errorCheck(err)
 
 	// Get key from memory of keyManager or from key files in key path of keyManager.
@@ -37,8 +38,8 @@ func main() {
 	bytePubKey, err := pub.ToPEM()
 
 	// Reconstruct key pair from bytes to key.
-	recPri, err := key.PEMToPrivateKey(bytePriKey, key.ECDSA384)
-	recPub, err := key.PEMToPublicKey(bytePubKey, key.ECDSA384)
+	recPri, err := key.PEMToPrivateKey(bytePriKey, heimdall.ECDSA384)
+	recPub, err := key.PEMToPublicKey(bytePubKey, heimdall.ECDSA384)
 	errorCheck(err)
 
 	// Compare reconstructed key pair with original key pair.
@@ -49,7 +50,7 @@ func main() {
 	sampleData := []byte("This is sample data from heimdall.")
 
 	// Convert raw data to digest(hash value) by using SHA512 function.
-	digest, err := hashing.Hash(sampleData, nil, hashing.SHA512)
+	digest, err := hash.Hash(sampleData, nil, heimdall.SHA512)
 	errorCheck(err)
 
 	// AuthManager makes digest(hash value) to signature with private key.

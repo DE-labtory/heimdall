@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"github.com/it-chain/heimdall"
 )
 
 // keyStorer contains key file path.
@@ -16,10 +17,10 @@ type keyStorer struct {
 }
 
 // Store stores the input keys to file.
-func (storer *keyStorer) Store(keys ...Key) (err error) {
+func (storer *keyStorer) Store(keys ...heimdall.Key) (err error) {
 
 	if len(keys) == 0 {
-		return errors.New("Input values should not be NIL")
+		return errors.New("input values should not be nil")
 	}
 
 	for _, key := range keys {
@@ -35,13 +36,13 @@ func (storer *keyStorer) Store(keys ...Key) (err error) {
 }
 
 // storeKey changes the key format to PEM and make file name, then store into file.
-func (storer *keyStorer) storeKey(key Key) error {
+func (storer *keyStorer) storeKey(key heimdall.Key) error {
 
 	var data []byte
 	var err error
 
 	if key == nil {
-		return errors.New("No Key Errors")
+		return errors.New("entered key is nil")
 	}
 
 	data, err = key.ToPEM()
@@ -50,7 +51,7 @@ func (storer *keyStorer) storeKey(key Key) error {
 		return err
 	}
 
-	path, err := storer.getFullPath(hex.EncodeToString(key.SKI()), key.Algorithm().String()+"_"+string(key.Type()))
+	path, err := storer.getFullPath(hex.EncodeToString(key.SKI()), key.GenOpt().String()+"_"+string(key.Type()))
 
 	if err != nil {
 		return err

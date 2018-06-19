@@ -20,7 +20,7 @@ func TestRSA_SignVerify(t *testing.T) {
 	assert.NotNil(t, generatedKey)
 
 	pri := &key.ECDSAPrivateKey{generatedKey}
-	pub, err := pri.PublicKey()
+	pub := pri.PublicKey()
 	assert.NoError(t, err)
 	assert.NotNil(t, pub)
 

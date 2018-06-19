@@ -4,10 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/it-chain/heimdall"
 )
 
 var RSAKeyBits = RSAKeyGenerator{bits: 2048}
-var RSAKeyGenOption = KeyGenOpts(RSA2048)
+var RSAKeyGenOption = heimdall.KeyGenOpts(heimdall.RSA2048)
 
 func TestRSAKeyPairGeneration(t *testing.T) {
 	pri, pub, err := RSAKeyBits.Generate(RSAKeyGenOption)
@@ -29,18 +30,17 @@ func TestRSAKeyPairSKI(t *testing.T) {
 func TestRSAGetAlgorithm(t *testing.T) {
 	pri, pub, _ := RSAKeyBits.Generate(RSAKeyGenOption)
 
-	priKeyOption := pri.Algorithm()
+	priKeyOption := pri.GenOpt()
 	assert.NotNil(t, priKeyOption)
 
-	pubKeyOption := pub.Algorithm()
+	pubKeyOption := pub.GenOpt()
 	assert.NotNil(t, pubKeyOption)
 }
 
 func TestRSAGetPublicKey(t *testing.T) {
 	pri, _, _ := RSAKeyBits.Generate(RSAKeyGenOption)
 
-	pub, err := pri.PublicKey()
-	assert.NoError(t, err)
+	pub := pri.PublicKey()
 	assert.NotNil(t, pub)
 }
 
@@ -60,8 +60,8 @@ func TestGetRSAKeyType(t *testing.T) {
 	pri, pub, _ := RSAKeyBits.Generate(RSAKeyGenOption)
 
 	priType := pri.Type()
-	assert.Equal(t, priType, PRIVATE_KEY, "They should be equal")
+	assert.Equal(t, priType, heimdall.PRIVATE_KEY, "They should be equal")
 
 	pubType := pub.Type()
-	assert.Equal(t, pubType, PUBLIC_KEY, "They should be equal")
+	assert.Equal(t, pubType, heimdall.PUBLIC_KEY, "They should be equal")
 }

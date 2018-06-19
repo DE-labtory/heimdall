@@ -11,6 +11,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/it-chain/heimdall"
 )
 
 // An ECDSAKeyGenerator contains elliptic curve for ECDSA.
@@ -19,23 +20,20 @@ type ECDSAKeyGenerator struct {
 }
 
 // Generate returns private key and public key for ECDSA using key generation option.
-func (keygen *ECDSAKeyGenerator) Generate(opts KeyGenOpts) (pri PriKey, pub PubKey, err error) {
+func (keygen *ECDSAKeyGenerator) Generate(opts heimdall.KeyGenOpts) (pri heimdall.PriKey, pub heimdall.PubKey, err error) {
 
 	if keygen.curve == nil {
-		return nil, nil, errors.New("Curve value have not to be nil")
+		return nil, nil, errors.New("curve value have not to be nil")
 	}
 
 	generatedKey, err := ecdsa.GenerateKey(keygen.curve, rand.Reader)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to generate ECDSA key : %s", err)
+		return nil, nil, fmt.Errorf("failed to generate ECDSA key : %s", err)
 	}
 
 	pri = &ECDSAPrivateKey{generatedKey}
-	pub, err = pri.(*ECDSAPrivateKey).PublicKey()
-	if err != nil {
-		return nil, nil, err
-	}
+	pub = pri.(*ECDSAPrivateKey).PublicKey()
 
 	return pri, pub, nil
 
@@ -62,13 +60,13 @@ func (key *ECDSAPrivateKey) SKI() (ski []byte) {
 }
 
 // Algorithm returns key generation option of ECDSA.
-func (key *ECDSAPrivateKey) Algorithm() KeyGenOpts {
-	return ECDSACurveToKeyGenOpts(key.PrivKey.Curve)
+func (key *ECDSAPrivateKey) GenOpt() heimdall.KeyGenOpts {
+	return heimdall.ECDSACurveToKeyGenOpts(key.PrivKey.Curve)
 }
 
 // PublicKey returns ECDSA public key of key pair.
-func (key *ECDSAPrivateKey) PublicKey() (PubKey, error) {
-	return &ECDSAPublicKey{&key.PrivKey.PublicKey}, nil
+func (key *ECDSAPrivateKey) PublicKey() heimdall.PubKey {
+	return &ECDSAPublicKey{&key.PrivKey.PublicKey}
 }
 
 // ToPEM makes a ECDSA private key to PEM format.
@@ -87,8 +85,8 @@ func (key *ECDSAPrivateKey) ToPEM() ([]byte, error) {
 }
 
 // Type returns type of the ECDSA private key.
-func (key *ECDSAPrivateKey) Type() KeyType {
-	return PRIVATE_KEY
+func (key *ECDSAPrivateKey) Type() heimdall.KeyType {
+	return heimdall.PRIVATE_KEY
 }
 
 // ECDSAPublicKey contains components of a public key.
@@ -112,8 +110,8 @@ func (key *ECDSAPublicKey) SKI() (ski []byte) {
 }
 
 // Algorithm returns ECDSA public key generation option.
-func (key *ECDSAPublicKey) Algorithm() KeyGenOpts {
-	return ECDSACurveToKeyGenOpts(key.PubKey.Curve)
+func (key *ECDSAPublicKey) GenOpt() heimdall.KeyGenOpts {
+	return heimdall.ECDSACurveToKeyGenOpts(key.PubKey.Curve)
 }
 
 // ToPEM makes a ECDSA public key to PEM format.
@@ -132,6 +130,6 @@ func (key *ECDSAPublicKey) ToPEM() ([]byte, error) {
 }
 
 // Type returns type of the ECDSA public key.
-func (key *ECDSAPublicKey) Type() KeyType {
-	return PUBLIC_KEY
+func (key *ECDSAPublicKey) Type() heimdall.KeyType {
+	return heimdall.PUBLIC_KEY
 }
