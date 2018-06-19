@@ -1,6 +1,6 @@
 // This file provides key generation options.
 
-package key
+package heimdall
 
 import (
 	"crypto/elliptic"
@@ -19,7 +19,7 @@ const (
 	ECDSA384
 	ECDSA521
 
-	UNKNOWN
+	UNKNOWN_KEYGENOPT
 )
 
 var optsArr = [...]string{
@@ -32,7 +32,19 @@ var optsArr = [...]string{
 	"ecdsa384",
 	"ecdsa521",
 
-	"unknown",
+	"unknown_keyGenOpt",
+}
+
+
+
+//TODO: Algorithm returns the key generation option's algorithm name.
+func (opts KeyGenOpts) Algorithm() string {
+	return ""
+}
+
+//TODO: Bits returns the key generation option's modulus lengths.
+func (opts KeyGenOpts) Bits() string {
+	return ""
 }
 
 // ValidCheck checks the input key generation option is valid or not.
@@ -83,7 +95,7 @@ func ECDSACurveToKeyGenOpts(curve elliptic.Curve) KeyGenOpts {
 	case elliptic.P521():
 		return ECDSA521
 	default:
-		return UNKNOWN
+		return UNKNOWN_KEYGENOPT
 	}
 
 }
@@ -117,7 +129,7 @@ func RSABitsToKeyGenOpts(bits int) KeyGenOpts {
 	case 4096:
 		return RSA4096
 	default:
-		return UNKNOWN
+		return UNKNOWN_KEYGENOPT
 	}
 
 }
@@ -134,6 +146,6 @@ func KeyGenOptsToRSABits(opts KeyGenOpts) int {
 		return 4096
 	default:
 		return -1
-	}
+}
 
 }
