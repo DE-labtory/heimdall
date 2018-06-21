@@ -3,45 +3,14 @@
 package key
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/asn1"
 	"encoding/pem"
-	"errors"
-	"fmt"
 	"math/big"
 	"github.com/it-chain/heimdall"
 )
-
-// An RSAKeyGenerator contains RSA key length.
-type RSAKeyGenerator struct {
-	bits int
-}
-
-// Generate returns private key and public key for RSA using key generation option.
-func (keygen *RSAKeyGenerator) Generate(opts heimdall.KeyGenOpts) (pri heimdall.PriKey, pub heimdall.PubKey, err error) {
-
-	if keygen.bits <= 0 {
-		return nil, nil, errors.New("bits length should be bigger than 0")
-	}
-
-	generatedKey, err := rsa.GenerateKey(rand.Reader, keygen.bits)
-
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to generate RSA key : %s", err)
-	}
-
-	pri = &RSAPrivateKey{PrivKey: generatedKey, Bits: keygen.bits}
-	pub = pri.(*RSAPrivateKey).PublicKey()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return pri, pub, nil
-
-}
 
 // rsaKeyMarshalOpt contains N and E that are RSA key's components
 type rsaKeyMarshalOpt struct {
