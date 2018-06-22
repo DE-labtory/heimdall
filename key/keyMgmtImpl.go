@@ -13,7 +13,7 @@ import (
 // KeyManagerImpl contains key file path, key generator, key loader and key storer.
 type keyManagerImpl struct {
 	path       string
-	generators map[heimdall.KeyGenOpts]keyGenerator
+	generators map[heimdall.KeyGenOpts]heimdall.KeyGenerator
 
 	loader keyLoader
 	storer keyStorer
@@ -34,7 +34,7 @@ func NewKeyManager(path string) (heimdall.KeyManager, error) {
 		path = path + "/.keys"
 	}
 
-	keyGenerators := make(map[heimdall.KeyGenOpts]keyGenerator)
+	keyGenerators := make(map[heimdall.KeyGenOpts]heimdall.KeyGenerator)
 	keyGenerators[heimdall.RSA1024] = &RSAKeyGenerator{1024}
 	keyGenerators[heimdall.RSA2048] = &RSAKeyGenerator{2048}
 	keyGenerators[heimdall.RSA4096] = &RSAKeyGenerator{4096}

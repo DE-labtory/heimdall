@@ -10,6 +10,13 @@ const (
 	PUBLIC_KEY  KeyType = "pub"
 )
 
+// keyGenerator represents a key generator.
+type KeyGenerator interface {
+
+	// Generate generates public and private key that match the input key generation option.
+	Generate(opts KeyGenOpts) (pri PriKey, pub PubKey, err error)
+}
+
 // A Key represents a cryptographic key.
 type Key interface {
 	// SKI provides name of file that will be store a key
