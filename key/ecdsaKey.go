@@ -8,8 +8,36 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"github.com/it-chain/heimdall"
+	"crypto/rand"
+	"fmt"
 )
+
+// An ECDSAKeyGenerator contains elliptic curve for ECDSA.
+type ECDSAKeyGenerator struct {
+	curve elliptic.Curve
+}
+
+// Generate returns private key and public key for ECDSA using key generation option.
+func (keygen *ECDSAKeyGenerator) Generate(opts heimdall.KeyGenOpts) (pri heimdall.PriKey, pub heimdall.PubKey, err error) {
+
+	if keygen.curve == nil {
+		return nil, nil, errors.New("curve value have not to be nil")
+	}
+
+	generatedKey, err := ecdsa.GenerateKey(keygen.curve, rand.Reader)
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to generate ECDSA key : %s", err)
+	}
+
+	pri = &ECDSAPrivateKey{generatedKey}
+	pub = pri.(*ECDSAPrivateKey).PublicKey()
+
+	return pri, pub, nil
+
+}
 
 // ECDSAPrivateKey contains private key of ECDSA.
 type ECDSAPrivateKey struct {
