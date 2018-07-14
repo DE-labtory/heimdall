@@ -3,13 +3,13 @@ package heimdall
 // KeyStore
 type KeyStore interface {
 	// StoreKey stores key as file.
-	StoreKey() error
+	StoreKey(keys ...Key) error
 
 	// GetKey gets the key pair from keyManagerImpl struct.
-	GetKey(ski []byte) (Key, err error)
+	GetKey(ski []byte) (Key, error)
 
 	// RemoveKey removes key files.
-	RemoveKey() error
+	RemoveKey(ski []byte) error
 
 	// GetPath returns path of key files
 	GetPath() string
