@@ -3,14 +3,14 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-
 	"reflect"
 
+	"os"
+
+	"github.com/it-chain/heimdall"
 	"github.com/it-chain/heimdall/auth"
 	"github.com/it-chain/heimdall/hash"
 	"github.com/it-chain/heimdall/key"
-	"github.com/it-chain/heimdall"
 )
 
 /*
@@ -31,32 +31,54 @@ func main() {
 	aeskey, _ := key.DeriveKeyFromPwd(pwd, salt, targetLength)
 	fmt.Println("derived key: " + string(aeskey))
 
-	keyManager, err := key.NewKeyManager("")
-	errorCheck(err)
+	// keyManager, err := key.NewKeyManager("")
+	// errorCheck(err)
 
 	defer os.RemoveAll("./.heimdall")
 
 	// Generate key pair with RSA algorithm.
-	pri, pub, err := keyManager.GenerateKey(heimdall.RSA4096)
+	generator, err := key.NewRSAKeyGenerator(4096)
+	pri, pub, err := generator.Generate(heimdall.RSA4096)
+	errorCheck(err)
+	fmt.Println("Key Generation")
+
+	// initiate new keystore
+	ks, err := key.NewKeystoreNoPwd("./.heimdall")
 	errorCheck(err)
 
-	// Get key from memory of keyManager or from key files in key path of keyManager.
-	pri, pub, err = keyManager.GetKey()
+	fmt.Println(ks.GetPath())
+
+	// store generated key pair
+	err = ks.StoreKey(pri, pub)
 	errorCheck(err)
+	fmt.Println("Key Store OK")
 
-	// Convert key to PEM(byte) format.
-	bytePriKey, err := pri.ToPEM()
-	bytePubKey, err := pub.ToPEM()
-
-	// Reconstruct key pair from bytes to key.
-	recPri, err := key.PEMToPrivateKey(bytePriKey, heimdall.RSA4096)
-	recPub, err := key.PEMToPublicKey(bytePubKey, heimdall.RSA4096)
+	// load key pair
+	ski := pri.SKI()
+	//ski, err := hex.DecodeString("9c4ece9bcaebb1fd8cfd447df9131b51bbb357698d4c73b40d6eb59d288c924f")
 	errorCheck(err)
-
-	// Compare reconstructed key pair with original key pair.
-	if reflect.DeepEqual(pri, recPri) && reflect.DeepEqual(pub, recPub) {
-		fmt.Println("reconstruct complete!")
+	loadedPri, err := ks.GetKey(ski)
+	errorCheck(err)
+	loadedPub := loadedPri.(heimdall.PriKey).PublicKey()
+	errorCheck(err)
+	// check if the loaded key pair is same with generated key pair
+	if reflect.DeepEqual(pri.SKI(), loadedPri.SKI()) && reflect.DeepEqual(pub.SKI(), loadedPub.SKI()) {
+		fmt.Println("Key Load OK")
 	}
+
+	//// Convert key to PEM(byte) format.
+	//bytePriKey, err := pri.ToPEM()
+	//bytePubKey, err := pub.ToPEM()
+	//
+	//// Reconstruct key pair from bytes to key.
+	//recPri, err := key.PEMToPrivateKey(bytePriKey, heimdall.RSA4096)
+	//recPub, err := key.PEMToPublicKey(bytePubKey, heimdall.RSA4096)
+	//errorCheck(err)
+	//
+	//// Compare reconstructed key pair with original key pair.
+	//if reflect.DeepEqual(pri, recPri) && reflect.DeepEqual(pub, recPub) {
+	//	fmt.Println("reconstruct complete!")
+	//}
 
 	sampleData := []byte("This is sample data from heimdall.")
 
@@ -68,17 +90,21 @@ func main() {
 	signerOpts := heimdall.EQUAL_SHA512.SignerOptsToPSSOptions()
 
 	// AuthManager makes digest(hash value) to signature with private key.
-	signature, err := auth.Sign(pri, digest, signerOpts)
+	//signature, err := auth.Sign(pri, digest, signerOpts)
+	signature, err := auth.Sign(loadedPri, digest, signerOpts)
 	errorCheck(err)
+	fmt.Println("Sign OK")
 
 	/* --------- After data transmitted --------- */
 
 	// AuthManager verify that received data has any forgery during transmitting process by digest.
 	// and verify that the received data is surely from the expected sender by public key.
-	ok, err := auth.Verify(pub, signature, digest, signerOpts)
+	//ok, err := auth.Verify(pub, signature, digest, signerOpts)
+	ok, err := auth.Verify(loadedPub, signature, digest, signerOpts)
 	errorCheck(err)
 
 	fmt.Println(ok)
+	fmt.Println("Verify OK")
 
 }
 
