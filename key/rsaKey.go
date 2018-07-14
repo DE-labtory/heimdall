@@ -3,21 +3,36 @@
 package key
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/asn1"
 	"encoding/pem"
-	"math/big"
-	"github.com/it-chain/heimdall"
 	"errors"
-	"crypto/rand"
 	"fmt"
+	"math/big"
+
+	"github.com/it-chain/heimdall"
 )
 
 // An RSAKeyGenerator contains RSA key length.
 type RSAKeyGenerator struct {
 	bits int
+}
+
+func NewRSAKeyGenerator(bits int) (heimdall.KeyGenerator, error) {
+	rsaKeyGenerator := &RSAKeyGenerator{}
+	return rsaKeyGenerator, rsaKeyGenerator.init(bits)
+}
+
+func (keygen *RSAKeyGenerator) init(bits int) error {
+	if err := heimdall.RSABitsValidCheck(bits); err != nil {
+		return err
+	}
+
+	keygen.bits = bits
+	return nil
 }
 
 // Generate returns private key and public key for RSA using key generation option.
