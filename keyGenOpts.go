@@ -4,6 +4,7 @@ package heimdall
 
 import (
 	"crypto/elliptic"
+	"errors"
 )
 
 // KeyGenOpts represents key generation options by integer number.
@@ -34,8 +35,6 @@ var optsArr = [...]string{
 
 	"unknown_keyGenOpt",
 }
-
-
 
 //TODO: Algorithm returns the key generation option's algorithm name.
 func (opts KeyGenOpts) Algorithm() string {
@@ -70,15 +69,15 @@ func (opts KeyGenOpts) String() string {
 }
 
 // StringToKeyGenOpts converts format of key generation option from string to KeyGenOpts
-func StringToKeyGenOpts(rawOpts string) (KeyGenOpts, bool) {
+func StringToKeyGenOpts(rawOpts string) (KeyGenOpts, error) {
 
 	for idx, opts := range optsArr {
 		if rawOpts == opts {
-			return KeyGenOpts(idx), true
+			return KeyGenOpts(idx), nil
 		}
 	}
 
-	return -1, false
+	return UNKNOWN_KEYGENOPT, errors.New("no such key generation option in option list")
 
 }
 
@@ -146,6 +145,15 @@ func KeyGenOptsToRSABits(opts KeyGenOpts) int {
 		return 4096
 	default:
 		return -1
+	}
+
 }
 
+// RSABitsValidCheck checks if the input RSA bits is valid by the list of RSA key generation options.
+func RSABitsValidCheck(bits int) error {
+	KeyGenOpts := RSABitsToKeyGenOpts(bits)
+	if KeyGenOpts == UNKNOWN_KEYGENOPT {
+		return errors.New("wrong bits(modulus length) for RSA")
+	}
+	return nil
 }
