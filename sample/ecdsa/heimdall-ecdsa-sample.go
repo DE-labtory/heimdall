@@ -3,14 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-
-	"reflect"
-
-	"github.com/it-chain/heimdall/auth"
-	"github.com/it-chain/heimdall/hash"
-	"github.com/it-chain/heimdall/key"
 	"github.com/it-chain/heimdall"
+	"os"
+	"encoding/hex"
+	"bytes"
 )
 
 /*
@@ -20,51 +16,80 @@ is signed and verified by ECDSA Key.
 
 func main() {
 
-	keyManager, err := key.NewKeyManager("")
-	errorCheck(err)
-
-	defer os.RemoveAll("./.heimdall")
+	defer os.RemoveAll(heimdall.TestKeyDir)
 
 	// Generate key pair with ECDSA algorithm.
-	pri, pub, err := keyManager.GenerateKey(heimdall.ECDSA384)
+	curveOpt := heimdall.TestCurveOpt
+	pri, err := heimdall.GenerateKey(curveOpt)
 	errorCheck(err)
+	fmt.Println("generate key success")
 
-	// Get key from memory of keyManager or from key files in key path of keyManager.
-	pri, pub, err = keyManager.GetKey()
+	// private key to bytes(from bytes)
+	bytePri := heimdall.PriKeyToBytes(pri)
+	recPri, err := heimdall.BytesToPriKey(bytePri, curveOpt)
 	errorCheck(err)
+	fmt.Println("genereted private key bytes : ", hex.EncodeToString(bytePri))
 
-	// Convert key to PEM(byte) format.
-	bytePriKey, err := pri.ToPEM()
-	bytePubKey, err := pub.ToPEM()
-
-	// Reconstruct key pair from bytes to key.
-	recPri, err := key.PEMToPrivateKey(bytePriKey, heimdall.ECDSA384)
-	recPub, err := key.PEMToPublicKey(bytePubKey, heimdall.ECDSA384)
-	errorCheck(err)
-
-	// Compare reconstructed key pair with original key pair.
-	if reflect.DeepEqual(pri, recPri) && reflect.DeepEqual(pub, recPub) {
-		print("reconstruct complete!\n")
+	if recPri.D.Cmp(pri.D) == 0 && recPri.X.Cmp(pri.X) == 0 && recPri.Y.Cmp(pri.Y) == 0 {
+		fmt.Println("converting private key to byte(and byte to private key) format success")
 	}
 
-	sampleData := []byte("This is sample data from heimdall.")
+	// public key to bytes(from bytes)
+	pub := &pri.PublicKey
+	bytePub := heimdall.PubKeyToBytes(pub)
+	recPub, err := heimdall.BytesToPubKey(bytePub, curveOpt)
+
+	if recPub.X.Cmp(pub.X) == 0 && recPub.Y.Cmp(pub.Y) == 0 {
+		fmt.Println("converting public key to byte(and byte to public key) format success")
+	}
+
+	// make new keystore
+	ks, err := heimdall.NewKeyStore(heimdall.TestKeyDir)
+	errorCheck(err)
+	fmt.Println("make new keystore success")
+
+	// storing key
+	err = ks.StoreKey(pri, "password")
+	errorCheck(err)
+	fmt.Println("store key success")
+
+	// public key ---> SKI ---->  Key ID (Base58encoded SKI)
+	ski := heimdall.SKIFromPubKey(pub)
+	keyId := heimdall.PubKeyToKeyID(pub)
+	fmt.Println("keyID : ", len(keyId), keyId)
+	// key ID ---> SKI
+	recSki := heimdall.SKIFromKeyID(keyId)
+	if bytes.Compare(ski, recSki) == 0 {
+		fmt.Println("key id to(from) ski success")
+	}
+
+	// load private key by key id and password
+	loadedPri, err := ks.LoadKey(keyId, "password")
+	if loadedPri.D.Cmp(pri.D) == 0 && loadedPri.X.Cmp(pri.X) == 0 && loadedPri.Y.Cmp(pri.Y) == 0 {
+		fmt.Println("loading private key from key id success")
+	}
+
+	fmt.Println("loaded private key bytes : ", hex.EncodeToString(heimdall.PriKeyToBytes(loadedPri)))
+
+	sampleData := []byte("This is sample data for signing and verifying.")
 
 	// Convert raw data to digest(hash value) by using SHA512 function.
-	digest, err := hash.Hash(sampleData, nil, heimdall.SHA512)
+	digest, err := heimdall.Hash(sampleData, nil, heimdall.SHA512)
 	errorCheck(err)
+	fmt.Println("Hashing success")
 
-	// AuthManager makes digest(hash value) to signature with private key.
-	signature, err := auth.Sign(pri, digest, nil)
+	// signing (making signature)
+	signature, err := heimdall.Sign(pri, digest)
 	errorCheck(err)
+	fmt.Println("signing success")
 
 	/* --------- After data transmitted --------- */
 
-	// AuthManager verify that received data has any forgery during transmitting process by digest.
-	// and verify that the received data is surely from the expected sender by public key.
-	ok, err := auth.Verify(pub, signature, digest, nil)
+	// verifying signature
+	ok, err := heimdall.Verify(pub, signature, digest)
 	errorCheck(err)
 
-	fmt.Println(ok)
+	fmt.Println("verifying result : ", ok)
 }
 
 func errorCheck(err error) {
