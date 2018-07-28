@@ -10,6 +10,7 @@ import (
 	"crypto/elliptic"
 	"crypto/sha256"
 	"github.com/btcsuite/btcutil/base58"
+	"encoding/hex"
 )
 
 
@@ -94,4 +95,17 @@ func SKIFromKeyID(keyId string) []byte {
 
 func RemoveKeyMem(pri *ecdsa.PrivateKey)  {
 	pri.D = new(big.Int)
+}
+
+func SKIValidCheck(keyId string, ski string) error {
+	skiBytes, err := hex.DecodeString(ski)
+	if err != nil {
+		return err
+	}
+
+	if SKIToKeyID(skiBytes) != keyId {
+		return errors.New("invalid SKI - SKI is not correspond to key ID")
+	}
+
+	return nil
 }
