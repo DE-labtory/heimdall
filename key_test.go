@@ -3,6 +3,7 @@ package heimdall
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
+	"encoding/hex"
 )
 
 func TestGenerateKey(t *testing.T) {
@@ -77,4 +78,16 @@ func TestRemoveKeyMem(t *testing.T) {
 	RemoveKeyMem(pri)
 	assert.NotEqual(t, pri.D, prevValue)
 	assert.Equal(t, pri.D.Int64(), int64(0))
+}
+
+func TestSKIValidCheck(t *testing.T) {
+	pri, _ := GenerateKey(TestCurveOpt)
+	ski := SKIFromPubKey(&pri.PublicKey)
+	keyId := SKIToKeyID(ski)
+
+	err := SKIValidCheck(keyId, hex.EncodeToString(ski))
+	assert.NoError(t, err)
+
+	err = SKIValidCheck(keyId, hex.EncodeToString([]byte("fake ski")))
+	assert.Error(t, err)
 }
