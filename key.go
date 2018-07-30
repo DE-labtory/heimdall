@@ -1,4 +1,4 @@
-// This file provides interfaces of Key, Private key and Public key.
+// This file provides ECDSA key related functions.
 
 package heimdall
 
@@ -20,12 +20,12 @@ func GenerateKey(curveOpt CurveOpts) (*ecdsa.PrivateKey, error) {
 	return ecdsa.GenerateKey(curveOpt.CurveOptToCurve(), rand.Reader)
 }
 
-// PriKeyToBytes converts private key to byte format.
+// PriKeyToBytes returns private key's D component as byte slice format.
 func PriKeyToBytes(pri *ecdsa.PrivateKey) []byte {
 	return pri.D.Bytes()
 }
 
-// BytesToPriKey converts key bytes to private key format.
+// BytesToPriKey converts key bytes (private key's D component) to private key format.
 func BytesToPriKey(d []byte, curveOpt CurveOpts) (*ecdsa.PrivateKey, error) {
 	pri := new(ecdsa.PrivateKey)
 	pri.PublicKey.Curve = curveOpt.CurveOptToCurve()
@@ -51,12 +51,12 @@ func BytesToPriKey(d []byte, curveOpt CurveOpts) (*ecdsa.PrivateKey, error) {
 	return pri, nil
 }
 
-// PubKeyToBytes converts public key to byte format.
+// PubKeyToBytes marshal and returns public key's X and Y coordinate as byte format.
 func PubKeyToBytes(pub *ecdsa.PublicKey) []byte {
 	return elliptic.Marshal(pub.Curve, pub.X, pub.Y)
 }
 
-// BytesToPubKey converts key bytes to public key format.
+// BytesToPubKey converts key bytes (public key's X, Y coordinate) to public key format.
 func BytesToPubKey(keyBytes []byte, curveOpt CurveOpts) (*ecdsa.PublicKey, error) {
 	curve := curveOpt.CurveOptToCurve()
 	x, y := elliptic.Unmarshal(curve, keyBytes)
@@ -68,7 +68,7 @@ func BytesToPubKey(keyBytes []byte, curveOpt CurveOpts) (*ecdsa.PublicKey, error
 	return &ecdsa.PublicKey{X: x, Y: y, Curve: curve}, nil
 }
 
-// SKI obtains Subject Key Identifier from ECDSA public key.
+// SKIFromPubKey obtains Subject Key Identifier from public key.
 func SKIFromPubKey(key *ecdsa.PublicKey) (ski []byte) {
 	if key == nil {
 		return nil
@@ -82,22 +82,27 @@ func SKIFromPubKey(key *ecdsa.PublicKey) (ski []byte) {
 	return hash.Sum(nil)
 }
 
+// PubKeyToKeyID obtains key ID from public key.
 func PubKeyToKeyID(key *ecdsa.PublicKey) string{
 	return keyIDPrefix + base58.Encode(SKIFromPubKey(key))
 }
 
+// SKIToKeyID obtains key ID from SKI(Subject Key Identifier).
 func SKIToKeyID(ski []byte) string {
 	return keyIDPrefix + base58.Encode(ski)
 }
 
+// SKIFromKeyID obtains SKI from key ID.
 func SKIFromKeyID(keyId string) []byte {
-	return base58.Decode(keyId)
+	return base58.Decode(strings.TrimPrefix(keyId, keyIDPrefix))
 }
 
+// RemoveKeyMem initializes (remove existing values) private key's memory.
 func RemoveKeyMem(pri *ecdsa.PrivateKey)  {
 	pri.D = new(big.Int)
 }
 
+// SKIValidCheck checks if input SKI is corresponding to key id.
 func SKIValidCheck(keyId string, ski string) error {
 	skiBytes, err := hex.DecodeString(ski)
 	if err != nil {
@@ -111,6 +116,7 @@ func SKIValidCheck(keyId string, ski string) error {
 	return nil
 }
 
+// KeyIDPrefixCheck checks if input key id has right prefix.
 func KeyIDPrefixCheck(keyId string) error {
 	if strings.HasPrefix(keyId, keyIDPrefix) != true {
 		return errors.New("invalid key ID - wrong prefix")
