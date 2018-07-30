@@ -4,6 +4,7 @@ import (
 	"testing"
 	"github.com/stretchr/testify/assert"
 	"encoding/hex"
+	"strings"
 )
 
 func TestGenerateKey(t *testing.T) {
@@ -56,6 +57,7 @@ func TestPubKeyToKeyID(t *testing.T) {
 	pri, _ := GenerateKey(TestCurveOpt)
 	keyId := PubKeyToKeyID(&pri.PublicKey)
 	assert.NotNil(t, keyId)
+	assert.True(t, strings.HasPrefix(keyId, keyIDPrefix))
 }
 
 func TestSKIToKeyID(t *testing.T) {
@@ -63,6 +65,7 @@ func TestSKIToKeyID(t *testing.T) {
 	ski := SKIFromPubKey(&pri.PublicKey)
 	keyId := SKIToKeyID(ski)
 	assert.NotNil(t, keyId)
+	assert.True(t, strings.HasPrefix(keyId, keyIDPrefix))
 }
 
 func TestSKIFromKeyID(t *testing.T) {
@@ -89,5 +92,18 @@ func TestSKIValidCheck(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = SKIValidCheck(keyId, hex.EncodeToString([]byte("fake ski")))
+	assert.Error(t, err)
+}
+
+func TestKeyIDPrefixCheck(t *testing.T) {
+	pri, _ := GenerateKey(TestCurveOpt)
+	ski := SKIFromPubKey(&pri.PublicKey)
+	keyId := SKIToKeyID(ski)
+	fakeKeyId := "fake" + keyId
+
+	err := KeyIDPrefixCheck(keyId)
+	assert.NoError(t, err)
+
+	err = KeyIDPrefixCheck(fakeKeyId)
 	assert.Error(t, err)
 }
