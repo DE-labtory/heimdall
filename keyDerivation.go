@@ -1,3 +1,5 @@
+// This file provides function for deriving a key from password for encrypting private key.
+
 package heimdall
 
 import (
