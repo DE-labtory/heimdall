@@ -1,3 +1,5 @@
+// This file provides definition of constant and variables for globally used.
+
 package heimdall
 
 import (
