@@ -1,3 +1,5 @@
+// This file provides functions for encryption and decryption functions for private key.
+
 package heimdall
 
 import (
