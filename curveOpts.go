@@ -1,4 +1,4 @@
-// This file provides key generation options.
+// This file provides ECDSA curve options and functions for using curves comfortable.
 
 package heimdall
 
@@ -35,7 +35,7 @@ func (opt CurveOpts) KeySize() string {
 	return keySize
 }
 
-// ValidCheck checks the input key generation option is valid or not.
+// ValidCheck checks the input curve option is valid or not.
 func (opt CurveOpts) ValidCheck() bool {
 
 	if opt < 0 || opt >= CurveOpts(len(curveArr)) {
@@ -43,10 +43,9 @@ func (opt CurveOpts) ValidCheck() bool {
 	}
 
 	return true
-
 }
 
-// String coverts format of key generation option from KeyGenOpts to string.
+// String obtains curve's name as string format from curve option type.
 func (opt CurveOpts) String() string {
 	if !opt.ValidCheck() {
 		return "unknown"
@@ -55,7 +54,7 @@ func (opt CurveOpts) String() string {
 	return curveArr[opt]
 }
 
-// CurveOptToCurve get curve corresponding to curve option.
+// CurveOptToCurve get elliptic curve corresponding to curve option.
 func (opt CurveOpts) CurveOptToCurve() elliptic.Curve {
 
 	switch opt {
@@ -73,7 +72,7 @@ func (opt CurveOpts) CurveOptToCurve() elliptic.Curve {
 
 }
 
-// StringToKeyGenOpts converts format of key generation option from string to KeyGenOpts
+// StringToCurveOpt obtains curve option from string (curve name).
 func StringToCurveOpt(rawOpts string) CurveOpts {
 	for idx, opts := range curveArr {
 		if rawOpts == opts {
@@ -84,7 +83,7 @@ func StringToCurveOpt(rawOpts string) CurveOpts {
 	return UNKNOWN
 }
 
-// ECDSACurveToKeyGenOpts converts format of ECDSA elliptic curve from elliptic.Curve to KeyGenOpts.
+// CurveToCurveOpt obtains curve option from elliptic.Curve type.
 func CurveToCurveOpt(curve elliptic.Curve) CurveOpts {
 
 	switch curve {
