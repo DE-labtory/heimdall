@@ -1,3 +1,5 @@
+// This file provides functions for storing and loading ECDSA key pair.
+
 package heimdall
 
 import (
@@ -18,6 +20,7 @@ type keystore struct {
 	path string
 }
 
+// struct for encrypted key's file format.
 type KeyFile struct {
 	SKI string
 	CurveOpt string
@@ -25,6 +28,7 @@ type KeyFile struct {
 	Hints EncryptionHints
 }
 
+// struct for providing hints of encryption and key derivation function.
 type EncryptionHints struct {
 	EncType string
 
@@ -32,6 +36,7 @@ type EncryptionHints struct {
 	KDFParams map[string]string
 }
 
+// NewKeyStore make and initialize a new keystore.
 func NewKeyStore(path string) (*keystore, error) {
 	keyStore := new(keystore)
 	return keyStore, keyStore.init(path)
@@ -46,6 +51,7 @@ func (ks *keystore) init(path string) error {
 	return nil
 }
 
+// StoreKey stores private key that is encrypted by key derived from input password.
 func (ks *keystore) StoreKey(pri *ecdsa.PrivateKey, pwd string) error {
 	ski := hex.EncodeToString(SKIFromPubKey(&pri.PublicKey))
 	keyId := PubKeyToKeyID(&pri.PublicKey)
@@ -114,6 +120,7 @@ func (ks *keystore) makeKeyFilePath(keyFileName string) (string, error) {
 	return filepath.Join(ks.path, keyFileName), nil
 }
 
+// makeJsonKeyFile marshals keyFile struct to json format.
 func makeJsonKeyFile(ski string, curveOpt string, encryptedKeyBytes []byte, KDFParams map[string]string) ([]byte, error) {
 	encHints := EncryptionHints{
 		EncType: "aes-256-ctr",
@@ -131,7 +138,7 @@ func makeJsonKeyFile(ski string, curveOpt string, encryptedKeyBytes []byte, KDFP
 	return json.Marshal(keyFile)
 }
 
-
+// LoadKey loads private key by key ID and password.
 func (ks *keystore) LoadKey(keyId string, pwd string) (*ecdsa.PrivateKey, error) {
 	var keyFile KeyFile
 
