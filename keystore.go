@@ -139,6 +139,10 @@ func (ks *keystore) LoadKey(keyId string, pwd string) (*ecdsa.PrivateKey, error)
 		return nil, errors.New("invalid keystore path - not exist")
 	}
 
+	if err := KeyIDPrefixCheck(keyId); err != nil {
+		return nil, err
+	}
+
 	keyPath, err := ks.findKeyById(keyId)
 	if err != nil {
 		return nil, err
