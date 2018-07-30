@@ -11,6 +11,7 @@ import (
 	"crypto/sha256"
 	"github.com/btcsuite/btcutil/base58"
 	"encoding/hex"
+	"strings"
 )
 
 
@@ -82,11 +83,11 @@ func SKIFromPubKey(key *ecdsa.PublicKey) (ski []byte) {
 }
 
 func PubKeyToKeyID(key *ecdsa.PublicKey) string{
-	return base58.Encode(SKIFromPubKey(key))
+	return keyIDPrefix + base58.Encode(SKIFromPubKey(key))
 }
 
 func SKIToKeyID(ski []byte) string {
-	return base58.Encode(ski)
+	return keyIDPrefix + base58.Encode(ski)
 }
 
 func SKIFromKeyID(keyId string) []byte {
@@ -105,6 +106,14 @@ func SKIValidCheck(keyId string, ski string) error {
 
 	if SKIToKeyID(skiBytes) != keyId {
 		return errors.New("invalid SKI - SKI is not correspond to key ID")
+	}
+
+	return nil
+}
+
+func KeyIDPrefixCheck(keyId string) error {
+	if strings.HasPrefix(keyId, keyIDPrefix) != true {
+		return errors.New("invalid key ID - wrong prefix")
 	}
 
 	return nil
