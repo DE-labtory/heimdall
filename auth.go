@@ -1,3 +1,5 @@
+// This file provides ECDSA signing and verifying related functions.
+
 package heimdall
 
 import (
@@ -9,7 +11,7 @@ import (
 )
 
 
-// ecdsaSignature contains ECDSA signature components that are two integers, R and S.
+// ecdsaSignature contains ECDSA signature components that are two big integers, R and S.
 type ecdsaSignature struct {
 	R, S *big.Int
 }
