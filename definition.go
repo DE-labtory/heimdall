@@ -6,6 +6,10 @@ import (
 	"os"
 	"path/filepath"
 	"encoding/hex"
+	"crypto/x509"
+	"math/big"
+	"crypto/x509/pkix"
+	"time"
 )
 
 
@@ -16,6 +20,7 @@ const keyIDPrefix = "IT"
 var WorkingDir, _ = os.Getwd()
 var RootDir = filepath.Dir(WorkingDir)
 var TestKeyDir = filepath.Join(WorkingDir, "./.testKeys")
+var TestCertDir = filepath.Join(WorkingDir, "./.testCerts")
 
 // Parameters for test
 const TestCurveOpt = SECP256R1
@@ -28,4 +33,17 @@ var TestScrpytParams = map[string]string{
 	"p" : ScryptP,
 	"keyLen" : ScryptKeyLen,
 	"salt" : hex.EncodeToString([]byte("saltsalt")),
+}
+
+var testCertTemplate = x509.Certificate{
+	SerialNumber: big.NewInt(1),
+	Subject: pkix.Name{
+		Organization: []string{"it-chain co"},
+	},
+	NotBefore: time.Now(),
+	NotAfter: time.Now().Add(time.Hour * 24 * 180),
+
+	KeyUsage: x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+	ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+	BasicConstraintsValid: true,
 }
