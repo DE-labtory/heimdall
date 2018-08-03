@@ -53,15 +53,23 @@ var TestScrpytParams = map[string]string{
 	"salt" : hex.EncodeToString([]byte("saltsalt")),
 }
 
-var testCertTemplate = x509.Certificate{
+var TestRootCertTemplate = x509.Certificate{
+	Version: 1,
+	SerialNumber: big.NewInt(1),
 	IsCA: true,
 	SubjectKeyId: []byte{1,2,3},
-	SerialNumber: big.NewInt(1),
+
 	Subject: pkix.Name{
-		Country: []string{"Korea"},
+		Country: []string{"KR"},
+		Province: []string{"Seoul"},
+		PostalCode: []string{"12312"},
+		StreetAddress: []string{"street123"},
 		Organization: []string{"it-chain co"},
-		OrganizationalUnit: []string{"authentication division"},
+		OrganizationalUnit: []string{"it-chain co"},
+		CommonName: string("it-chain central"),
 	},
+	CRLDistributionPoints: []string{"URL of distribution point"},
+
 	NotBefore: time.Now(),
 	NotAfter: time.Now().Add(time.Hour * 24 * 180),
 
@@ -69,3 +77,71 @@ var testCertTemplate = x509.Certificate{
 	ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 	BasicConstraintsValid: true,
 }
+
+var TestIntermediateCertTemplate = x509.Certificate{
+	Version: 1,
+	SerialNumber: big.NewInt(2),
+	IsCA: true,
+	SubjectKeyId: []byte{4,5,6},
+
+	Subject: pkix.Name{
+		Country: []string{"KR"},
+		Province: []string{"Seoul"},
+		PostalCode: []string{"12312"},
+		StreetAddress: []string{"street123"},
+		Organization: []string{"it-chain co"},
+		OrganizationalUnit: []string{"development division"},
+		CommonName: string("it-chain dev"),
+	},
+	CRLDistributionPoints: []string{"URL of distribution point"},
+
+	NotBefore: time.Now(),
+	NotAfter: time.Now().Add(time.Hour * 24 * 180),
+
+	KeyUsage: x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+	ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
+	BasicConstraintsValid: true,
+}
+
+var TestCertTemplate = x509.Certificate{
+	Version: 1,
+	SerialNumber: big.NewInt(3),
+	IsCA: false,
+	SubjectKeyId: []byte{7,8,9},
+
+	Subject: pkix.Name{
+		Country: []string{"KR"},
+		Province: []string{"Seoul"},
+		PostalCode: []string{"12312"},
+		StreetAddress: []string{"street123"},
+		Organization: []string{"it-chain co"},
+		OrganizationalUnit: []string{"Development Division", "Authentication Team"},
+		CommonName: string("it-chain dev-auth"),
+	},
+	CRLDistributionPoints: []string{"URL of distribution point"},
+
+	NotBefore: time.Now(),
+	NotAfter: time.Now().Add(time.Hour * 24 * 180),
+
+	KeyUsage: x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+	ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
+	BasicConstraintsValid: true,
+}
+
+const TestCertPemBytes = `-----BEGIN CERTIFICATE-----
+MIICfTCCAiOgAwIBAgIBATAKBggqhkjOPQQDAjCBiDELMAkGA1UEBhMCS1IxDjAM
+BgNVBAgTBVNlb3VsMRIwEAYDVQQJEwlzdHJlZXQxMjMxDjAMBgNVBBETBTEyMzEy
+MRQwEgYDVQQKEwtpdC1jaGFpbiBjbzEUMBIGA1UECxMLaXQtY2hhaW4gY28xGTAX
+BgNVBAMTEGl0LWNoYWluIGNlbnRyYWwwHhcNMTgwODAzMDY0OTUzWhcNMTkwMTMw
+MDY0OTUzWjCBiDELMAkGA1UEBhMCS1IxDjAMBgNVBAgTBVNlb3VsMRIwEAYDVQQJ
+EwlzdHJlZXQxMjMxDjAMBgNVBBETBTEyMzEyMRQwEgYDVQQKEwtpdC1jaGFpbiBj
+bzEUMBIGA1UECxMLaXQtY2hhaW4gY28xGTAXBgNVBAMTEGl0LWNoYWluIGNlbnRy
+YWwwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASSiQD7VeydDXkiOLCaSJ291FLb
+RMaY8IZoCC6wQcgow+kJ/WgtU8QmBFKJ2NFMn13vOY4/80pui/baFaGRfanvo3ww
+ejAOBgNVHQ8BAf8EBAMCAqQwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMC
+MA8GA1UdEwEB/wQFMAMBAf8wDAYDVR0OBAUEAwECAzAqBgNVHR8EIzAhMB+gHaAb
+hhlVUkwgb2YgZGlzdHJpYnV0aW9uIHBvaW50MAoGCCqGSM49BAMCA0gAMEUCIQCO
+/6n5Bwm165VAEek35c6lrOnWPbnuTvFxPXqscb5YXQIgTHNvabAeu1ma3mTflTDN
+KX5s9w2er5dmDAkXxe/IDl8=
+-----END CERTIFICATE-----
+`
