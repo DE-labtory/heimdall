@@ -20,8 +20,6 @@ package heimdall
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
-	"crypto/x509"
-	"crypto/rand"
 )
 
 func TestSign(t *testing.T) {
@@ -61,8 +59,7 @@ func TestVerifyWithCert(t *testing.T) {
 	pri, _ := GenerateKey(TestCurveOpt)
 
 	signature, _ := Sign(pri, msg, nil, TestHashOpt)
-	derBytes, _ := x509.CreateCertificate(rand.Reader, &testCertTemplate, &testCertTemplate, &pri.PublicKey, pri)
-	cert, _ := x509.ParseCertificate(derBytes)
+	cert, _ := PemToX509Cert([]byte(TestCertPemBytes))
 
 	valid, err := VerifyWithCert(cert, signature, msg, nil, TestHashOpt)
 	assert.True(t, valid)
