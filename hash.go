@@ -10,7 +10,7 @@ import (
 )
 
 // Hash hashes the input data.
-func Hash(data []byte, tail []byte, opts HashOpts) ([]byte, error) {
+func Hash(data []byte, preBuffer []byte, opts HashOpts) ([]byte, error) {
 
 	if data == nil {
 		return nil, errors.New("data should not be NIL")
@@ -34,6 +34,6 @@ func Hash(data []byte, tail []byte, opts HashOpts) ([]byte, error) {
 	}
 
 	selectedHash.Write(data)
-	return selectedHash.Sum(tail), nil
+	return selectedHash.Sum(preBuffer), nil
 
 }
