@@ -51,6 +51,7 @@ func TestCertStore_StoreCert(t *testing.T) {
 func TestCertStore_LoadCert(t *testing.T) {
 	certStore, _ := NewCertStore(TestCertDir)
 	pri, _ := GenerateKey(TestCurveOpt)
+	testCertTemplate.SubjectKeyId = SKIFromPubKey(&pri.PublicKey)
 	derBytes, err := x509.CreateCertificate(rand.Reader, &testCertTemplate, &testCertTemplate, &pri.PublicKey, pri)
 	assert.NoError(t, err)
 
