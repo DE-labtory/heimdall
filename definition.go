@@ -41,6 +41,7 @@ var TestCertDir = filepath.Join(WorkingDir, "./.testCerts")
 
 // Parameters for test
 const TestCurveOpt = SECP256R1
+const TestHashOpt = SHA512
 
 // Note: salt have to be unique, so do not use this for real implementation.
 var TestSalt = []byte{0xc8, 0x28, 0xf2, 0x58, 0xa7, 0x6a, 0xad, 0x7b}
