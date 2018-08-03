@@ -96,22 +96,24 @@ func main() {
 
 	fmt.Println("loaded private key bytes : ", hex.EncodeToString(heimdall.PriKeyToBytes(loadedPri)))
 
+
 	sampleData := []byte("This is sample data for signing and verifying.")
 
 	// Convert raw data to digest(hash value) by using SHA512 function.
-	digest, err := heimdall.Hash(sampleData, nil, heimdall.SHA512)
+	digest, err := heimdall.Hash(sampleData, nil, heimdall.TestHashOpt)
 	errorCheck(err)
+	fmt.Println(digest)
 	fmt.Println("Hashing success")
 
 	// signing (making signature)
-	signature, err := heimdall.Sign(pri, digest)
+	signature, err := heimdall.Sign(pri, sampleData, nil, heimdall.TestHashOpt)
 	errorCheck(err)
 	fmt.Println("signing success")
 
 	/* --------- After data transmitted --------- */
 
 	// verifying signature
-	ok, err := heimdall.Verify(pub, signature, digest)
+	ok, err := heimdall.Verify(pub, signature, sampleData, nil, heimdall.TestHashOpt)
 	errorCheck(err)
 
 	fmt.Println("verifying result : ", ok)
