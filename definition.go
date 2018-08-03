@@ -53,18 +53,14 @@ var TestScrpytParams = map[string]string{
 }
 
 var testCertTemplate = x509.Certificate{
-	IsCA: true,
-	SubjectKeyId: []byte{1,2,3},
 	SerialNumber: big.NewInt(1),
 	Subject: pkix.Name{
-		Country: []string{"Korea"},
 		Organization: []string{"it-chain co"},
-		OrganizationalUnit: []string{"authentication division"},
 	},
 	NotBefore: time.Now(),
 	NotAfter: time.Now().Add(time.Hour * 24 * 180),
 
-	KeyUsage: x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-	ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
+	KeyUsage: x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+	ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 	BasicConstraintsValid: true,
 }
