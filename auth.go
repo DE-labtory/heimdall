@@ -25,6 +25,7 @@ import (
 	"math/big"
 	"encoding/asn1"
 	"errors"
+	"crypto/x509"
 )
 
 
@@ -69,8 +70,14 @@ func unmarshalECDSASignature(signature []byte) (*big.Int, *big.Int, error) {
 	return ecdsaSig.R, ecdsaSig.S, nil
 }
 
-// Sign signs a digest(hash) using priKey(private key), and returns signature.
-func Sign(pri *ecdsa.PrivateKey, digest []byte) ([]byte, error) {
+// Sign generates signature for a data using private key.
+// if preBuf is not nil, data's hash append to preBuf - no malloc for hashed data.
+func Sign(pri *ecdsa.PrivateKey, data, preBuf []byte, opts HashOpts) ([]byte, error) {
+	digest, err := Hash(data, preBuf, opts)
+	if err != nil {
+		return nil, err
+	}
+
 	r, s, err := ecdsa.Sign(rand.Reader, pri, digest)
 	if err != nil {
 		return nil, err
@@ -88,7 +95,12 @@ func Sign(pri *ecdsa.PrivateKey, digest []byte) ([]byte, error) {
 }
 
 // Verify verifies the signature using pubKey(public key) and digest of original message, then returns boolean value.
-func Verify(pub *ecdsa.PublicKey, signature, digest []byte) (bool, error) {
+func Verify(pub *ecdsa.PublicKey, signature, data, preBuf []byte, opts HashOpts) (bool, error) {
+	digest, err := Hash(data, preBuf, opts)
+	if err != nil {
+		return false, err
+	}
+
 	r, s, err := unmarshalECDSASignature(signature)
 	if err != nil {
 		return false, err
@@ -96,8 +108,13 @@ func Verify(pub *ecdsa.PublicKey, signature, digest []byte) (bool, error) {
 
 	valid := ecdsa.Verify(pub, digest, r, s)
 	if !valid {
-		return valid, errors.New("invalid signature")
+		return valid, nil
 	}
 
 	return valid, nil
+}
+
+// VerifyWithCert verify a signature with certificate.
+func VerifyWithCert(cert *x509.Certificate, signature, data, preBuf []byte, opts HashOpts) (bool, error) {
+	return Verify(cert.PublicKey.(*ecdsa.PublicKey), signature, data, preBuf, opts)
 }
