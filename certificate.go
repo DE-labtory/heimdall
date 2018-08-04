@@ -27,6 +27,9 @@ import (
 	"encoding/pem"
 	"crypto/ecdsa"
 	"bytes"
+	"time"
+	"crypto/x509/pkix"
+	"net/http"
 )
 
 type CertStore struct{
@@ -169,8 +172,6 @@ func DERToX509Cert(derBytes []byte) (cert *x509.Certificate, err error) {
 	return x509.ParseCertificate(derBytes)
 }
 
-// TODO: 설정 파일 혹은 다른 요소에 의해 사전 정의된 신뢰할 수 있는 root CA 지정 필요
-// TODO: root CA와 intermediate CA의 인증서에 대한 검증 필요 -> root CA와 통신 (CRL)
 // VerifyCertChain verifies a certificate from local certificates in certificate store directory.
 func (cs *CertStore) VerifyCertChain(cert *x509.Certificate) error {
 	roots, err := cs.makeRootsPool()
@@ -251,4 +252,76 @@ func (cs *CertStore) makeIntermediatesPool() (intermediatesPool *x509.CertPool, 
 	}
 
 	return intermediatesPool, nil
+}
+
+// VerifyCert verifies a certificate's validity.
+// if returned values are false true nil, then certificate is expired.
+// if returned values are true false nil, then certificate is revoked.
+func VerifyCert(cert *x509.Certificate) (timeValid bool, notRevoked bool, err error) {
+	// check if expired or invalid generation time
+	timeValid, err = checkTime(cert.NotBefore, cert.NotAfter)
+	if err != nil {
+		return timeValid, notRevoked, err
+	}
+
+	if timeValid != true {
+		return timeValid, notRevoked, nil
+	}
+
+	// check if revoked
+	for _, url := range cert.CRLDistributionPoints {
+		crl, err := requestCRL(url)
+		if err != nil {
+			return timeValid, notRevoked, err
+		}
+
+		if checkRevocation(cert, crl) != true {
+			return timeValid, notRevoked,nil
+		}
+	}
+
+	return timeValid, notRevoked, nil
+}
+
+// checkTime checks if entered certificate's generated/expired time is valid.
+func checkTime(notBefore time.Time, notAfter time.Time) (bool, error) {
+	if time.Now().Before(notBefore) {
+		return false, errors.New("invalid certificate - certificate's generated time is invalid")
+	}
+
+	if time.Now().After(notAfter) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+// requestCRL requests CRL(Certificate Revocation List) from CRLDistributionURL.
+func requestCRL(url string) (*pkix.CertificateList, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	} else if resp.StatusCode >= 300 {
+		return nil, errors.New("failed to retrieve CRL")
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return x509.ParseCRL(body)
+}
+
+// checkRevocation checks if entered certificate is revoked by CRL(Certificate Revocation List).
+func checkRevocation(cert *x509.Certificate, crl *pkix.CertificateList) bool {
+	for _, revokedCert := range crl.TBSCertList.RevokedCertificates {
+		if cert.SerialNumber.Cmp(revokedCert.SerialNumber) == 0 {
+			return false
+		}
+	}
+
+	return true
 }
