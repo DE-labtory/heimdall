@@ -23,6 +23,12 @@ import (
 	"crypto/x509"
 	"crypto/rand"
 	"os"
+	"net/http/httptest"
+	"net/http"
+	"crypto/x509/pkix"
+	"math/big"
+	"time"
+	"io"
 )
 
 
@@ -143,4 +149,48 @@ func TestCertStore_VerifyCertChain(t *testing.T) {
 	assert.NoError(t, err)
 
 	defer os.RemoveAll(TestCertDir)
+}
+
+func TestVerifyCert(t *testing.T) {
+	// test expired cert
+	expiredCert, _ := PemToX509Cert([]byte(ExpiredCertForTest))
+	timeValid, notRevoked, err := VerifyCert(expiredCert)
+	assert.False(t, timeValid)
+	assert.NoError(t, err)
+	assert.NotNil(t, notRevoked)
+
+	// test revoked cert
+	revokedCert, _ := PemToX509Cert([]byte(RevokedCertForTest))
+
+	// root cert
+	rootPri, _ := GenerateKey(TestCurveOpt)
+
+	TestRootCertTemplate.SubjectKeyId = SKIFromPubKey(&rootPri.PublicKey)
+	derBytes, err := x509.CreateCertificate(rand.Reader, &TestRootCertTemplate, &TestRootCertTemplate, &rootPri.PublicKey, rootPri)
+	assert.NoError(t, err)
+	rootCert, _ := DERToX509Cert(derBytes)
+
+	// revoked certificate
+	revokedCertificate := new(pkix.RevokedCertificate)
+	revokedCertificate.SerialNumber = big.NewInt(44)
+	revokedCertificate.RevocationTime = time.Now()
+	revokedCertificate.Extensions = nil
+
+	revokedCertList := []pkix.RevokedCertificate{*revokedCertificate}
+
+	// create CRL
+	crlBytes, err := rootCert.CreateCRL(rand.Reader, rootPri, revokedCertList, time.Now(), time.Now().Add(time.Hour * 24))
+	assert.NoError(t, err)
+	assert.NotNil(t, crlBytes)
+
+	// test with httptest server
+	testCA := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, string(crlBytes))
+	}))
+	revokedCert.CRLDistributionPoints = []string{testCA.URL}
+
+	timeValid, notRevoked, err = VerifyCert(revokedCert)
+	assert.True(t, timeValid)
+	assert.NoError(t, err)
+	assert.False(t, notRevoked)
 }
