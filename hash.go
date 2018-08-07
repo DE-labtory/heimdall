@@ -20,7 +20,6 @@
 package heimdall
 
 import (
-	"crypto/sha1"
 	"crypto/sha512"
 	"errors"
 	"hash"
@@ -28,7 +27,6 @@ import (
 
 // Hash hashes the input data.
 func Hash(data []byte, preBuffer []byte, opts HashOpts) ([]byte, error) {
-
 	if data == nil {
 		return nil, errors.New("data should not be NIL")
 	}
@@ -36,8 +34,6 @@ func Hash(data []byte, preBuffer []byte, opts HashOpts) ([]byte, error) {
 	var selectedHash hash.Hash
 
 	switch opts {
-	case SHA1:
-		selectedHash = sha1.New()
 	case SHA224:
 		selectedHash = sha512.New512_224()
 	case SHA256:
@@ -52,5 +48,4 @@ func Hash(data []byte, preBuffer []byte, opts HashOpts) ([]byte, error) {
 
 	selectedHash.Write(data)
 	return selectedHash.Sum(preBuffer), nil
-
 }

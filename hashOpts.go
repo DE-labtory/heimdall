@@ -23,8 +23,7 @@ package heimdall
 type HashOpts int
 
 const (
-	SHA1 HashOpts = iota
-	SHA224
+	SHA224 HashOpts = iota
 	SHA256
 	SHA384
 	SHA512
