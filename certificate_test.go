@@ -15,7 +15,7 @@
  *
  */
 
-package heimdall
+package heimdall_test
 
 import (
 	"testing"
@@ -29,117 +29,118 @@ import (
 	"math/big"
 	"time"
 	"io"
+	"github.com/it-chain/heimdall"
 )
 
 
 func TestNewCertStore(t *testing.T) {
-	certStore, err := NewCertStore(TestCertDir)
+	certStore, err := heimdall.NewCertStore(heimdall.TestCertDir)
 	assert.NoError(t, err)
 	assert.NotNil(t, certStore)
 }
 
 func TestCertStore_StoreCert(t *testing.T) {
-	certStore, _ := NewCertStore(TestCertDir)
-	pri, _ := GenerateKey(TestCurveOpt)
-	derBytes, err := x509.CreateCertificate(rand.Reader, &TestRootCertTemplate, &TestRootCertTemplate, &pri.PublicKey, pri)
+	certStore, _ := heimdall.NewCertStore(heimdall.TestCertDir)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	derBytes, err := x509.CreateCertificate(rand.Reader, &heimdall.TestRootCertTemplate, &heimdall.TestRootCertTemplate, &pri.PublicKey, pri)
 	assert.NoError(t, err)
 
-	cert, _ := DERToX509Cert(derBytes)
+	cert, _ := heimdall.DERToX509Cert(derBytes)
 
 	err = certStore.StoreCert(cert)
 	assert.NoError(t, err)
 
-	defer os.RemoveAll(TestCertDir)
+	defer os.RemoveAll(heimdall.TestCertDir)
 }
 
 func TestCertStore_LoadCert(t *testing.T) {
-	certStore, _ := NewCertStore(TestCertDir)
-	pri, _ := GenerateKey(TestCurveOpt)
-	TestRootCertTemplate.SubjectKeyId = SKIFromPubKey(&pri.PublicKey)
-	derBytes, err := x509.CreateCertificate(rand.Reader, &TestRootCertTemplate, &TestRootCertTemplate, &pri.PublicKey, pri)
+	certStore, _ := heimdall.NewCertStore(heimdall.TestCertDir)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	heimdall.TestRootCertTemplate.SubjectKeyId = heimdall.SKIFromPubKey(&pri.PublicKey)
+	derBytes, err := x509.CreateCertificate(rand.Reader, &heimdall.TestRootCertTemplate, &heimdall.TestRootCertTemplate, &pri.PublicKey, pri)
 	assert.NoError(t, err)
 
-	cert, _ := DERToX509Cert(derBytes)
+	cert, _ := heimdall.DERToX509Cert(derBytes)
 
 	err = certStore.StoreCert(cert)
 
-	certStore, _ = NewCertStore(TestCertDir)
-	testCert, err := certStore.LoadCert(PubKeyToKeyID(&pri.PublicKey))
+	certStore, _ = heimdall.NewCertStore(heimdall.TestCertDir)
+	testCert, err := certStore.LoadCert(heimdall.PubKeyToKeyID(&pri.PublicKey))
 	assert.NoError(t, err)
 	assert.NotNil(t, testCert)
 
-	defer os.RemoveAll(TestCertDir)
+	defer os.RemoveAll(heimdall.TestCertDir)
 }
 
 func TestPemToX509Cert(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	TestRootCertTemplate.SubjectKeyId = SKIFromPubKey(&pri.PublicKey)
-	derBytes, err := x509.CreateCertificate(rand.Reader, &TestRootCertTemplate, &TestRootCertTemplate, &pri.PublicKey, pri)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	heimdall.TestRootCertTemplate.SubjectKeyId = heimdall.SKIFromPubKey(&pri.PublicKey)
+	derBytes, err := x509.CreateCertificate(rand.Reader, &heimdall.TestRootCertTemplate, &heimdall.TestRootCertTemplate, &pri.PublicKey, pri)
 	assert.NoError(t, err)
-	pemBytes := DERCertToPem(derBytes)
+	pemBytes := heimdall.DERCertToPem(derBytes)
 
-	cert, err := PemToX509Cert(pemBytes)
+	cert, err := heimdall.PemToX509Cert(pemBytes)
 	assert.NoError(t, err)
 	assert.NotNil(t, cert)
 }
 
 func TestX509CertToPem(t *testing.T) {
-	cert, _ := PemToX509Cert([]byte(TestCertPemBytes))
-	pemBytes := X509CertToPem(cert)
-	assert.Equal(t, pemBytes, []byte(TestCertPemBytes))
+	cert, _ := heimdall.PemToX509Cert([]byte(heimdall.TestCertPemBytes))
+	pemBytes := heimdall.X509CertToPem(cert)
+	assert.Equal(t, pemBytes, []byte(heimdall.TestCertPemBytes))
 }
 
 func TestDERCertToPem(t *testing.T) {
-	cert, _ := PemToX509Cert([]byte(TestCertPemBytes))
-	pemBytes := DERCertToPem(cert.Raw)
-	assert.Equal(t, pemBytes, []byte(TestCertPemBytes))
+	cert, _ := heimdall.PemToX509Cert([]byte(heimdall.TestCertPemBytes))
+	pemBytes := heimdall.DERCertToPem(cert.Raw)
+	assert.Equal(t, pemBytes, []byte(heimdall.TestCertPemBytes))
 }
 
 func TestX509CertToDER(t *testing.T) {
-	cert, _ := PemToX509Cert([]byte(TestCertPemBytes))
-	derBytes := X509CertToDER(cert)
+	cert, _ := heimdall.PemToX509Cert([]byte(heimdall.TestCertPemBytes))
+	derBytes := heimdall.X509CertToDER(cert)
 	assert.NotNil(t, derBytes)
-	assert.Equal(t, []byte(TestCertPemBytes), DERCertToPem(derBytes))
+	assert.Equal(t, []byte(heimdall.TestCertPemBytes), heimdall.DERCertToPem(derBytes))
 }
 
 func TestDERToX509Cert(t *testing.T) {
-	cert, _ := PemToX509Cert([]byte(TestCertPemBytes))
+	cert, _ := heimdall.PemToX509Cert([]byte(heimdall.TestCertPemBytes))
 	assert.NotNil(t, cert)
-	assert.Equal(t, []byte(TestCertPemBytes), X509CertToPem(cert))
+	assert.Equal(t, []byte(heimdall.TestCertPemBytes), heimdall.X509CertToPem(cert))
 }
 
 func TestCertStore_VerifyCertChain(t *testing.T) {
-	certStore, _ := NewCertStore(TestCertDir)
+	certStore, _ := heimdall.NewCertStore(heimdall.TestCertDir)
 
 	// root cert
-	rootPri, _ := GenerateKey(TestCurveOpt)
+	rootPri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
 
-	TestRootCertTemplate.SubjectKeyId = SKIFromPubKey(&rootPri.PublicKey)
-	derBytes, err := x509.CreateCertificate(rand.Reader, &TestRootCertTemplate, &TestRootCertTemplate, &rootPri.PublicKey, rootPri)
+	heimdall.TestRootCertTemplate.SubjectKeyId = heimdall.SKIFromPubKey(&rootPri.PublicKey)
+	derBytes, err := x509.CreateCertificate(rand.Reader, &heimdall.TestRootCertTemplate, &heimdall.TestRootCertTemplate, &rootPri.PublicKey, rootPri)
 	assert.NoError(t, err)
-	rootCert, _ := DERToX509Cert(derBytes)
+	rootCert, _ := heimdall.DERToX509Cert(derBytes)
 
 	err = certStore.StoreCert(rootCert)
 	assert.NoError(t, err)
 
 	// intermediate cert
-	interPri, _ := GenerateKey(TestCurveOpt)
+	interPri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
 
-	TestIntermediateCertTemplate.SubjectKeyId = SKIFromPubKey(&interPri.PublicKey)
-	derBytes, err = x509.CreateCertificate(rand.Reader, &TestIntermediateCertTemplate, &TestRootCertTemplate, &interPri.PublicKey, rootPri)
+	heimdall.TestIntermediateCertTemplate.SubjectKeyId = heimdall.SKIFromPubKey(&interPri.PublicKey)
+	derBytes, err = x509.CreateCertificate(rand.Reader, &heimdall.TestIntermediateCertTemplate, &heimdall.TestRootCertTemplate, &interPri.PublicKey, rootPri)
 	assert.NoError(t, err)
-	interCert, _ := DERToX509Cert(derBytes)
+	interCert, _ := heimdall.DERToX509Cert(derBytes)
 
 	err = certStore.StoreCert(interCert)
 	assert.NoError(t, err)
 
 	// client cert
-	ClientPri, _ := GenerateKey(TestCurveOpt)
+	ClientPri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
 
-	TestCertTemplate.SubjectKeyId = SKIFromPubKey(&ClientPri.PublicKey)
-	derBytes, err = x509.CreateCertificate(rand.Reader, &TestCertTemplate, &TestIntermediateCertTemplate, &ClientPri.PublicKey, interPri)
+	heimdall.TestCertTemplate.SubjectKeyId = heimdall.SKIFromPubKey(&ClientPri.PublicKey)
+	derBytes, err = x509.CreateCertificate(rand.Reader, &heimdall.TestCertTemplate, &heimdall.TestIntermediateCertTemplate, &ClientPri.PublicKey, interPri)
 	assert.NoError(t, err)
-	clientCert, _ := DERToX509Cert(derBytes)
+	clientCert, _ := heimdall.DERToX509Cert(derBytes)
 
 	err = certStore.StoreCert(clientCert)
 	assert.NoError(t, err)
@@ -148,27 +149,27 @@ func TestCertStore_VerifyCertChain(t *testing.T) {
 	err = certStore.VerifyCertChain(clientCert)
 	assert.NoError(t, err)
 
-	defer os.RemoveAll(TestCertDir)
+	defer os.RemoveAll(heimdall.TestCertDir)
 }
 
 func TestVerifyCert(t *testing.T) {
 	// test expired cert
-	expiredCert, _ := PemToX509Cert([]byte(ExpiredCertForTest))
-	timeValid, notRevoked, err := VerifyCert(expiredCert)
+	expiredCert, _ := heimdall.PemToX509Cert([]byte(heimdall.ExpiredCertForTest))
+	timeValid, notRevoked, err := heimdall.VerifyCert(expiredCert)
 	assert.False(t, timeValid)
 	assert.NoError(t, err)
 	assert.NotNil(t, notRevoked)
 
 	// test revoked cert
-	revokedCert, _ := PemToX509Cert([]byte(RevokedCertForTest))
+	revokedCert, _ := heimdall.PemToX509Cert([]byte(heimdall.RevokedCertForTest))
 
 	// root cert
-	rootPri, _ := GenerateKey(TestCurveOpt)
+	rootPri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
 
-	TestRootCertTemplate.SubjectKeyId = SKIFromPubKey(&rootPri.PublicKey)
-	derBytes, err := x509.CreateCertificate(rand.Reader, &TestRootCertTemplate, &TestRootCertTemplate, &rootPri.PublicKey, rootPri)
+	heimdall.TestRootCertTemplate.SubjectKeyId = heimdall.SKIFromPubKey(&rootPri.PublicKey)
+	derBytes, err := x509.CreateCertificate(rand.Reader, &heimdall.TestRootCertTemplate, &heimdall.TestRootCertTemplate, &rootPri.PublicKey, rootPri)
 	assert.NoError(t, err)
-	rootCert, _ := DERToX509Cert(derBytes)
+	rootCert, _ := heimdall.DERToX509Cert(derBytes)
 
 	// revoked certificate
 	revokedCertificate := new(pkix.RevokedCertificate)
@@ -189,7 +190,7 @@ func TestVerifyCert(t *testing.T) {
 	}))
 	revokedCert.CRLDistributionPoints = []string{testCA.URL}
 
-	timeValid, notRevoked, err = VerifyCert(revokedCert)
+	timeValid, notRevoked, err = heimdall.VerifyCert(revokedCert)
 	assert.True(t, timeValid)
 	assert.NoError(t, err)
 	assert.False(t, notRevoked)
