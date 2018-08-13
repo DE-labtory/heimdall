@@ -15,42 +15,42 @@
  *
  */
 
-package heimdall
+package heimdall_test
 
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
 	"os"
+	"github.com/it-chain/heimdall"
 )
 
 func TestNewKeyStore(t *testing.T) {
-	ks, err := NewKeyStore(TestKeyDir)
+	ks, err := heimdall.NewKeyStore(heimdall.TestKeyDir)
 	assert.NoError(t, err)
 	assert.NotNil(t, ks)
-	assert.NotEmpty(t, ks.path)
 }
 
 func TestKeystore_StoreKey(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
 
-	ks, _ := NewKeyStore(TestKeyDir)
+	ks, _ := heimdall.NewKeyStore(heimdall.TestKeyDir)
 	err := ks.StoreKey(pri, "password")
 	assert.NoError(t, err)
 
-	defer os.RemoveAll(TestKeyDir)
+	defer os.RemoveAll(heimdall.TestKeyDir)
 }
 
 func TestKeystore_LoadKey(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
 
-	ks, _ := NewKeyStore(TestKeyDir)
+	ks, _ := heimdall.NewKeyStore(heimdall.TestKeyDir)
 	_ = ks.StoreKey(pri, "password")
 
-	keyId := PubKeyToKeyID(&pri.PublicKey)
+	keyId := heimdall.PubKeyToKeyID(&pri.PublicKey)
 	loadedPri, err := ks.LoadKey(keyId, "password")
 	assert.NoError(t, err)
 	assert.NotNil(t, loadedPri)
 	assert.EqualValues(t, loadedPri, pri)
 
-	defer os.RemoveAll(TestKeyDir)
+	defer os.RemoveAll(heimdall.TestKeyDir)
 }

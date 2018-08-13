@@ -31,7 +31,7 @@ import (
 
 
 // Key ID prefix
-const keyIDPrefix = "IT"
+const KeyIDPrefix = "IT"
 
 // directories for test
 var WorkingDir, _ = os.Getwd()
