@@ -25,19 +25,6 @@ import (
 	"strconv"
 )
 
-const (
-	KDFName = "scrypt"
-
-	// N should highest power of 2 that key derived in 100ms.
-	ScryptN = "32768" // 1 << 15 (2^15)
-	// Parallelization parameter; a positive integer satisfying p ≤ (232− 1) * hLen / MFLen.
-	ScryptP = "1"
-
-	// blocksize parameter : fine-tune sequential memory read size and performance. (8 is commonly used)
-	ScryptR = "8"
-	// Desired length of key in bytes
-	ScryptKeyLen = "32"
-)
 
 // DeriveKeyFromPwd derives a key from input password.
 func DeriveKeyFromPwd(KDFName string, pwd []byte, salt []byte, keyLen int, KDFParams map[string]string) (dKey []byte, err error) {
