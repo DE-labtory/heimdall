@@ -24,16 +24,15 @@ import (
 )
 
 func TestNewKeyStore(t *testing.T) {
-	ks, err := NewKeyStore(TestKeyDir)
+	ks, err := NewKeyStore(TestConf.keyDirPath, TestConf.kdf, TestConf.kdfParams, TestConf.encAlgo, TestConf.encKeyLength)
 	assert.NoError(t, err)
 	assert.NotNil(t, ks)
-	assert.NotEmpty(t, ks.path)
 }
 
 func TestKeystore_StoreKey(t *testing.T) {
 	pri, _ := GenerateKey(TestCurveOpt)
 
-	ks, _ := NewKeyStore(TestKeyDir)
+	ks, _ := NewKeyStore(TestConf.keyDirPath, TestConf.kdf, TestConf.kdfParams, TestConf.encAlgo, TestConf.encKeyLength)
 	err := ks.StoreKey(pri, "password")
 	assert.NoError(t, err)
 
@@ -41,9 +40,9 @@ func TestKeystore_StoreKey(t *testing.T) {
 }
 
 func TestKeystore_LoadKey(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
+	pri, _ := GenerateKey(TestConf.curveOpt)
 
-	ks, _ := NewKeyStore(TestKeyDir)
+	ks, _ := NewKeyStore(TestConf.keyDirPath, TestConf.kdf, TestConf.kdfParams, TestConf.encAlgo, TestConf.encKeyLength)
 	_ = ks.StoreKey(pri, "password")
 
 	keyId := PubKeyToKeyID(&pri.PublicKey)
