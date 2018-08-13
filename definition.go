@@ -33,6 +33,11 @@ import (
 // Key ID prefix
 const keyIDPrefix = "IT"
 
+// KDF functions
+const SCRYPT = "scrypt"
+const PBKDF2 = "pbkdf2"
+const BCRYPT = "bcrypt"
+
 // directories for test
 var WorkingDir, _ = os.Getwd()
 var RootDir = filepath.Dir(WorkingDir)
@@ -43,12 +48,19 @@ var TestCertDir = filepath.Join(WorkingDir, "./.testCerts")
 const TestCurveOpt = SECP256R1
 const TestHashOpt = SHA512
 
+
+// TestConf provides configuration struct using 192 bits of security level.
+var TestConf = NewDefaultConfig()
 // Note: salt have to be unique, so do not use this for real implementation.
 var TestSalt = []byte{0xc8, 0x28, 0xf2, 0x58, 0xa7, 0x6a, 0xad, 0x7b}
 var TestScrpytParams = map[string]string{
+	// N should highest power of 2 that key derived in 100ms.
 	"n" : ScryptN,
+	// R(blocksize parameter) : fine-tune sequential memory read size and performance. (8 is commonly used)
 	"r" : ScryptR,
+	// P(Parallelization parameter) : a positive integer satisfying p ≤ (232− 1) * hLen / MFLen.
 	"p" : ScryptP,
+	// keyLen : Desired length of key in bytes
 	"keyLen" : ScryptKeyLen,
 	"salt" : hex.EncodeToString([]byte("saltsalt")),
 }
