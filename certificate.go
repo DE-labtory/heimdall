@@ -247,10 +247,6 @@ func (cs *CertStore) makeIntermediatesPool() (intermediatesPool *x509.CertPool, 
 		}
 	}
 
-	if len(intermediatesPool.Subjects()) == 0 {
-		return nil, errors.New("no root certificate in certificate store directory")
-	}
-
 	return intermediatesPool, nil
 }
 
