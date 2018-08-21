@@ -119,10 +119,7 @@ func (conf *Config) initDefaultConfig() {
 	conf.kdf = "scrypt"
 	conf.sigAlgo = "ECDSA"
 	conf.encAlgo = "AES-CTR"
-	conf.kdfParams = make(map[string]string, 3)
-	conf.kdfParams["n"] = ScryptN
-	conf.kdfParams["r"] = ScryptR
-	conf.kdfParams["p"] = ScryptP
+	conf.kdfParams = DefaultScrpytParams
 	conf.initBySecLv192()
 }
 
