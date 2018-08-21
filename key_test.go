@@ -15,112 +15,113 @@
  *
  */
 
-package heimdall
+package heimdall_test
 
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
 	"encoding/hex"
 	"strings"
+	"github.com/it-chain/heimdall"
 )
 
 func TestGenerateKey(t *testing.T) {
-	pri, err := GenerateKey(TestCurveOpt)
+	pri, err := heimdall.GenerateKey(heimdall.TestCurveOpt)
 	assert.NoError(t, err)
 	assert.NotNil(t, pri)
 }
 
 func TestPriKeyToBytes(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	keyBytes := PriKeyToBytes(pri)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	keyBytes := heimdall.PriKeyToBytes(pri)
 	assert.NotNil(t, keyBytes)
 }
 
 func TestBytesToPriKey(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	keyBytes := PriKeyToBytes(pri)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	keyBytes := heimdall.PriKeyToBytes(pri)
 	assert.NotNil(t, keyBytes)
 
-	recPri, err := BytesToPriKey(keyBytes, TestCurveOpt)
+	recPri, err := heimdall.BytesToPriKey(keyBytes, heimdall.TestCurveOpt)
 	assert.NoError(t, err)
 	assert.NotNil(t, recPri)
 	assert.EqualValues(t, pri, recPri)
 }
 
 func TestPubKeyToBytes(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	keyBytes := PubKeyToBytes(&pri.PublicKey)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	keyBytes := heimdall.PubKeyToBytes(&pri.PublicKey)
 	assert.NotNil(t, keyBytes)
 }
 
 func TestBytesToPubKey(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	keyBytes := PubKeyToBytes(&pri.PublicKey)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	keyBytes := heimdall.PubKeyToBytes(&pri.PublicKey)
 	assert.NotNil(t, keyBytes)
 
-	pub, err := BytesToPubKey(keyBytes, TestCurveOpt)
+	pub, err := heimdall.BytesToPubKey(keyBytes, heimdall.TestCurveOpt)
 	assert.NoError(t, err)
 	assert.NotNil(t, pub)
 	assert.EqualValues(t, pub, &pri.PublicKey)
 }
 
 func TestSKIFromPubKey(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	ski := SKIFromPubKey(&pri.PublicKey)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	ski := heimdall.SKIFromPubKey(&pri.PublicKey)
 	assert.NotNil(t, ski)
 }
 
 func TestPubKeyToKeyID(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	keyId := PubKeyToKeyID(&pri.PublicKey)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	keyId := heimdall.PubKeyToKeyID(&pri.PublicKey)
 	assert.NotNil(t, keyId)
-	assert.True(t, strings.HasPrefix(keyId, keyIDPrefix))
+	assert.True(t, strings.HasPrefix(keyId, heimdall.KeyIDPrefix))
 }
 
 func TestSKIToKeyID(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	ski := SKIFromPubKey(&pri.PublicKey)
-	keyId := SKIToKeyID(ski)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	ski := heimdall.SKIFromPubKey(&pri.PublicKey)
+	keyId := heimdall.SKIToKeyID(ski)
 	assert.NotNil(t, keyId)
-	assert.True(t, strings.HasPrefix(keyId, keyIDPrefix))
+	assert.True(t, strings.HasPrefix(keyId, heimdall.KeyIDPrefix))
 }
 
 func TestSKIFromKeyID(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	keyId := PubKeyToKeyID(&pri.PublicKey)
-	ski := SKIFromKeyID(keyId)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	keyId := heimdall.PubKeyToKeyID(&pri.PublicKey)
+	ski := heimdall.SKIFromKeyID(keyId)
 	assert.NotNil(t, ski)
 }
 
 func TestRemoveKeyMem(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
 	prevValue := pri.D
-	RemoveKeyMem(pri)
+	heimdall.RemoveKeyMem(pri)
 	assert.NotEqual(t, pri.D, prevValue)
 	assert.Equal(t, pri.D.Int64(), int64(0))
 }
 
 func TestSKIValidCheck(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	ski := SKIFromPubKey(&pri.PublicKey)
-	keyId := SKIToKeyID(ski)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	ski := heimdall.SKIFromPubKey(&pri.PublicKey)
+	keyId := heimdall.SKIToKeyID(ski)
 
-	err := SKIValidCheck(keyId, hex.EncodeToString(ski))
+	err := heimdall.SKIValidCheck(keyId, hex.EncodeToString(ski))
 	assert.NoError(t, err)
 
-	err = SKIValidCheck(keyId, hex.EncodeToString([]byte("fake ski")))
+	err = heimdall.SKIValidCheck(keyId, hex.EncodeToString([]byte("fake ski")))
 	assert.Error(t, err)
 }
 
 func TestKeyIDPrefixCheck(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	ski := SKIFromPubKey(&pri.PublicKey)
-	keyId := SKIToKeyID(ski)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	ski := heimdall.SKIFromPubKey(&pri.PublicKey)
+	keyId := heimdall.SKIToKeyID(ski)
 	fakeKeyId := "fake" + keyId
 
-	err := KeyIDPrefixCheck(keyId)
+	err := heimdall.KeyIDPrefixCheck(keyId)
 	assert.NoError(t, err)
 
-	err = KeyIDPrefixCheck(fakeKeyId)
+	err = heimdall.KeyIDPrefixCheck(fakeKeyId)
 	assert.Error(t, err)
 }
