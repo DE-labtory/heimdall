@@ -15,29 +15,30 @@
  *
  */
 
-package heimdall
+package heimdall_test
 
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
+	"github.com/it-chain/heimdall"
 )
 
 func TestEncryptPriKey(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	dKey, _ := DeriveKeyFromPwd(TestConf.kdf, []byte("password"), TestSalt, TestConf.encKeyLength, TestConf.kdfParams)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	dKey, _ := heimdall.DeriveKeyFromPwd(heimdall.TestConf.Kdf, []byte("password"), heimdall.TestSalt, heimdall.TestConf.EncKeyLength, heimdall.TestConf.KdfParams)
 
-	encryptedKey, err := EncryptPriKey(pri, dKey)
+	encryptedKey, err := heimdall.EncryptPriKey(pri, dKey)
 	assert.NoError(t, err)
 	assert.NotNil(t, encryptedKey)
 }
 
 func TestDecryptPriKey(t *testing.T) {
-	pri, _ := GenerateKey(TestCurveOpt)
-	dKey, _ := DeriveKeyFromPwd(TestConf.kdf, []byte("password"), TestSalt, TestConf.encKeyLength, TestConf.kdfParams)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
+	dKey, _ := heimdall.DeriveKeyFromPwd(heimdall.TestConf.Kdf, []byte("password"), heimdall.TestSalt, heimdall.TestConf.EncKeyLength, heimdall.TestConf.KdfParams)
 
-	encryptedKey, _ := EncryptPriKey(pri, dKey)
+	encryptedKey, _ := heimdall.EncryptPriKey(pri, dKey)
 
-	decryptedKey, err := DecryptPriKey(encryptedKey, dKey, TestCurveOpt)
+	decryptedKey, err := heimdall.DecryptPriKey(encryptedKey, dKey, heimdall.TestCurveOpt)
 	assert.NotNil(t, decryptedKey)
 	assert.NoError(t, err)
 	assert.EqualValues(t, pri, decryptedKey)
