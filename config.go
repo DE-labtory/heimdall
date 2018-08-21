@@ -25,16 +25,16 @@ import (
 )
 
 type Config struct {
-	secLv int
-	keyDirPath string
-	certDirPath string
-	encAlgo string
-	sigAlgo string
-	kdf string
-	kdfParams map[string]string
-	curveOpt CurveOpts
-	hashOpt HashOpts
-	encKeyLength int
+	SecLv int
+	KeyDirPath string
+	CertDirPath string
+	EncAlgo string
+	SigAlgo string
+	Kdf string
+	KdfParams map[string]string
+	CurveOpt CurveOpts
+	HashOpt HashOpts
+	EncKeyLength int
 }
 
 // NewConfig makes configuration struct using entered parameters.
@@ -54,38 +54,38 @@ func (conf *Config) initConfig(secLv int, keyDirPath, certDirPath, encAlgo, sigA
 	if len(keyDirPath) == 0 {
 		return errors.New("invalid key directory path - empty")
 	}
-	conf.keyDirPath = keyDirPath
+	conf.KeyDirPath = keyDirPath
 
 	if len(certDirPath) == 0 {
 		return errors.New("invalid certificate directory path - empty")
 	}
-	conf.certDirPath = certDirPath
+	conf.CertDirPath = certDirPath
 
 	if len(encAlgo) == 0 {
 		return errors.New("invalid encryption algorithm - empty")
 	} else if encAlgo = strings.ToUpper(encAlgo); encAlgo != "AES-CTR" {
 		return errors.New("invalid encryption algorithm - not supported")
 	}
-	conf.encAlgo = encAlgo
+	conf.EncAlgo = encAlgo
 
 	if len(sigAlgo) == 0 {
 		return errors.New("invalid signature algorithm - empty")
 	} else if sigAlgo = strings.ToUpper(sigAlgo); sigAlgo != "ECDSA" {
 		return errors.New("invalid signature algorithm - not supported")
 	}
-	conf.sigAlgo = sigAlgo
+	conf.SigAlgo = sigAlgo
 
 	if len(kdf) == 0 {
 		errors.New("invalid key derivation function - empty")
 	} else if kdf = strings.ToLower(kdf); kdf != "scrypt" && kdf != "bcrypt" && kdf != "pbkdf2" {
 		return errors.New("invalid key derivation function - not supported")
 	}
-	conf.kdf = kdf
+	conf.Kdf = kdf
 
 	if len(kdfParams) == 0 {
 		return errors.New("invalid key derivation function parameters - empty")
 	}
-	conf.kdfParams = kdfParams
+	conf.KdfParams = kdfParams
 
 	switch secLv {
 	case 112:
@@ -107,50 +107,47 @@ func (conf *Config) initConfig(secLv int, keyDirPath, certDirPath, encAlgo, sigA
 	default:
 		return errors.New("invalid security level - not supported")
 	}
-	conf.secLv = secLv
+	conf.SecLv = secLv
 
 	return nil
 }
 
 func (conf *Config) initDefaultConfig() {
-	conf.secLv = 192
-	conf.keyDirPath = TestKeyDir
-	conf.certDirPath = TestCertDir
-	conf.kdf = "scrypt"
-	conf.sigAlgo = "ECDSA"
-	conf.encAlgo = "AES-CTR"
-	conf.kdfParams = make(map[string]string, 3)
-	conf.kdfParams["n"] = ScryptN
-	conf.kdfParams["r"] = ScryptR
-	conf.kdfParams["p"] = ScryptP
+	conf.SecLv = 192
+	conf.KeyDirPath = TestKeyDir
+	conf.CertDirPath = TestCertDir
+	conf.Kdf = "scrypt"
+	conf.SigAlgo = "ECDSA"
+	conf.EncAlgo = "AES-CTR"
+	conf.KdfParams = DefaultScrpytParams
 	conf.initBySecLv192()
 }
 
 // initBySecLv112 sets hash type, elliptic curve type, key length for encryption corresponding to 112bits of security level.
 func (conf *Config) initBySecLv112() {
-	conf.hashOpt = SHA224
-	conf.curveOpt = SECP224R1
-	conf.encKeyLength = int(112 / 8)
+	conf.HashOpt = SHA224
+	conf.CurveOpt = SECP224R1
+	conf.EncKeyLength = int(112 / 8)
 }
 
 // initBySecLv128 sets hash type, elliptic curve type, key length for encryption corresponding to 128bits of security level.
 func (conf *Config) initBySecLv128() {
-	conf.hashOpt = SHA256
-	conf.curveOpt = SECP256R1
-	conf.encKeyLength = int(128 / 8)
+	conf.HashOpt = SHA256
+	conf.CurveOpt = SECP256R1
+	conf.EncKeyLength = int(128 / 8)
 }
 
 // initBySecLv192 sets hash type, elliptic curve type, key length for encryption corresponding to 192bits of security level.
 func (conf *Config) initBySecLv192() {
-	conf.hashOpt = SHA384
-	conf.curveOpt = SECP384R1
-	conf.encKeyLength = int(192 / 8)
+	conf.HashOpt = SHA384
+	conf.CurveOpt = SECP384R1
+	conf.EncKeyLength = int(192 / 8)
 }
 
 // initBySecLv256 sets hash type, elliptic curve type, key length for encryption corresponding to 256bits of security level.
 func (conf *Config) initBySecLv256() {
-	conf.hashOpt = SHA512
-	conf.curveOpt = SECP521R1
-	conf.encKeyLength = int(256 / 8)
+	conf.HashOpt = SHA512
+	conf.CurveOpt = SECP521R1
+	conf.EncKeyLength = int(256 / 8)
 }
 
