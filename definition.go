@@ -22,7 +22,6 @@ package heimdall
 import (
 	"os"
 	"path/filepath"
-	"encoding/hex"
 	"crypto/x509"
 	"math/big"
 	"crypto/x509/pkix"
@@ -53,16 +52,14 @@ const TestHashOpt = SHA512
 var TestConf = NewDefaultConfig()
 // Note: salt have to be unique, so do not use this for real implementation.
 var TestSalt = []byte{0xc8, 0x28, 0xf2, 0x58, 0xa7, 0x6a, 0xad, 0x7b}
-var TestScrpytParams = map[string]string{
+// Default scrypt Parameters
+var DefaultScrpytParams = map[string]string{
 	// N should highest power of 2 that key derived in 100ms.
-	"n" : ScryptN,
+	"n" : "32768", // 1 << 15 (2^15)
 	// R(blocksize parameter) : fine-tune sequential memory read size and performance. (8 is commonly used)
-	"r" : ScryptR,
+	"r" : "8",
 	// P(Parallelization parameter) : a positive integer satisfying p ≤ (232− 1) * hLen / MFLen.
-	"p" : ScryptP,
-	// keyLen : Desired length of key in bytes
-	"keyLen" : ScryptKeyLen,
-	"salt" : hex.EncodeToString([]byte("saltsalt")),
+	"p" : "32" ,
 }
 
 var TestRootCertTemplate = x509.Certificate{
