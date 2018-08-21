@@ -24,7 +24,7 @@ import (
 
 func TestEncryptPriKey(t *testing.T) {
 	pri, _ := GenerateKey(TestCurveOpt)
-	dKey, _ := DeriveKeyFromPwd("scrypt", []byte("password"), TestScrpytParams)
+	dKey, _ := DeriveKeyFromPwd(TestConf.kdf, []byte("password"), TestSalt, TestConf.encKeyLength, TestConf.kdfParams)
 
 	encryptedKey, err := EncryptPriKey(pri, dKey)
 	assert.NoError(t, err)
@@ -33,7 +33,7 @@ func TestEncryptPriKey(t *testing.T) {
 
 func TestDecryptPriKey(t *testing.T) {
 	pri, _ := GenerateKey(TestCurveOpt)
-	dKey, _ := DeriveKeyFromPwd("scrypt", []byte("password"), TestScrpytParams)
+	dKey, _ := DeriveKeyFromPwd(TestConf.kdf, []byte("password"), TestSalt, TestConf.encKeyLength, TestConf.kdfParams)
 
 	encryptedKey, _ := EncryptPriKey(pri, dKey)
 

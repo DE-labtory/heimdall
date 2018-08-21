@@ -119,11 +119,10 @@ func (conf *Config) initDefaultConfig() {
 	conf.kdf = "scrypt"
 	conf.sigAlgo = "ECDSA"
 	conf.encAlgo = "AES-CTR"
-	conf.kdfParams = make(map[string]string, 5)
+	conf.kdfParams = make(map[string]string, 3)
 	conf.kdfParams["n"] = ScryptN
 	conf.kdfParams["r"] = ScryptR
 	conf.kdfParams["p"] = ScryptP
-	conf.kdfParams["keyLen"] = string(conf.secLv)
 	conf.initBySecLv192()
 }
 
@@ -131,27 +130,27 @@ func (conf *Config) initDefaultConfig() {
 func (conf *Config) initBySecLv112() {
 	conf.hashOpt = SHA224
 	conf.curveOpt = SECP224R1
-	conf.encKeyLength = 112
+	conf.encKeyLength = int(112 / 8)
 }
 
 // initBySecLv128 sets hash type, elliptic curve type, key length for encryption corresponding to 128bits of security level.
 func (conf *Config) initBySecLv128() {
 	conf.hashOpt = SHA256
 	conf.curveOpt = SECP256R1
-	conf.encKeyLength = 128
+	conf.encKeyLength = int(128 / 8)
 }
 
 // initBySecLv192 sets hash type, elliptic curve type, key length for encryption corresponding to 192bits of security level.
 func (conf *Config) initBySecLv192() {
 	conf.hashOpt = SHA384
 	conf.curveOpt = SECP384R1
-	conf.encKeyLength = 192
+	conf.encKeyLength = int(192 / 8)
 }
 
 // initBySecLv256 sets hash type, elliptic curve type, key length for encryption corresponding to 256bits of security level.
 func (conf *Config) initBySecLv256() {
 	conf.hashOpt = SHA512
 	conf.curveOpt = SECP521R1
-	conf.encKeyLength = 256
+	conf.encKeyLength = int(256 / 8)
 }
 

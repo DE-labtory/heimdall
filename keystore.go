@@ -34,7 +34,11 @@ import (
 
 
 type keystore struct {
-	path string
+	keyDirPath string
+	kdf string
+	kdfParams map[string]string
+	encAlgo string
+	encKeyLen int
 }
 
 // struct for encrypted key's file format.
@@ -47,23 +51,45 @@ type KeyFile struct {
 
 // struct for providing hints of encryption and key derivation function.
 type EncryptionHints struct {
-	EncType string
+	EncAlgo string
+	EncKeyLen int
 
 	KDF string
 	KDFParams map[string]string
+	KDFSalt []byte
 }
 
 // NewKeyStore make and initialize a new keystore.
-func NewKeyStore(path string) (*keystore, error) {
+func NewKeyStore(keyDirPath string, kdf string, kdfParams map[string]string, encAlgo string, encKeyLen int) (*keystore, error) {
 	keyStore := new(keystore)
-	return keyStore, keyStore.init(path)
+	return keyStore, keyStore.init(keyDirPath, kdf, kdfParams, encAlgo, encKeyLen)
 }
 
-func (ks *keystore) init(path string) error {
-	if len(path) == 0 {
-		return errors.New("input path is empty")
+func (ks *keystore) init(keyDirPath string, kdf string, kdfParams map[string]string, encAlgo string, encKeyLen int) error {
+	if len(keyDirPath) == 0 {
+		return errors.New("invalid path - empty")
 	}
-	ks.path = path
+	ks.keyDirPath = keyDirPath
+
+	if len(kdf) == 0 {
+		return errors.New("invalid kdf - empty")
+	}
+	ks.kdf = kdf
+
+	if len(kdfParams) == 0 {
+		return errors.New("invalid kdf parameters - empty")
+	}
+	ks.kdfParams = kdfParams
+
+	if len(encAlgo) == 0 {
+		return errors.New("invalid encryption algorithm - empty")
+	}
+	ks.encAlgo = encAlgo
+
+	if encKeyLen == 0 {
+		return errors.New("invalid encryption key length - 0")
+	}
+	ks.encKeyLen = encKeyLen
 
 	return nil
 }
@@ -89,16 +115,7 @@ func (ks *keystore) StoreKey(pri *ecdsa.PrivateKey, pwd string) error {
 		return err
 	}
 
-	// TODO: need another function to enter kdf name and params from external config file.
-	// TODO: KDFParams, err := GetKDFConfig(??????)
-	scrpytParams := make(map[string]string, 5)
-	scrpytParams["n"] = ScryptN
-	scrpytParams["r"] = ScryptR
-	scrpytParams["p"] = ScryptP
-	scrpytParams["keyLen"] = ScryptKeyLen
-	scrpytParams["salt"] = hex.EncodeToString(salt)
-
-	dKey, err := DeriveKeyFromPwd("scrypt", []byte(pwd), scrpytParams)
+	dKey, err := DeriveKeyFromPwd(ks.kdf, []byte(pwd), salt, ks.encKeyLen, ks.kdfParams)
 	if err != nil {
 		return err
 	}
@@ -108,7 +125,7 @@ func (ks *keystore) StoreKey(pri *ecdsa.PrivateKey, pwd string) error {
 		return err
 	}
 
-	jsonKeyFile, err := makeJsonKeyFile(ski, curveOpt, encryptedKeyBytes, scrpytParams)
+	jsonKeyFile, err := ks.makeJsonKeyFile(ski, curveOpt, encryptedKeyBytes, salt)
 	if err != nil {
 		return err
 	}
@@ -123,26 +140,26 @@ func (ks *keystore) StoreKey(pri *ecdsa.PrivateKey, pwd string) error {
 	return nil
 }
 
-
-
 // makeKeyFilePath makes key file path (absolute) of the key file.
 func (ks *keystore) makeKeyFilePath(keyFileName string) (string, error) {
-	if _, err := os.Stat(ks.path); os.IsNotExist(err) {
-		err = os.MkdirAll(ks.path, 0755)
+	if _, err := os.Stat(ks.keyDirPath); os.IsNotExist(err) {
+		err = os.MkdirAll(ks.keyDirPath, 0755)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	return filepath.Join(ks.path, keyFileName), nil
+	return filepath.Join(ks.keyDirPath, keyFileName), nil
 }
 
 // makeJsonKeyFile marshals keyFile struct to json format.
-func makeJsonKeyFile(ski string, curveOpt string, encryptedKeyBytes []byte, KDFParams map[string]string) ([]byte, error) {
+func (ks *keystore) makeJsonKeyFile(ski string, curveOpt string, encryptedKeyBytes []byte, kdfSalt []byte) ([]byte, error) {
 	encHints := EncryptionHints{
-		EncType: "aes-256-ctr",
-		KDF: "scrypt",
-		KDFParams: KDFParams,
+		EncAlgo: ks.encAlgo,
+		EncKeyLen: ks.encKeyLen,
+		KDF: ks.kdf,
+		KDFParams: ks.kdfParams,
+		KDFSalt: kdfSalt,
 	}
 
 	keyFile := KeyFile{
@@ -159,7 +176,7 @@ func makeJsonKeyFile(ski string, curveOpt string, encryptedKeyBytes []byte, KDFP
 func (ks *keystore) LoadKey(keyId string, pwd string) (*ecdsa.PrivateKey, error) {
 	var keyFile KeyFile
 
-	if _, err := os.Stat(ks.path); os.IsNotExist(err) {
+	if _, err := os.Stat(ks.keyDirPath); os.IsNotExist(err) {
 		return nil, errors.New("invalid keystore path - not exist")
 	}
 
@@ -185,7 +202,7 @@ func (ks *keystore) LoadKey(keyId string, pwd string) (*ecdsa.PrivateKey, error)
 		return nil, err
 	}
 
-	dKey, err := DeriveKeyFromPwd(keyFile.Hints.KDF, []byte(pwd), keyFile.Hints.KDFParams)
+	dKey, err := DeriveKeyFromPwd(keyFile.Hints.KDF, []byte(pwd), keyFile.Hints.KDFSalt, keyFile.Hints.EncKeyLen, keyFile.Hints.KDFParams)
 	if err != nil {
 		return nil, err
 	}
@@ -207,14 +224,14 @@ func (ks *keystore) LoadKey(keyId string, pwd string) (*ecdsa.PrivateKey, error)
 func (ks *keystore) findKeyById(keyId string) (keyPath string, err error) {
 	keyPath = ""
 
-	files, err := ioutil.ReadDir(ks.path)
+	files, err := ioutil.ReadDir(ks.keyDirPath)
 	if err != nil {
 		return "", errors.New("invalid keystore path - failed to read directory path")
 	}
 
 	for _, file := range files {
 		if strings.Compare(file.Name(), keyId) == 0 {
-			keyPath = filepath.Join(ks.path, file.Name())
+			keyPath = filepath.Join(ks.keyDirPath, file.Name())
 			break
 		}
 	}
