@@ -101,17 +101,17 @@ func SKIFromPubKey(key *ecdsa.PublicKey) (ski []byte) {
 
 // PubKeyToKeyID obtains key ID from public key.
 func PubKeyToKeyID(key *ecdsa.PublicKey) string{
-	return keyIDPrefix + base58.Encode(SKIFromPubKey(key))
+	return KeyIDPrefix + base58.Encode(SKIFromPubKey(key))
 }
 
 // SKIToKeyID obtains key ID from SKI(Subject Key Identifier).
 func SKIToKeyID(ski []byte) string {
-	return keyIDPrefix + base58.Encode(ski)
+	return KeyIDPrefix + base58.Encode(ski)
 }
 
 // SKIFromKeyID obtains SKI from key ID.
 func SKIFromKeyID(keyId string) []byte {
-	return base58.Decode(strings.TrimPrefix(keyId, keyIDPrefix))
+	return base58.Decode(strings.TrimPrefix(keyId, KeyIDPrefix))
 }
 
 // RemoveKeyMem initializes (remove existing values) private key's memory.
@@ -135,7 +135,7 @@ func SKIValidCheck(keyId string, ski string) error {
 
 // KeyIDPrefixCheck checks if input key id has right prefix.
 func KeyIDPrefixCheck(keyId string) error {
-	if strings.HasPrefix(keyId, keyIDPrefix) != true {
+	if strings.HasPrefix(keyId, KeyIDPrefix) != true {
 		return errors.New("invalid key ID - wrong prefix")
 	}
 
