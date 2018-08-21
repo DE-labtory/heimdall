@@ -25,10 +25,7 @@ import (
 
 
 func TestNewConfig(t *testing.T) {
-	kdfParams := make(map[string]string, 3)
-	kdfParams["n"] = heimdall.ScryptN
-	kdfParams["r"] = heimdall.ScryptR
-	kdfParams["p"] = heimdall.ScryptP
+	kdfParams := heimdall.DefaultScrpytParams
 	conf, err := heimdall.NewConfig(192, heimdall.TestKeyDir, heimdall.TestCertDir, "AES-CTR", "ECDSA", "scrypt", kdfParams)
 	assert.NoError(t, err)
 	assert.NotNil(t, conf)
