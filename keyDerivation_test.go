@@ -15,15 +15,16 @@
  *
  */
 
-package heimdall
+package heimdall_test
 
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
+	"github.com/it-chain/heimdall"
 )
 
 func TestDeriveKeyFromPwd(t *testing.T) {
-	dKey, err := DeriveKeyFromPwd(TestConf.kdf, []byte("password"), TestSalt, TestConf.encKeyLength, TestConf.kdfParams)
+	dKey, err := heimdall.DeriveKeyFromPwd(heimdall.TestConf.Kdf, []byte("password"), heimdall.TestSalt, heimdall.TestConf.EncKeyLength, heimdall.TestConf.KdfParams)
 	assert.NoError(t, err)
 	assert.NotNil(t, dKey)
 }

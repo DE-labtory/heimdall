@@ -15,18 +15,19 @@
  *
  */
 
-package heimdall
+package heimdall_test
 
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
+	"github.com/it-chain/heimdall"
 )
 
 func TestSign(t *testing.T) {
 	msg := []byte("message for test")
-	pri, _ := GenerateKey(TestCurveOpt)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
 
-	signature, err := Sign(pri, msg, nil, TestHashOpt)
+	signature, err := heimdall.Sign(pri, msg, nil, heimdall.TestHashOpt)
 	assert.NoError(t, err)
 	assert.NotNil(t, signature)
 
@@ -35,33 +36,33 @@ func TestSign(t *testing.T) {
 
 func TestVerify(t *testing.T) {
 	msg := []byte("message for test")
-	pri, _ := GenerateKey(TestCurveOpt)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
 
-	signature, _ := Sign(pri, msg, nil, TestHashOpt)
+	signature, _ := heimdall.Sign(pri, msg, nil, heimdall.TestHashOpt)
 
-	valid, err := Verify(&pri.PublicKey, signature, msg, nil, TestHashOpt)
+	valid, err := heimdall.Verify(&pri.PublicKey, signature, msg, nil, heimdall.TestHashOpt)
 	assert.NoError(t, err)
 	assert.True(t, valid)
 
 	fakeMsg := append(msg, 1)
-	valid, err = Verify(&pri.PublicKey, signature, fakeMsg, nil, TestHashOpt)
+	valid, err = heimdall.Verify(&pri.PublicKey, signature, fakeMsg, nil, heimdall.TestHashOpt)
 	assert.NoError(t, err)
 	assert.False(t, valid)
 
-	fakeSig, _ := Sign(pri, fakeMsg, nil, TestHashOpt)
-	valid, err = Verify(&pri.PublicKey, fakeSig, msg, nil, TestHashOpt)
+	fakeSig, _ := heimdall.Sign(pri, fakeMsg, nil, heimdall.TestHashOpt)
+	valid, err = heimdall.Verify(&pri.PublicKey, fakeSig, msg, nil, heimdall.TestHashOpt)
 	assert.NoError(t, err)
 	assert.False(t, valid)
 }
 
 func TestVerifyWithCert(t *testing.T) {
 	msg := []byte("message for test")
-	pri, _ := GenerateKey(TestCurveOpt)
+	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
 
-	signature, _ := Sign(pri, msg, nil, TestHashOpt)
-	cert, _ := PemToX509Cert([]byte(TestCertPemBytes))
+	signature, _ := heimdall.Sign(pri, msg, nil, heimdall.TestHashOpt)
+	cert, _ := heimdall.PemToX509Cert([]byte(heimdall.TestCertPemBytes))
 
-	valid, err := VerifyWithCert(cert, signature, msg, nil, TestHashOpt)
+	valid, err := heimdall.VerifyWithCert(cert, signature, msg, nil, heimdall.TestHashOpt)
 	assert.True(t, valid)
 	assert.NoError(t, err)
 }
