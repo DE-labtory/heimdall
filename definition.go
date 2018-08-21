@@ -30,7 +30,7 @@ import (
 
 
 // Key ID prefix
-const keyIDPrefix = "IT"
+const KeyIDPrefix = "IT"
 
 // KDF functions
 const SCRYPT = "scrypt"
