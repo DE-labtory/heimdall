@@ -276,7 +276,7 @@ func VerifyCert(cert *x509.Certificate) (timeValid bool, notRevoked bool, err er
 		}
 	}
 
-	return timeValid, notRevoked, nil
+	return timeValid, true, nil
 }
 
 // checkTime checks if entered certificate's generated/expired time is valid.
