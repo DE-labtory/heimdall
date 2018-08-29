@@ -163,6 +163,9 @@ func TestVerifyCert(t *testing.T) {
 	// test revoked cert
 	revokedCert, _ := heimdall.PemToX509Cert([]byte(heimdall.RevokedCertForTest))
 
+	// test normal client cert
+	clientCert, _ := heimdall.PemToX509Cert([]byte(heimdall.ClientCertForTest))
+
 	// root cert
 	rootPri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
 
@@ -188,10 +191,18 @@ func TestVerifyCert(t *testing.T) {
 	testCA := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, string(crlBytes))
 	}))
+
 	revokedCert.CRLDistributionPoints = []string{testCA.URL}
 
 	timeValid, notRevoked, err = heimdall.VerifyCert(revokedCert)
 	assert.True(t, timeValid)
 	assert.NoError(t, err)
 	assert.False(t, notRevoked)
+
+	clientCert.CRLDistributionPoints = []string{testCA.URL}
+
+	timeValid, notRevoked, err = heimdall.VerifyCert(clientCert)
+	assert.True(t, timeValid)
+	assert.NoError(t, err)
+	assert.True(t, notRevoked)
 }
