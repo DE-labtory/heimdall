@@ -4,7 +4,7 @@
 
 <h1 align="center">Heimdall</h1>
 
-<p align="center"><i>Heimdall</i> is a simple library that keeps your data secure through signing and verification written by Golang.</p><br>
+<p align="center"><i>Heimdall</i> is a simple library for signing and verifying messages written by Golang.</p><br>
 
 ## Definition of Heimdall
 
@@ -26,38 +26,112 @@ go get -u github.com/it-chain/heimdall
 
 ### Usage
 
+#### 1. Load crypto configuration (maybe from configuration file)
+
 ```Go
-keyManager, err := NewKeyManager(".myKeys")
+// In this sample, we use default configuration that equals to use heimdall.NewDefaultConfig()
+myConfig, err := heimdall.NewConfig(
+    192,                        // security level
+    heimdall.TestKeyDir,        // key directory path
+    heimdall.TestCertDir,       // certificate directory path
+    "AES-CTR",                  // encryption algorithm and operation mode name
+    "ECDSA",                    // signing algorithm name
+    "scrypt",                   // key derivation function name
+    heimdall.DefaultScrpytParams, // key derivation function parameters
+)
+```
 
-// Generate a pair of key with RSA Algorithm
-priv, pub, err := keyManager.GenerateKey(key.RSA4096)
+#### 2. Generate key pair
 
-// If a pair of key is already exist, you can get key from memory or from file
-priv, pub, err = keyManager.GetKey()
+```Go
+// Generate key pair
+privateKey, err := heimdall.GenerateKey(myConfig.CurveOpt)
 
-sampleData = []byte("This is the data will be transmitted.")
+// public key can be obtained like below
+publicKey := &privateKey.PublicKey
+```
 
-// Convert raw data to hashed data by using SHA512 function
-digest, err := hashing.Hash(sampleData, nil, hashing.SHA512)
+#### 3. Minimize key size (bytes <--> key)
+The key bytes from these functions have a component for recovering the key.
 
-// The option will be used in signing process of RSA-PSS algorithm for making EM(Encoded Message)
-signerOpts := auth.EQUAL_SHA256.SignerOptsToPSSOptions()
+```Go
+// private key to bytes(from bytes)
+bytePri := heimdall.PriKeyToBytes(privateKey)
+recPri, err := heimdall.BytesToPriKey(bytePri, myConfig.CurveOpt)
 
-// Auth make hashed-data(digest) to signature with the generated private key
-signature, err := auth.Sign(priv, digest, signerOpts)
+// public key to bytes(from bytes)
+bytePub := heimdall.PubKeyToBytes(publicKey)
+recPub, err := heimdall.BytesToPubKey(bytePub, myConfig.CurveOpt)
+```
+
+#### 4. Key ID
+Keys can be identified by below key ID with prefix that is "IT" for it-chain. <br>
+Key IDs from private key and public key are equal, so we use public key .
+
+```Go
+// key ID from public key directly
+keyId := PubKeyToKeyID(publicKey)
+
+// key ID from SKI(Subject Key Identifier) used in certificate
+ski := heimdall.SKIFromPubKey(publicKey)
+keyId := heimdall.SKIToKeyID(ski)
+
+// SKI from key ID
+recSki := heimdall.SKIFromKeyID(keyId)
+```
+
+#### 5. Store and load key by keystore
+
+```Go
+// make new keystore
+ks, err := heimdall.NewKeyStore(myConFig.KeyDirPath, myConFig.Kdf, myConFig.KdfParams, myConFig.EncAlgo, myConFig.EncKeyLength)
+
+// storing private key with password for encryption of private key
+err = ks.StoreKey(privateKey, "password")
+
+// load private key by key ID and password
+loadedPri, err := ks.LoadKey(keyId, "password")
+```
+
+#### 6. Store and load certificate by certstore
+Assume that 'cert' is a x.509 certificate of 'publicKey' which can be identified by 'keyId'
+
+```Go
+// make certstore
+certstore, err := heimdall.NewCertStore(myConFig.CertDirPath)
+
+// store certificate as .crt file named as its key ID
+err = certstore.StoreCert(cert)
+
+// load certificate by key ID
+cert, err = certstore.LoadCert(keyId string)
+```
+
+#### 7. Verify certificate
+
+```Go
+// verify certificate chain (check if the chain of trust is right in local)
+err = certstore.VerifyCertChain(cert)
+
+// verify certificate (check if expired or revoked)
+timeValid, notRevoked, err := heimdall.VerifyCert(cert)
+```
+
+#### 8. Make signature for data and verify the signature
+
+```Go
+sampleData := []byte("This is sample data for signing and verifying.")
+
+// signing (making signature)
+signature, err := heimdall.Sign(pri, sampleData, nil, myConFig.HashOpt)
 
 /* --------- After data transmitted --------- */
-// Reconstruct public key from byte(PEM) formatted public key and store the key into keyManager
-// byteFormatPubKey is a public key that is in byte(PEM) format
-err := keyManager.ByteToKey(byteFormatPubKey, key.RSA4096, key.PUBLIC_KEY)
+/* --------- In receiver node --------- */
+// verify signature with public key
+ok, err := heimdall.Verify(pub, signature, sampleData, nil, myConFig.HashOpt)
+// verify signature with certificate
+ok, err = heimdall.VerifyWithCert(clientCert, signature, sampleData, nil, myConFig.HashOpt)
 
-// Get the reconstructed public key
-_, pub, err := keyManager.GetKey()
-
-// Auth verify that received data has any forgery during transmitting process
-ok, err := auth.Verify(pub, signature, digest, signerOpts)
-
-fmt.println(ok) // true
 ```
 
 ## Features 
@@ -65,20 +139,18 @@ fmt.println(ok) // true
 ### Signature algorithms
 
 Currently, we support following Signature algorithms with options to provide wide selection range of key length.
-- [RSASSA-PSS](https://tools.ietf.org/html/rfc4056) ( 1024 / 2048 / 4096 )
 - [ECDSA](https://en.wikipedia.org/wiki/ECDSA) ( 224 / 256 / 384 / 512 )
 
 ### Hash functions
 
 You can make hash data by using `SHA` Algorithm with various type.
-
 - [SHA](https://en.wikipedia.org/wiki/Secure_Hash_Algorithms) ( 224 / 256 / 384 / 512 )
 
 ### Default key storage path
-If you input empty path such as "", we store a pair of the key in below location.
+If you enter empty path for your keystore such as "", your private key will be stored in below location.
 
 ```
-(Current Directory)/.heimdall
+(Current Directory)/.heimdall/.key
 ```
 
 ## Lincese
