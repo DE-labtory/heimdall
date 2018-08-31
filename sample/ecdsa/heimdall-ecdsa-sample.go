@@ -136,13 +136,23 @@ func main() {
 	errorCheck(err)
 	log.Println("5. make cert store")
 
-	// store certificates from CA
+	// store certificates
 	err = certstore.StoreCert(rootCert)
 	errorCheck(err)
 	log.Println("6-1. store root certificate")
 	err = certstore.StoreCert(clientCert)
 	errorCheck(err)
 	log.Println("6-2. store client certificate")
+
+	// load certificates
+	log.Println("6-3. load client certificate")
+	loadedCert, err := certstore.LoadCert(keyId)
+	errorCheck(err)
+	if loadedCert.Equal(clientCert) {
+		log.Println("loading client certificate success")
+	} else {
+		errorCheck(errors.New("loading client certificate failed"))
+	}
 
 	// verify certificate chain
 	log.Println("7. verify certificate chain")
