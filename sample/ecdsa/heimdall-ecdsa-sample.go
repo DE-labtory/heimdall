@@ -18,20 +18,27 @@
 package main
 
 import (
-	"log"
-	"github.com/it-chain/heimdall"
-	"encoding/hex"
-	"errors"
 	"crypto/ecdsa"
-	"crypto/x509"
+	"crypto/elliptic"
 	"crypto/rand"
-	"os"
-	"net/http/httptest"
+	"crypto/x509"
 	"crypto/x509/pkix"
-	"math/big"
-	"time"
-	"net/http"
+	"errors"
 	"io"
+	"log"
+	"math/big"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"time"
+
+	"github.com/it-chain/heimdall"
+	"github.com/it-chain/heimdall/config"
+	"github.com/it-chain/heimdall/encryption"
+	"github.com/it-chain/heimdall/hecdsa"
+	"github.com/it-chain/heimdall/kdf"
+	"github.com/it-chain/heimdall/keystore"
+	"github.com/it-chain/heimdall/mocks"
 )
 
 /*
@@ -40,161 +47,123 @@ is signed and verified by ECDSA Key.
 */
 
 func main() {
-
-	// load configuration (usually from file)
-	// params : secLv - int
-	// 			keyDirPath - string
-	// 			certDirPath - string
-	// 			encAlgo - string
-	// 			sigAlgo - string
-	// 			kdf - string
-	// 			kdfParams - map[string]string
-	// In sample code, we use default config that equals to heimdall.NewDefaultConfig()
-	myConFig, err := heimdall.NewConfig(
-		192,
-		heimdall.TestKeyDir,
-		heimdall.TestCertDir,
-		"AES-CTR",
-		"ECDSA",
-		"scrypt",
-		heimdall.DefaultScrpytParams,
-	)
+	// set configuration
+	myConFig, err := config.NewSimpleConfig(192)
 	errorCheck(err)
 
 	defer os.RemoveAll(myConFig.CertDirPath)
 	defer os.RemoveAll(myConFig.KeyDirPath)
 
 	// Generate key pair with ECDSA algorithm.
-	curveOpt := myConFig.CurveOpt
-	pri, err := heimdall.GenerateKey(curveOpt)
+	log.Println("generating key...")
+	keyGenOpt := myConFig.KeyGenOpt
+	generator := hecdsa.KeyGenerator{}
+	pri, err := generator.GenerateKey(keyGenOpt)
 	errorCheck(err)
-	log.Println("1. generate key success")
-
-	// public key to bytes(from bytes)
-	pub := &pri.PublicKey
-	bytePub := heimdall.PubKeyToBytes(pub)
-	recPub, err := heimdall.BytesToPubKey(bytePub, curveOpt)
-
-	if recPub.X.Cmp(pub.X) == 0 && recPub.Y.Cmp(pub.Y) == 0 && recPub.Curve.IsOnCurve(pub.X, pub.Y) {
-		log.Println("obtaining public key from public key's X, Y coordinate is success")
-	} else {
-		errorCheck(errors.New("obtaining public key from public key's X, Y coordinate is failed"))
-	}
-
-	// private key to bytes(from bytes)
-	bytePri := heimdall.PriKeyToBytes(pri)
-	recPri, err := heimdall.BytesToPriKey(bytePri, curveOpt)
-	errorCheck(err)
-	log.Println("genereted private key bytes : ", hex.EncodeToString(bytePri))
-
-	if recPri.D.Cmp(pri.D) == 0 && recPri.X.Cmp(pri.X) == 0 && recPri.Y.Cmp(pri.Y) == 0 {
-		log.Println("obtaining private key from byte format of private key's D component is success")
-	} else {
-		errorCheck(errors.New("obtaining private key from byte format of private key's D component is failed"))
-	}
-
-	// public key ---> SKI ---->  Key ID (Base58encoded SKI)
-	ski := heimdall.SKIFromPubKey(pub)
-	keyId := heimdall.SKIToKeyID(ski)
-	errorCheck(heimdall.KeyIDPrefixCheck(keyId))
-	log.Println("keyID : ", len(keyId), keyId)
-	// key ID ---> SKI
-	recSki := heimdall.SKIFromKeyID(keyId)
-	errorCheck(heimdall.SKIValidCheck(keyId, hex.EncodeToString(recSki)))
-
-	log.Println("key id to(from) ski success")
-
-	// make new keystore
-	ks, err := heimdall.NewKeyStore(myConFig.KeyDirPath, myConFig.Kdf, myConFig.KdfParams, myConFig.EncAlgo, myConFig.EncKeyLength)
-	errorCheck(err)
-	log.Println("2. making new keystore is success")
+	log.Println("generating key success!")
 
 	// storing key
-	err = ks.StoreKey(pri, "password")
-	errorCheck(err)
-	log.Println("3. store key success")
+	log.Println("storing key...")
+	kdfOpt := myConFig.KdfOpt
+	encOpt := myConFig.EncOpt
+	keyDeriver := &kdf.ScryptKeyDeriver{}
+	keyEncryptor := &encryption.AESCTREncryptor{}
+	keyStorer := keystore.NewKeyStorer(kdfOpt, encOpt, keyDeriver, keyEncryptor)
 
-	// load private key by key id and password
-	loadedPri, err := ks.LoadKey(keyId, "password")
+	err = keyStorer.StoreKey(pri, "password", myConFig.KeyDirPath)
 	errorCheck(err)
-	if loadedPri.D.Cmp(pri.D) == 0 && loadedPri.X.Cmp(pri.X) == 0 && loadedPri.Y.Cmp(pri.Y) == 0 {
-		log.Println("loading private key by key id success")
-	} else {
-		errorCheck(errors.New("loading private key by key id failed"))
+	log.Println("storing key is success!")
+
+	// loading key
+	log.Println("loading key...")
+	keyId := pri.ID()
+
+	keyDecryptor := &encryption.AESCTRDecryptor{}
+	keyRecoverer := &hecdsa.KeyRecoverer{}
+	loaderKeyDeriver := &kdf.ScryptKeyDeriver{}
+
+	keyLoader := keystore.NewKeyLoader(keyDecryptor, keyRecoverer, loaderKeyDeriver)
+	loadedPri, err := keyLoader.LoadKey(keyId, "password", myConFig.KeyDirPath)
+	errorCheck(err)
+	if loadedPri == nil {
+		log.Println("loading key is failed!")
 	}
+	log.Println("loading key is success!")
 
-	log.Println("loaded private key bytes : ", hex.EncodeToString(heimdall.PriKeyToBytes(loadedPri)))
-
-	////////////////////// config CA for sample
-	rootCert, clientCert, sampleCA, err := configCA(&pri.PublicKey)
+	// using other key for testing certificate related functions
+	ecPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	errorCheck(err)
-	log.Println("4. request and receive certificate from rootCA")
+	hPri := hecdsa.NewPriKey(ecPri)
+	////////////////////// config CA for sample /////////////////////
+	log.Println("requesting and receiving certificate from testCA...")
+	rootCert, clientCert, sampleCA, err := configCA(&ecPri.PublicKey)
+	errorCheck(err)
+	log.Println("request and receive certificate from testCA success")
 	//////////////////////////////////////////////////////////////////
 
-	// make certstore
-	certstore, err := heimdall.NewCertStore(myConFig.CertDirPath)
+	// storing root and client certificates
+	log.Println("storing root and client certificates...")
+	certStorer := hecdsa.CertStorer{}
+	err = certStorer.StoreCert(rootCert, myConFig.CertDirPath)
 	errorCheck(err)
-	log.Println("5. make cert store")
+	err = certStorer.StoreCert(clientCert, myConFig.CertDirPath)
+	errorCheck(err)
+	log.Println("storing root and client certificates success!")
 
-	// store certificates
-	err = certstore.StoreCert(rootCert)
+	// loading client certificate
+	log.Println("loading client certificate...")
+	certLoader := hecdsa.CertLoader{}
+	loadedClientCert, err := certLoader.LoadCert(hPri.ID(), myConFig.CertDirPath)
 	errorCheck(err)
-	log.Println("6-1. store root certificate")
-	err = certstore.StoreCert(clientCert)
-	errorCheck(err)
-	log.Println("6-2. store client certificate")
-
-	// load certificates
-	log.Println("6-3. load client certificate")
-	loadedCert, err := certstore.LoadCert(keyId)
-	errorCheck(err)
-	if loadedCert.Equal(clientCert) {
+	if loadedClientCert.Equal(clientCert) {
 		log.Println("loading client certificate success")
 	} else {
 		errorCheck(errors.New("loading client certificate failed"))
 	}
 
-	// verify certificate chain
-	log.Println("7. verify certificate chain")
-	err = certstore.VerifyCertChain(clientCert)
+	// verifying certificate chain
+	log.Println("verifying certificate chain...")
+	certVerifier := hecdsa.CertVerifier{}
+	err = certVerifier.VerifyCertChain(clientCert, myConFig.CertDirPath)
 	if err != nil {
 		log.Println(err)
 	} else {
-		log.Println("valid certificate chain")
+		log.Println("client certificate chain is valid!")
 	}
 
 	// set CRL distribution point
 	clientCert.CRLDistributionPoints = []string{sampleCA.URL}
-	// verify cert with rootCert (can be intermediate cert between root and client)
-	log.Println("8. verify certificate")
-	timeValid, notRevoked, err := heimdall.VerifyCert(clientCert)
+	// verifying client cert with rootCert (can be intermediate certs between root and client)
+	log.Println("verifying client certificate...")
+	err = certVerifier.VerifyCert(clientCert)
 	errorCheck(err)
-	if !timeValid {
-		log.Println("error - certificate is expired")
-	} else if !notRevoked {
-		log.Println("error - certificate is revoked")
-	} else if timeValid && notRevoked {
-		log.Println("valid certificate")
-	}
+	log.Println("client certificate is valid")
 
+	message := []byte("This is sample message for signing and verifying.")
 
-	sampleData := []byte("This is sample data for signing and verifying.")
-
-	// signing (making signature)
-	signature, err := heimdall.Sign(pri, sampleData, nil, myConFig.HashOpt)
+	// signing message (making signature)
+	log.Println("signing message...")
+	signer := hecdsa.Signer{}
+	// todo: signerOpt... 개선이 필요
+	signerOpt := hecdsa.SignerOpts("SHA384")
+	signature, err := signer.Sign(hPri, message, signerOpt)
 	errorCheck(err)
-	log.Println("make signature(signing) message")
+	log.Println("signing message success!")
 
 	/* --------- After data transmitted --------- */
 
 	// verifying signature with public key
-	ok, err := heimdall.Verify(pub, signature, sampleData, nil, myConFig.HashOpt)
+	log.Println("verifying signature with public key...")
+	verfier := hecdsa.Verifier{}
+	valid, err := verfier.Verify(hPri.PublicKey(), signature, message, signerOpt)
 	errorCheck(err)
-	log.Println("verifying with public key result : ", ok)
+	log.Println("verifying with public key result: ", valid)
 
-	ok, err = heimdall.VerifyWithCert(clientCert, signature, sampleData, nil, myConFig.HashOpt)
+	// verifying signature with certificate
+	log.Println("verifying signature with certificate...")
+	valid, err = verfier.VerifyWithCert(clientCert, signature, message, signerOpt)
 	errorCheck(err)
-	log.Println("verifying with certificate result : ", ok)
+	log.Println("verifying with certificate result: ", valid)
 }
 
 func errorCheck(err error) {
@@ -203,17 +172,20 @@ func errorCheck(err error) {
 	}
 }
 
-func configCA(pub *ecdsa.PublicKey) (rootCert, clientCert *x509.Certificate, sampleCA *httptest.Server, err error) {
-	rootPri, err := heimdall.GenerateKey(heimdall.TestCurveOpt)
+func configCA(clientPub *ecdsa.PublicKey) (rootCert, clientCert *x509.Certificate, sampleCA *httptest.Server, err error) {
+	rootPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	errorCheck(err)
 	rootPub := &rootPri.PublicKey
+	hRootPub := hecdsa.NewPubKey(rootPub)
 
-	heimdall.TestRootCertTemplate.SubjectKeyId = heimdall.SKIFromPubKey(rootPub)
-	heimdall.TestCertTemplate.SubjectKeyId = heimdall.SKIFromPubKey(pub)
+	mocks.TestRootCertTemplate.SubjectKeyId = hRootPub.SKI()
 
-	rootDerBytes, err := x509.CreateCertificate(rand.Reader, &heimdall.TestRootCertTemplate, &heimdall.TestRootCertTemplate, rootPub, rootPri)
+	hClientPub := hecdsa.NewPubKey(clientPub)
+	mocks.TestCertTemplate.SubjectKeyId = hClientPub.SKI()
+
+	rootDerBytes, err := x509.CreateCertificate(rand.Reader, &mocks.TestRootCertTemplate, &mocks.TestRootCertTemplate, rootPub, rootPri)
 	errorCheck(err)
-	clientDerBytes, err := x509.CreateCertificate(rand.Reader, &heimdall.TestCertTemplate, &heimdall.TestRootCertTemplate, pub, rootPri)
+	clientDerBytes, err := x509.CreateCertificate(rand.Reader, &mocks.TestCertTemplate, &mocks.TestRootCertTemplate, clientPub, rootPri)
 	errorCheck(err)
 
 	rootCert, err = heimdall.DERToX509Cert(rootDerBytes)
@@ -230,14 +202,13 @@ func configCA(pub *ecdsa.PublicKey) (rootCert, clientCert *x509.Certificate, sam
 	revokedCertList := []pkix.RevokedCertificate{*revokedCertificate}
 
 	// create CRL
-	crlBytes, err := rootCert.CreateCRL(rand.Reader, rootPri, revokedCertList, time.Now(), time.Now().Add(time.Hour * 24))
+	crlBytes, err := rootCert.CreateCRL(rand.Reader, rootPri, revokedCertList, time.Now(), time.Now().Add(time.Hour*24))
 	errorCheck(err)
 
 	// httptest server
 	sampleCA = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, string(crlBytes))
 	}))
-
 
 	return rootCert, clientCert, sampleCA, nil
 }
