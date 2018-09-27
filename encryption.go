@@ -16,15 +16,10 @@
 
 package heimdall
 
-type Keystore interface {
-	KeyStorer
-	KeyLoader
+type KeyEncryptor interface {
+	EncryptKey(target Key, encKey []byte) ([]byte, error)
 }
 
-type KeyStorer interface {
-	StoreKey(key Key, pwd string, keyDirPath string) error
-}
-
-type KeyLoader interface {
-	LoadKey(keyID KeyID, pwd string, keyDirPath string) (Key, error)
+type KeyDecryptor interface {
+	DecryptKey(target []byte, decKey []byte) ([]byte, error)
 }

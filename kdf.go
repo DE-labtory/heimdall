@@ -16,15 +16,6 @@
 
 package heimdall
 
-type Keystore interface {
-	KeyStorer
-	KeyLoader
-}
-
-type KeyStorer interface {
-	StoreKey(key Key, pwd string, keyDirPath string) error
-}
-
-type KeyLoader interface {
-	LoadKey(keyID KeyID, pwd string, keyDirPath string) (Key, error)
+type KeyDeriver interface {
+	DeriveKey(pwd []byte, salt []byte, keyLen int, opt KeyDerivationOpts) ([]byte, error)
 }
