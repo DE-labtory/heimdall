@@ -18,110 +18,68 @@
 package heimdall_test
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
-	"encoding/hex"
 	"strings"
+	"testing"
+
 	"github.com/it-chain/heimdall"
+	"github.com/it-chain/heimdall/hecdsa"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateKey(t *testing.T) {
-	pri, err := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	assert.NoError(t, err)
-	assert.NotNil(t, pri)
-}
-
-func TestPriKeyToBytes(t *testing.T) {
-	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	keyBytes := heimdall.PriKeyToBytes(pri)
-	assert.NotNil(t, keyBytes)
-}
-
-func TestBytesToPriKey(t *testing.T) {
-	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	keyBytes := heimdall.PriKeyToBytes(pri)
-	assert.NotNil(t, keyBytes)
-
-	recPri, err := heimdall.BytesToPriKey(keyBytes, heimdall.TestCurveOpt)
-	assert.NoError(t, err)
-	assert.NotNil(t, recPri)
-	assert.EqualValues(t, pri, recPri)
-}
-
-func TestPubKeyToBytes(t *testing.T) {
-	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	keyBytes := heimdall.PubKeyToBytes(&pri.PublicKey)
-	assert.NotNil(t, keyBytes)
-}
-
-func TestBytesToPubKey(t *testing.T) {
-	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	keyBytes := heimdall.PubKeyToBytes(&pri.PublicKey)
-	assert.NotNil(t, keyBytes)
-
-	pub, err := heimdall.BytesToPubKey(keyBytes, heimdall.TestCurveOpt)
-	assert.NoError(t, err)
-	assert.NotNil(t, pub)
-	assert.EqualValues(t, pub, &pri.PublicKey)
-}
-
-func TestSKIFromPubKey(t *testing.T) {
-	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	ski := heimdall.SKIFromPubKey(&pri.PublicKey)
-	assert.NotNil(t, ski)
-}
-
-func TestPubKeyToKeyID(t *testing.T) {
-	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	keyId := heimdall.PubKeyToKeyID(&pri.PublicKey)
-	assert.NotNil(t, keyId)
-	assert.True(t, strings.HasPrefix(keyId, heimdall.KeyIDPrefix))
-}
-
 func TestSKIToKeyID(t *testing.T) {
-	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	ski := heimdall.SKIFromPubKey(&pri.PublicKey)
+	// given
+	keyGenerator := hecdsa.KeyGenerator{}
+
+	pri, err := keyGenerator.GenerateKey(hecdsa.ECP384)
+	assert.NoError(t, err)
+
+	ski := pri.SKI()
+
+	// when
 	keyId := heimdall.SKIToKeyID(ski)
+
+	// then
 	assert.NotNil(t, keyId)
 	assert.True(t, strings.HasPrefix(keyId, heimdall.KeyIDPrefix))
-}
-
-func TestSKIFromKeyID(t *testing.T) {
-	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	keyId := heimdall.PubKeyToKeyID(&pri.PublicKey)
-	ski := heimdall.SKIFromKeyID(keyId)
-	assert.NotNil(t, ski)
-}
-
-func TestRemoveKeyMem(t *testing.T) {
-	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	prevValue := pri.D
-	heimdall.RemoveKeyMem(pri)
-	assert.NotEqual(t, pri.D, prevValue)
-	assert.Equal(t, pri.D.Int64(), int64(0))
 }
 
 func TestSKIValidCheck(t *testing.T) {
-	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	ski := heimdall.SKIFromPubKey(&pri.PublicKey)
-	keyId := heimdall.SKIToKeyID(ski)
+	// given
+	keyGenerator := hecdsa.KeyGenerator{}
 
-	err := heimdall.SKIValidCheck(keyId, hex.EncodeToString(ski))
+	pri, err := keyGenerator.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
-	err = heimdall.SKIValidCheck(keyId, hex.EncodeToString([]byte("fake ski")))
-	assert.Error(t, err)
+	ski := pri.SKI()
+
+	keyId := heimdall.SKIToKeyID(ski)
+
+	// when
+	err = heimdall.SKIValidCheck(keyId, ski)
+	err2 := heimdall.SKIValidCheck(keyId, []byte("fake ski"))
+
+	// then
+	assert.NoError(t, err)
+	assert.Error(t, err2)
 }
 
 func TestKeyIDPrefixCheck(t *testing.T) {
-	pri, _ := heimdall.GenerateKey(heimdall.TestCurveOpt)
-	ski := heimdall.SKIFromPubKey(&pri.PublicKey)
+	// given
+	keyGenerator := hecdsa.KeyGenerator{}
+
+	pri, err := keyGenerator.GenerateKey(hecdsa.ECP384)
+	assert.NoError(t, err)
+
+	ski := pri.SKI()
+
 	keyId := heimdall.SKIToKeyID(ski)
 	fakeKeyId := "fake" + keyId
 
-	err := heimdall.KeyIDPrefixCheck(keyId)
-	assert.NoError(t, err)
+	// when
+	err = heimdall.KeyIDPrefixCheck(keyId)
+	err2 := heimdall.KeyIDPrefixCheck(fakeKeyId)
 
-	err = heimdall.KeyIDPrefixCheck(fakeKeyId)
-	assert.Error(t, err)
+	// then
+	assert.NoError(t, err)
+	assert.Error(t, err2)
 }
