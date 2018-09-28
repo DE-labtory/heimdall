@@ -33,6 +33,11 @@ import (
 	"github.com/it-chain/heimdall/kdf"
 )
 
+var ErrInvalidKeyGenOpt = "invalid ECDSA key generation option - not supported curve"
+var ErrInvalidKDFOpt = "invalid key derivation option"
+var ErrWrongKeyID = "wrong key id - failed to find key using key ID"
+var ErrEmptyKeyPath = "invalid keyPath - keyPath empty"
+
 // struct for encrypted key's file format.
 type KeyFile struct {
 	SKI          []byte
@@ -72,7 +77,7 @@ func (keyStorer *KeyStorer) StoreKey(key heimdall.Key, pwd string, keyDirPath st
 
 	keyGenOpt := key.KeyGenOpt()
 	if !keyGenOpt.IsValid() {
-		return errors.New("invalid ECDSA key generation option - not supported curve")
+		return errors.New(ErrInvalidKeyGenOpt)
 	}
 
 	keyFilePath, err := keyStorer.makeKeyFilePath(string(keyId), keyDirPath)
@@ -162,7 +167,7 @@ func (keyLoader *KeyLoader) LoadKey(keyId heimdall.KeyID, pwd string, keyDirPath
 	var keyFile KeyFile
 
 	if _, err := os.Stat(keyDirPath); os.IsNotExist(err) {
-		return nil, errors.New("invalid keystore path - not exist")
+		return nil, err
 	}
 
 	if err := heimdall.KeyIDPrefixCheck(string(keyId)); err != nil {
@@ -189,8 +194,7 @@ func (keyLoader *KeyLoader) LoadKey(keyId heimdall.KeyID, pwd string, keyDirPath
 
 	kdfOpt := kdf.MapToOpts(keyFile.Hints.KDFInnerFileInfo)
 	if !kdfOpt.IsValid() {
-		// todo: error message 작성
-		return nil, errors.New("")
+		return nil, errors.New(ErrInvalidKDFOpt)
 	}
 
 	dKey, err := keyLoader.DeriveKey([]byte(pwd), keyFile.Hints.KDFSalt, keyFile.Hints.EncInnerFileInfo.KeyLen, kdfOpt)
@@ -222,7 +226,7 @@ func (keyLoader *KeyLoader) findKeyById(keyId string, keyDirPath string) (keyPat
 
 	files, err := ioutil.ReadDir(keyDirPath)
 	if err != nil {
-		return "", errors.New("invalid keystore path - failed to read directory path")
+		return "", err
 	}
 
 	for _, file := range files {
@@ -233,7 +237,7 @@ func (keyLoader *KeyLoader) findKeyById(keyId string, keyDirPath string) (keyPat
 	}
 
 	if len(keyPath) == 0 {
-		return "", errors.New("wrong key id - failed to find key using keyId")
+		return "", errors.New(ErrWrongKeyID)
 	}
 
 	return keyPath, nil
@@ -242,7 +246,7 @@ func (keyLoader *KeyLoader) findKeyById(keyId string, keyDirPath string) (keyPat
 // loadJsonKeyFile reads json formatted KeyFile struct from file.
 func (keyLoader *KeyLoader) loadJsonKeyFile(keyPath string) (jsonKeyFile []byte, err error) {
 	if len(keyPath) == 0 {
-		return nil, errors.New("invalid keyPath - keyPath empty")
+		return nil, errors.New(ErrEmptyKeyPath)
 	}
 
 	jsonKeyFile, err = ioutil.ReadFile(keyPath)

@@ -34,11 +34,24 @@ import (
 	"path/filepath"
 	"time"
 
+	"strconv"
+
 	"github.com/it-chain/heimdall"
 	"github.com/it-chain/heimdall/hashing"
 )
 
-// todo: 에러 메시지 정리
+var ErrInvalidSignature = [...]string{
+	"invalid signature - garbage follows signature",
+	"invalid signature - signature's R value should not be nil",
+	"invalid signature - signature's S value should not be nil",
+	"invalid signature - signature's R value should be positive except zero",
+	"invalid signature - signature's S value should be positive except zero",
+}
+
+var ErrCertGenTimeIsFuture = "invalid certificate - certificate's generated time is not past time"
+var ErrCertExpired = "invalid certificate - certificate is expired"
+var ErrCertRevoked = "invalid certificate - revoked certificate"
+var ErrNoRootCertInPath = "no root certificate in certificate directory path"
 
 // ecdsaSignature contains ECDSA signature components that are two big integers, R and S.
 type ecdsaSignature struct {
@@ -55,27 +68,27 @@ func unmarshalECDSASignature(signature []byte) (*big.Int, *big.Int, error) {
 	ecdsaSig := new(ecdsaSignature)
 	rest, err := asn1.Unmarshal(signature, ecdsaSig)
 	if err != nil {
-		return nil, nil, errors.New("failed to unmarshal")
+		return nil, nil, err
 	}
 
 	if len(rest) != 0 {
-		return nil, nil, errors.New("garbage following signature")
+		return nil, nil, errors.New(ErrInvalidSignature[0])
 	}
 
 	if ecdsaSig.R == nil {
-		return nil, nil, errors.New("invalid signature")
+		return nil, nil, errors.New(ErrInvalidSignature[1])
 	}
 
 	if ecdsaSig.S == nil {
-		return nil, nil, errors.New("invalid signature")
+		return nil, nil, errors.New(ErrInvalidSignature[2])
 	}
 
 	if ecdsaSig.R.Sign() != 1 {
-		return nil, nil, errors.New("invalid signature")
+		return nil, nil, errors.New(ErrInvalidSignature[3])
 	}
 
 	if ecdsaSig.S.Sign() != 1 {
-		return nil, nil, errors.New("invalid signature")
+		return nil, nil, errors.New(ErrInvalidSignature[4])
 	}
 
 	return ecdsaSig.R, ecdsaSig.S, nil
@@ -85,7 +98,6 @@ type Signer struct {
 }
 
 // Sign generates signature for a data using private key.
-// if preBuf is not nil, data's hashing append to preBuf - no malloc for hashed data.
 func (signer *Signer) Sign(pri heimdall.PriKey, message []byte, opts heimdall.SignerOpts) ([]byte, error) {
 	digest, err := hashing.Hash(message, opts.HashOpt())
 	if err != nil {
@@ -167,7 +179,7 @@ func makeRootsPool(certDirPath string) (rootsPool *x509.CertPool, err error) {
 
 	files, err := ioutil.ReadDir(certDirPath)
 	if err != nil {
-		return nil, errors.New("invalid cert directory path - failed to read directory path")
+		return nil, err
 	}
 
 	for _, file := range files {
@@ -184,7 +196,7 @@ func makeRootsPool(certDirPath string) (rootsPool *x509.CertPool, err error) {
 	}
 
 	if len(rootsPool.Subjects()) == 0 {
-		return nil, errors.New("no root certificate in certificate store directory")
+		return nil, errors.New(ErrNoRootCertInPath)
 	}
 
 	return rootsPool, nil
@@ -196,7 +208,7 @@ func makeIntermediatesPool(certDirPath string) (intermediatesPool *x509.CertPool
 
 	files, err := ioutil.ReadDir(certDirPath)
 	if err != nil {
-		return nil, errors.New("invalid cert directory path - failed to read directory path")
+		return nil, err
 	}
 
 	for _, file := range files {
@@ -242,11 +254,11 @@ func (cv *CertVerifier) VerifyCert(cert *x509.Certificate) error {
 // checkTime checks if entered certificate's generated/expired time is valid.
 func checkTime(notBefore time.Time, notAfter time.Time) error {
 	if time.Now().Before(notBefore) {
-		return errors.New("invalid certificate - certificate's generated time is invalid")
+		return errors.New(ErrCertGenTimeIsFuture)
 	}
 
 	if time.Now().After(notAfter) {
-		return errors.New("invalid certificate - certificate is expired")
+		return errors.New(ErrCertExpired)
 	}
 
 	return nil
@@ -258,7 +270,7 @@ func requestCRL(url string) (*pkix.CertificateList, error) {
 	if err != nil {
 		return nil, err
 	} else if resp.StatusCode >= 300 {
-		return nil, errors.New("failed to retrieve CRL")
+		return nil, errors.New("failed to retrieve CRL - http status code :[" + strconv.Itoa(resp.StatusCode) + "]")
 	}
 
 	defer resp.Body.Close()
@@ -275,7 +287,7 @@ func requestCRL(url string) (*pkix.CertificateList, error) {
 func checkRevocation(cert *x509.Certificate, crl *pkix.CertificateList) error {
 	for _, revokedCert := range crl.TBSCertList.RevokedCertificates {
 		if cert.SerialNumber.Cmp(revokedCert.SerialNumber) == 0 {
-			return errors.New("invalid certificate - revoked certificate")
+			return errors.New(ErrCertRevoked)
 		}
 	}
 

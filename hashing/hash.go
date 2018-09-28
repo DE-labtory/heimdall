@@ -23,12 +23,12 @@ import (
 	"errors"
 )
 
+var ErrTargetDataNil = "hashing target data should not be nil"
+
 // Hash hashes the input data.
-// todo: 아래 정의처럼 preBuffer를 사용하는 함수도 만들어야함.
-// func Hash(data []byte, preBuffer []byte, opt HashOpts) ([]byte, error) {
 func Hash(data []byte, opt HashOpts) ([]byte, error) {
 	if data == nil {
-		return nil, errors.New("data should not be NIL")
+		return nil, errors.New(ErrTargetDataNil)
 	}
 
 	hashFunc := opt.HashFunction()()
