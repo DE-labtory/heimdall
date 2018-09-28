@@ -30,12 +30,12 @@ import (
 	"github.com/it-chain/heimdall"
 )
 
-var errECDSAKeyGenOpt = "invalid ECDSA key generating option"
-var errKeyBytesLength = "invalid key bytes length - wrong length of key bytes for the entered curve option"
-var errPriKeySize = "invalid private key - private key must be smaller than N of curve"
-var errPriKeyValue = "invalid private key - private key should not be zero or negative"
-var errPubKeyValue = "invalid public key - public key X component must not be nil"
-var errKeyType = "invalid key type - key type should be heimdall.PRIVATEKEY or heimdall.PUBLICKEY"
+var ErrECDSAKeyGenOpt = "invalid ECDSA key generating option"
+var ErrKeyBytesLength = "invalid key bytes length - wrong length of key bytes for the entered curve option"
+var ErrPriKeySize = "invalid private key - private key must be smaller than N of curve"
+var ErrPriKeyValue = "invalid private key - private key should not be zero or negative"
+var ErrPubKeyValue = "invalid public key - public key X component must not be nil"
+var ErrKeyType = "invalid key type - key type should be heimdall.PRIVATEKEY or heimdall.PUBLICKEY"
 
 // KeyGenerator is an implementation of KeyGenerator interface to generate ECDSA key
 type KeyGenerator struct {
@@ -44,7 +44,7 @@ type KeyGenerator struct {
 func (generator *KeyGenerator) GenerateKey(keyGenOpt heimdall.KeyGenOpts) (heimdall.PriKey, error) {
 	valid := keyGenOpt.IsValid()
 	if !valid {
-		return nil, errors.New(errECDSAKeyGenOpt)
+		return nil, errors.New(ErrECDSAKeyGenOpt)
 	}
 
 	pri, err := ecdsa.GenerateKey(keyGenOpt.(KeyGenOpts).ToCurve(), rand.Reader)
@@ -148,21 +148,21 @@ func (recoverer *KeyRecoverer) RecoverKeyFromByte(keyBytes []byte, keyType heimd
 		pri.internalPriKey.PublicKey.Curve = curve
 
 		if 8*len(keyBytes) != pri.internalPriKey.Params().BitSize {
-			return nil, errors.New(errKeyBytesLength)
+			return nil, errors.New(ErrKeyBytesLength)
 		}
 		pri.internalPriKey.D = new(big.Int).SetBytes(keyBytes)
 
 		if pri.internalPriKey.D.Cmp(pri.internalPriKey.Params().N) >= 0 {
-			return nil, errors.New(errPriKeySize)
+			return nil, errors.New(ErrPriKeySize)
 		}
 
 		if pri.internalPriKey.D.Sign() <= 0 {
-			return nil, errors.New(errPriKeyValue)
+			return nil, errors.New(ErrPriKeyValue)
 		}
 
 		pri.internalPriKey.PublicKey.X, pri.internalPriKey.PublicKey.Y = pri.internalPriKey.PublicKey.Curve.ScalarBaseMult(keyBytes)
 		if pri.internalPriKey.PublicKey.X == nil {
-			return nil, errors.New(errPubKeyValue)
+			return nil, errors.New(ErrPubKeyValue)
 		}
 
 		return pri, nil
@@ -171,7 +171,7 @@ func (recoverer *KeyRecoverer) RecoverKeyFromByte(keyBytes []byte, keyType heimd
 		x, y := elliptic.Unmarshal(curve, keyBytes)
 
 		if x == nil {
-			return nil, errors.New(errPubKeyValue)
+			return nil, errors.New(ErrPubKeyValue)
 		}
 
 		pub := new(PubKey)
@@ -183,5 +183,5 @@ func (recoverer *KeyRecoverer) RecoverKeyFromByte(keyBytes []byte, keyType heimd
 		return pub, nil
 	}
 
-	return nil, errors.New(errKeyType)
+	return nil, errors.New(ErrKeyType)
 }

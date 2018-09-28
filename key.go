@@ -64,7 +64,7 @@ func SKIToKeyID(ski []byte) string {
 // SKIValidCheck checks if input SKI is corresponding to key id.
 func SKIValidCheck(keyId string, ski []byte) error {
 	if SKIToKeyID(ski) != keyId {
-		return errors.New("invalid SKI - SKI is not correspond to key ID")
+		return errors.New("invalid SKI - SKI is not correspond to input key ID")
 	}
 
 	return nil
