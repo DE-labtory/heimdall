@@ -1,8 +1,11 @@
-<p align="center"> 
+# Heimdall
+[![Build Status](https://travis-ci.org/it-chain/heimdall.svg?branch=mater)](https://travis-ci.org/it-chain/heimdall)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Language](https://img.shields.io/badge/language-go-orange.svg)](https://golang.org)
+[![Coverage Status](https://coveralls.io/repos/github/it-chain/heimdall/badge.svg?branch=master)](https://coveralls.io/github/it-chain/heimdall?branch=master)
+<p align="center">
 <img src="./logo.png" width="210" height="210" />
 </p>
-
-<h1 align="center">Heimdall</h1>
 
 <p align="center"><i>Heimdall</i> is a simple library for signing and verifying messages written by Golang.</p><br>
 
