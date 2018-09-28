@@ -33,10 +33,10 @@ import (
 	"github.com/it-chain/heimdall/kdf"
 )
 
-var ErrInvalidKeyGenOpt = "invalid ECDSA key generation option - not supported curve"
-var ErrInvalidKDFOpt = "invalid key derivation option"
-var ErrWrongKeyID = "wrong key id - failed to find key using key ID"
-var ErrEmptyKeyPath = "invalid keyPath - keyPath empty"
+var ErrInvalidKeyGenOpt = errors.New("invalid ECDSA key generation option - not supported curve")
+var ErrInvalidKDFOpt = errors.New("invalid key derivation option")
+var ErrWrongKeyID = errors.New("wrong key id - failed to find key using key ID")
+var ErrEmptyKeyPath = errors.New("invalid keyPath - keyPath empty")
 
 // struct for encrypted key's file format.
 type KeyFile struct {
@@ -77,7 +77,7 @@ func (keyStorer *KeyStorer) StoreKey(key heimdall.Key, pwd string, keyDirPath st
 
 	keyGenOpt := key.KeyGenOpt()
 	if !keyGenOpt.IsValid() {
-		return errors.New(ErrInvalidKeyGenOpt)
+		return ErrInvalidKeyGenOpt
 	}
 
 	keyFilePath, err := keyStorer.makeKeyFilePath(string(keyId), keyDirPath)
@@ -194,7 +194,7 @@ func (keyLoader *KeyLoader) LoadKey(keyId heimdall.KeyID, pwd string, keyDirPath
 
 	kdfOpt := kdf.MapToOpts(keyFile.Hints.KDFInnerFileInfo)
 	if !kdfOpt.IsValid() {
-		return nil, errors.New(ErrInvalidKDFOpt)
+		return nil, ErrInvalidKDFOpt
 	}
 
 	dKey, err := keyLoader.DeriveKey([]byte(pwd), keyFile.Hints.KDFSalt, keyFile.Hints.EncInnerFileInfo.KeyLen, kdfOpt)
@@ -237,7 +237,7 @@ func (keyLoader *KeyLoader) findKeyById(keyId string, keyDirPath string) (keyPat
 	}
 
 	if len(keyPath) == 0 {
-		return "", errors.New(ErrWrongKeyID)
+		return "", ErrWrongKeyID
 	}
 
 	return keyPath, nil
@@ -246,7 +246,7 @@ func (keyLoader *KeyLoader) findKeyById(keyId string, keyDirPath string) (keyPat
 // loadJsonKeyFile reads json formatted KeyFile struct from file.
 func (keyLoader *KeyLoader) loadJsonKeyFile(keyPath string) (jsonKeyFile []byte, err error) {
 	if len(keyPath) == 0 {
-		return nil, errors.New(ErrEmptyKeyPath)
+		return nil, ErrEmptyKeyPath
 	}
 
 	jsonKeyFile, err = ioutil.ReadFile(keyPath)

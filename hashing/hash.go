@@ -23,12 +23,12 @@ import (
 	"errors"
 )
 
-var ErrTargetDataNil = "hashing target data should not be nil"
+var ErrTargetDataNil = errors.New("hashing target data should not be nil")
 
 // Hash hashes the input data.
 func Hash(data []byte, opt HashOpts) ([]byte, error) {
 	if data == nil {
-		return nil, errors.New(ErrTargetDataNil)
+		return nil, ErrTargetDataNil
 	}
 
 	hashFunc := opt.HashFunction()()
