@@ -47,7 +47,7 @@ func TestScryptOpts_KDF(t *testing.T) {
 	strKDF := kdfOpt.KDF()
 
 	// then
-	assert.Equal(t, kdf.Scrypt, strKDF)
+	assert.Equal(t, kdf.SCRYPT, strKDF)
 }
 
 func TestScryptOpts_ParamsToMap(t *testing.T) {
@@ -71,7 +71,7 @@ func TestScryptOpts_ToInnerFileInfo(t *testing.T) {
 	kdfInnerFileInfo := kdfOpt.ToInnerFileInfo()
 
 	// then
-	assert.Equal(t, kdf.Scrypt, kdfInnerFileInfo.KDF)
+	assert.Equal(t, kdf.SCRYPT, kdfInnerFileInfo.KDF)
 	assert.Equal(t, kdfOpt.ParamsToMap(), kdfInnerFileInfo.Params)
 }
 
@@ -96,7 +96,7 @@ func TestPbkdf2Opts_KDF(t *testing.T) {
 	strKDF := kdfOpt.KDF()
 
 	// then
-	assert.Equal(t, kdf.Pbkdf2, strKDF)
+	assert.Equal(t, kdf.PBKDF2, strKDF)
 }
 
 func TestPbkdf2Opts_ParamsToMap(t *testing.T) {
@@ -119,7 +119,7 @@ func TestPbkdf2Opts_ToInnerFileInfo(t *testing.T) {
 	kdfInnerFileInfo := kdfOpt.ToInnerFileInfo()
 
 	// then
-	assert.Equal(t, kdf.Pbkdf2, kdfInnerFileInfo.KDF)
+	assert.Equal(t, kdf.PBKDF2, kdfInnerFileInfo.KDF)
 	assert.Equal(t, kdfOpt.ParamsToMap(), kdfInnerFileInfo.Params)
 }
 

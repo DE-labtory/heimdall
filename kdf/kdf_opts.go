@@ -53,8 +53,8 @@ var TestSalt = []byte{0xc8, 0x28, 0xf2, 0x58, 0xa7, 0x6a, 0xad, 0x7b}
 
 // supported Key Derivation Functions
 const (
-	Scrypt = "SCRYPT"
-	Pbkdf2 = "PBKDF2"
+	SCRYPT = "SCRYPT"
+	PBKDF2 = "PBKDF2"
 )
 
 var kdfs = [...]string{
@@ -82,7 +82,7 @@ func (opt ScryptOpts) IsValid() bool {
 }
 
 func (opt ScryptOpts) KDF() string {
-	return Scrypt
+	return SCRYPT
 }
 
 func (opt ScryptOpts) ParamsToMap() map[string]string {
@@ -119,7 +119,7 @@ func (opt Pbkdf2Opts) IsValid() bool {
 }
 
 func (opt Pbkdf2Opts) KDF() string {
-	return Pbkdf2
+	return PBKDF2
 }
 
 func (opt Pbkdf2Opts) ParamsToMap() map[string]string {
@@ -139,9 +139,9 @@ func (opt Pbkdf2Opts) ToInnerFileInfo() heimdall.KDFInnerFileInfo {
 
 func MapToOpts(kdfInfo heimdall.KDFInnerFileInfo) heimdall.KeyDerivationOpts {
 	switch kdfInfo.KDF {
-	case Scrypt:
+	case SCRYPT:
 		return mapToScryptOpts(kdfInfo.Params)
-	case Pbkdf2:
+	case PBKDF2:
 		return mapToPbkdf2Opts(kdfInfo.Params)
 	}
 
