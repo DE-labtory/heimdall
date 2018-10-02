@@ -80,7 +80,7 @@ func (keyStorer *KeyStorer) StoreKey(key heimdall.Key, pwd string, keyDirPath st
 		return ErrInvalidKeyGenOpt
 	}
 
-	keyFilePath, err := keyStorer.makeKeyFilePath(string(keyId), keyDirPath)
+	keyFilePath, err := keyStorer.makeKeyFilePath(keyId, keyDirPath)
 	if err != nil {
 		return err
 	}
@@ -170,11 +170,11 @@ func (keyLoader *KeyLoader) LoadKey(keyId heimdall.KeyID, pwd string, keyDirPath
 		return nil, err
 	}
 
-	if err := heimdall.KeyIDPrefixCheck(string(keyId)); err != nil {
+	if err := heimdall.KeyIDPrefixCheck(keyId); err != nil {
 		return nil, err
 	}
 
-	keyPath, err := keyLoader.findKeyById(string(keyId), keyDirPath)
+	keyPath, err := keyLoader.findKeyById(keyId, keyDirPath)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +188,7 @@ func (keyLoader *KeyLoader) LoadKey(keyId heimdall.KeyID, pwd string, keyDirPath
 		return nil, err
 	}
 
-	if err = heimdall.SKIValidCheck(string(keyId), keyFile.SKI); err != nil {
+	if err = heimdall.SKIValidCheck(keyId, keyFile.SKI); err != nil {
 		return nil, err
 	}
 

@@ -74,8 +74,8 @@ func TestPriKey_ID(t *testing.T) {
 	otherKeyId := otherPri.ID()
 
 	// then
-	assert.NoError(t, heimdall.KeyIDPrefixCheck(string(keyId)))
-	assert.NoError(t, heimdall.KeyIDPrefixCheck(string(otherKeyId)))
+	assert.NoError(t, heimdall.KeyIDPrefixCheck(keyId))
+	assert.NoError(t, heimdall.KeyIDPrefixCheck(otherKeyId))
 	assert.NotEqual(t, otherKeyId, keyId)
 }
 
@@ -160,8 +160,8 @@ func TestPubKey_ID(t *testing.T) {
 	otherKeyId := otherPub.ID()
 
 	// then
-	assert.NoError(t, heimdall.KeyIDPrefixCheck(string(keyId)))
-	assert.NoError(t, heimdall.KeyIDPrefixCheck(string(otherKeyId)))
+	assert.NoError(t, heimdall.KeyIDPrefixCheck(keyId))
+	assert.NoError(t, heimdall.KeyIDPrefixCheck(otherKeyId))
 	assert.NotEqual(t, otherKeyId, keyId)
 }
 
