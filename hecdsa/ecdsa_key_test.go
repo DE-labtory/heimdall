@@ -122,7 +122,7 @@ func TestPriKey_KeyType(t *testing.T) {
 	keyType := pri.KeyType()
 
 	// then
-	assert.Equal(t, heimdall.KeyType(heimdall.PRIVATEKEY), keyType)
+	assert.Equal(t, heimdall.KeyType(heimdall.PRIVATE_KEY), keyType)
 }
 
 func TestPriKey_PublicKey(t *testing.T) {
@@ -208,7 +208,7 @@ func TestPubKey_KeyType(t *testing.T) {
 	keyType := pub.KeyType()
 
 	// then
-	assert.Equal(t, heimdall.KeyType(heimdall.PUBLICKEY), keyType)
+	assert.Equal(t, heimdall.KeyType(heimdall.PUBLIC_KEY), keyType)
 }
 
 func TestKeyRecoverer_RecoverKeyFromByte(t *testing.T) {

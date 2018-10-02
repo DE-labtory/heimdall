@@ -84,7 +84,7 @@ func (priKey *PriKey) KeyGenOpt() heimdall.KeyGenOpts {
 }
 
 func (priKey *PriKey) KeyType() heimdall.KeyType {
-	return heimdall.PRIVATEKEY
+	return heimdall.PRIVATE_KEY
 }
 
 func (priKey *PriKey) PublicKey() heimdall.PubKey {
@@ -131,7 +131,7 @@ func (pubKey *PubKey) KeyGenOpt() heimdall.KeyGenOpts {
 }
 
 func (pubKey *PubKey) KeyType() heimdall.KeyType {
-	return heimdall.PUBLICKEY
+	return heimdall.PUBLIC_KEY
 }
 
 type KeyRecoverer struct {
@@ -141,7 +141,7 @@ func (recoverer *KeyRecoverer) RecoverKeyFromByte(keyBytes []byte, keyType heimd
 	curve := StringToKeyGenOpt(strFmtKeyGenOpt).ToCurve()
 
 	switch keyType {
-	case heimdall.PRIVATEKEY:
+	case heimdall.PRIVATE_KEY:
 		pri := new(PriKey)
 		pri.internalPriKey = new(ecdsa.PrivateKey)
 
@@ -167,7 +167,7 @@ func (recoverer *KeyRecoverer) RecoverKeyFromByte(keyBytes []byte, keyType heimd
 
 		return pri, nil
 
-	case heimdall.PUBLICKEY:
+	case heimdall.PUBLIC_KEY:
 		x, y := elliptic.Unmarshal(curve, keyBytes)
 
 		if x == nil {
