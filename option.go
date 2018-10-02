@@ -18,8 +18,8 @@ package heimdall
 
 import "github.com/it-chain/heimdall/hashing"
 
-type KeyID string
-type KeyType int
+type KeyID = string
+type KeyType = int
 
 var OptDelimiter = "_"
 
