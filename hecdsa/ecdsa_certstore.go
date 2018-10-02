@@ -61,7 +61,7 @@ func makeCertFilePath(certDirPath string, cert *x509.Certificate) (certFilePath 
 
 	pub := NewPubKey(cert.PublicKey.(*ecdsa.PublicKey))
 	keyId := pub.ID()
-	certFilePath = filepath.Join(certDirPath, string(keyId)+".crt")
+	certFilePath = filepath.Join(certDirPath, keyId+".crt")
 
 	return certFilePath, nil
 }
@@ -71,7 +71,7 @@ type CertLoader struct {
 
 // LoadCert loads a certificate by entered key ID.
 func (cl *CertLoader) LoadCert(keyId heimdall.KeyID, certDirPath string) (cert *x509.Certificate, err error) {
-	certFilePath, err := findCertFileByKeyId(certDirPath, string(keyId))
+	certFilePath, err := findCertFileByKeyId(certDirPath, keyId)
 	if err != nil {
 		return nil, err
 	}

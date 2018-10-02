@@ -107,7 +107,7 @@ func NewPubKey(internalPubKey *ecdsa.PublicKey) heimdall.PubKey {
 
 func (pubKey *PubKey) ID() heimdall.KeyID {
 	// return base58 encoded ski with key id prefix
-	return heimdall.KeyID(heimdall.KeyIDPrefix + base58.Encode(pubKey.SKI()))
+	return heimdall.KeyIDPrefix + base58.Encode(pubKey.SKI())
 }
 
 func (pubKey *PubKey) SKI() []byte {
