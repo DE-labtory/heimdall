@@ -24,8 +24,8 @@ type KeyType = int
 var OptDelimiter = "_"
 
 const (
-	PRIVATEKEY = iota
-	PUBLICKEY
+	PRIVATE_KEY = iota
+	PUBLIC_KEY
 )
 
 type KDFInnerFileInfo struct {
