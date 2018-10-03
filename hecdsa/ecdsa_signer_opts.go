@@ -20,16 +20,24 @@ import (
 	"github.com/it-chain/heimdall/hashing"
 )
 
-type SignerOpts string
+type SignerOpts struct {
+	hashOpt hashing.HashOpts
+}
 
-func (signerOpt SignerOpts) Algorithm() string {
+func NewSignerOpts(hashOpt hashing.HashOpts) *SignerOpts {
+	return &SignerOpts{
+		hashOpt: hashOpt,
+	}
+}
+
+func (signerOpt *SignerOpts) Algorithm() string {
 	return "ECDSA"
 }
 
-func (signerOpt SignerOpts) IsValid() bool {
-	return hashing.StringToHashOpts(string(signerOpt)).IsValid()
+func (signerOpt *SignerOpts) IsValid() bool {
+	return signerOpt.hashOpt.IsValid()
 }
 
-func (signerOpt SignerOpts) HashOpt() hashing.HashOpts {
-	return hashing.StringToHashOpts(string(signerOpt))
+func (signerOpt *SignerOpts) HashOpt() hashing.HashOpts {
+	return signerOpt.hashOpt
 }
