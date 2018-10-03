@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package certstore_test
+package cert_test
 
 import (
 	"crypto/ecdsa"
