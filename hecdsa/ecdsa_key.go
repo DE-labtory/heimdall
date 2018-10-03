@@ -37,11 +37,7 @@ var ErrPriKeyValue = errors.New("invalid private key - private key should not be
 var ErrPubKeyValue = errors.New("invalid public key - public key X component must not be nil")
 var ErrKeyType = errors.New("invalid key type - key type should be heimdall.PRIVATEKEY or heimdall.PUBLICKEY")
 
-// KeyGenerator is an implementation of KeyGenerator interface to generate ECDSA key
-type KeyGenerator struct {
-}
-
-func (generator *KeyGenerator) GenerateKey(keyGenOpt heimdall.KeyGenOpts) (heimdall.PriKey, error) {
+func GenerateKey(keyGenOpt heimdall.KeyGenOpts) (heimdall.PriKey, error) {
 	valid := keyGenOpt.IsValid()
 	if !valid {
 		return nil, ErrECDSAKeyGenOpt
