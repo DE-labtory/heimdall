@@ -32,8 +32,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/it-chain/heimdall"
-	"github.com/it-chain/heimdall/certstore"
+	"github.com/it-chain/heimdall/cert"
 	"github.com/it-chain/heimdall/config"
 	"github.com/it-chain/heimdall/encryption"
 	"github.com/it-chain/heimdall/hashing"
@@ -104,17 +103,15 @@ func main() {
 
 	// storing root and client certificates
 	log.Println("storing root and client certificates...")
-	certStorer := certstore.CertStorer{}
-	err = certStorer.StoreCert(rootCert, myConFig.CertDirPath)
+	err = cert.Store(rootCert, myConFig.CertDirPath)
 	errorCheck(err)
-	err = certStorer.StoreCert(clientCert, myConFig.CertDirPath)
+	err = cert.Store(clientCert, myConFig.CertDirPath)
 	errorCheck(err)
 	log.Println("storing root and client certificates success!")
 
 	// loading client certificate
 	log.Println("loading client certificate...")
-	certLoader := certstore.CertLoader{}
-	loadedClientCert, err := certLoader.LoadCert(hPri.ID(), myConFig.CertDirPath)
+	loadedClientCert, err := cert.Load(hPri.ID(), myConFig.CertDirPath)
 	errorCheck(err)
 	if loadedClientCert.Equal(clientCert) {
 		log.Println("loading client certificate success")
@@ -124,8 +121,7 @@ func main() {
 
 	// verifying certificate chain
 	log.Println("verifying certificate chain...")
-	certVerifier := hecdsa.CertVerifier{}
-	err = certVerifier.VerifyCertChain(clientCert, myConFig.CertDirPath)
+	err = cert.VerifyChain(clientCert, myConFig.CertDirPath)
 	if err != nil {
 		log.Println(err)
 	} else {
@@ -136,7 +132,7 @@ func main() {
 	clientCert.CRLDistributionPoints = []string{sampleCA.URL}
 	// verifying client cert with rootCert (can be intermediate certs between root and client)
 	log.Println("verifying client certificate...")
-	err = certVerifier.VerifyCert(clientCert)
+	err = cert.Verify(clientCert)
 	errorCheck(err)
 	log.Println("client certificate is valid")
 
@@ -188,9 +184,9 @@ func configCA(clientPub *ecdsa.PublicKey) (rootCert, clientCert *x509.Certificat
 	clientDerBytes, err := x509.CreateCertificate(rand.Reader, &mocks.TestCertTemplate, &mocks.TestRootCertTemplate, clientPub, rootPri)
 	errorCheck(err)
 
-	rootCert, err = heimdall.DERToX509Cert(rootDerBytes)
+	rootCert, err = cert.DERToX509Cert(rootDerBytes)
 	errorCheck(err)
-	clientCert, err = heimdall.DERToX509Cert(clientDerBytes)
+	clientCert, err = cert.DERToX509Cert(clientDerBytes)
 	errorCheck(err)
 
 	// revoked certificate
