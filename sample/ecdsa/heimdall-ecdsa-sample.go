@@ -57,8 +57,7 @@ func main() {
 	// Generate key pair with ECDSA algorithm.
 	log.Println("generating key...")
 	keyGenOpt := myConFig.KeyGenOpt
-	generator := hecdsa.KeyGenerator{}
-	pri, err := generator.GenerateKey(keyGenOpt)
+	pri, err := hecdsa.GenerateKey(keyGenOpt)
 	errorCheck(err)
 	log.Println("generating key success!")
 

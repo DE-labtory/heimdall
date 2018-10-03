@@ -26,9 +26,7 @@ import (
 
 func TestPriKey_Clear(t *testing.T) {
 	// given
-	generator := KeyGenerator{}
-
-	pri, err := generator.GenerateKey(ECP384)
+	pri, err := GenerateKey(ECP384)
 	assert.NoError(t, err)
 
 	// when

@@ -33,8 +33,7 @@ func TestAESCTREncryptor_EncryptKey(t *testing.T) {
 	_, err := rand.Read(encKey)
 	assert.NoError(t, err)
 
-	generator := hecdsa.KeyGenerator{}
-	priKey, err := generator.GenerateKey(hecdsa.ECP384)
+	priKey, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
 	encryptor := encryption.AESCTREncryptor{}
@@ -53,8 +52,7 @@ func TestAESCTRDecryptor_DecryptKey(t *testing.T) {
 	_, err := rand.Read(encKey)
 	assert.NoError(t, err)
 
-	generator := hecdsa.KeyGenerator{}
-	priKey, err := generator.GenerateKey(hecdsa.ECP384)
+	priKey, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
 	encryptor := encryption.AESCTREncryptor{}

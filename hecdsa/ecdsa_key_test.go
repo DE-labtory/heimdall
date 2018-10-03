@@ -28,28 +28,27 @@ import (
 )
 
 func setUpPriKey(t *testing.T) *hecdsa.PriKey {
-	generator := hecdsa.KeyGenerator{}
-
-	pri, err := generator.GenerateKey(hecdsa.ECP384)
+	pri, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
 	return pri.(*hecdsa.PriKey)
 }
 
-func TestECDSAKeyGenerator_GenerateKey(t *testing.T) {
+func TestGenerateKey(t *testing.T) {
 	// given
-	generator := hecdsa.KeyGenerator{}
+	keyGenOpt := hecdsa.ECP384
+	invalidKeyGenOpt := hecdsa.KeyGenOpts(100)
 
 	// when
-	pri, err := generator.GenerateKey(hecdsa.ECP384)
-	wrongPri, err2 := generator.GenerateKey(hecdsa.KeyGenOpts(100))
+	pri, err := hecdsa.GenerateKey(keyGenOpt)
+	nilPri, err2 := hecdsa.GenerateKey(invalidKeyGenOpt)
 
 	// then
 	assert.NoError(t, err)
 	assert.NotNil(t, pri)
 
 	assert.Error(t, err2)
-	assert.Nil(t, wrongPri)
+	assert.Nil(t, nilPri)
 }
 
 func TestNewPriKey(t *testing.T) {
