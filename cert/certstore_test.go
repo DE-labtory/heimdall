@@ -26,7 +26,7 @@ import (
 	"os"
 
 	"github.com/it-chain/heimdall"
-	"github.com/it-chain/heimdall/certstore"
+	"github.com/it-chain/heimdall/cert"
 	"github.com/it-chain/heimdall/hecdsa"
 	"github.com/it-chain/heimdall/mocks"
 	"github.com/stretchr/testify/assert"
@@ -34,8 +34,6 @@ import (
 
 func TestCertStorer_StoreCert(t *testing.T) {
 	// given
-	certStorer := certstore.CertStorer{}
-
 	rootPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	rootPub := &rootPri.PublicKey
 	assert.NoError(t, err)
@@ -44,10 +42,10 @@ func TestCertStorer_StoreCert(t *testing.T) {
 	mocks.TestRootCertTemplate.SubjectKeyId = hRootPri.SKI()
 	derBytes, err := x509.CreateCertificate(rand.Reader, &mocks.TestRootCertTemplate, &mocks.TestRootCertTemplate, rootPub, rootPri)
 	assert.NoError(t, err)
-	rootCert, _ := heimdall.DERToX509Cert(derBytes)
+	rootCert, _ := cert.DERToX509Cert(derBytes)
 
 	// when
-	err = certStorer.StoreCert(rootCert, heimdall.TestCertDir)
+	err = cert.Store(rootCert, heimdall.TestCertDir)
 
 	// then
 	assert.NoError(t, err)
@@ -57,9 +55,6 @@ func TestCertStorer_StoreCert(t *testing.T) {
 
 func TestCertLoader_LoadCert(t *testing.T) {
 	// given
-	certStorer := certstore.CertStorer{}
-	certLoader := certstore.CertLoader{}
-
 	rootPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	rootPub := &rootPri.PublicKey
 	assert.NoError(t, err)
@@ -68,19 +63,19 @@ func TestCertLoader_LoadCert(t *testing.T) {
 	mocks.TestRootCertTemplate.SubjectKeyId = hRootPri.SKI()
 	derBytes, err := x509.CreateCertificate(rand.Reader, &mocks.TestRootCertTemplate, &mocks.TestRootCertTemplate, rootPub, rootPri)
 	assert.NoError(t, err)
-	rootCert, _ := heimdall.DERToX509Cert(derBytes)
+	rootCert, _ := cert.DERToX509Cert(derBytes)
 
-	err = certStorer.StoreCert(rootCert, heimdall.TestCertDir)
+	err = cert.Store(rootCert, heimdall.TestCertDir)
 	assert.NoError(t, err)
 
 	keyId := hRootPri.ID()
 
 	// when
-	cert, err := certLoader.LoadCert(keyId, heimdall.TestCertDir)
+	testCert, err := cert.Load(keyId, heimdall.TestCertDir)
 
 	// then
 	assert.NoError(t, err)
-	assert.Equal(t, rootCert, cert)
+	assert.Equal(t, rootCert, testCert)
 
 	defer os.RemoveAll(heimdall.TestCertDir)
 }

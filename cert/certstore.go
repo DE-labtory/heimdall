@@ -84,7 +84,7 @@ func Load(keyId heimdall.KeyID, certDirPath string) (cert *x509.Certificate, err
 		return nil, err
 	}
 
-	cert, err = heimdall.PemToX509Cert(certPEMBlock)
+	cert, err = PemToX509Cert(certPEMBlock)
 	if err != nil {
 		return nil, err
 	}

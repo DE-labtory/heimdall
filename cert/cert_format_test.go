@@ -12,10 +12,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-package heimdall_test
+package cert_test
 
 import (
 	"crypto/ecdsa"
@@ -24,7 +23,7 @@ import (
 	"crypto/x509"
 	"testing"
 
-	"github.com/it-chain/heimdall"
+	"github.com/it-chain/heimdall/cert"
 	"github.com/it-chain/heimdall/hecdsa"
 	"github.com/it-chain/heimdall/mocks"
 	"github.com/stretchr/testify/assert"
@@ -40,25 +39,25 @@ func TestPemToX509Cert(t *testing.T) {
 	mocks.TestRootCertTemplate.SubjectKeyId = hPubKey.SKI()
 	derBytes, err := x509.CreateCertificate(rand.Reader, &mocks.TestRootCertTemplate, &mocks.TestRootCertTemplate, pub, pri)
 	assert.NoError(t, err)
-	pemBytes := heimdall.DERCertToPem(derBytes)
+	pemBytes := cert.DERCertToPem(derBytes)
 
 	// when
-	cert, err := heimdall.PemToX509Cert(pemBytes)
-	nilCert, nilBlockErr := heimdall.PemToX509Cert([]byte(""))
+	testCert, err := cert.PemToX509Cert(pemBytes)
+	nilCert, nilBlockErr := cert.PemToX509Cert([]byte(""))
 
 	// then
 	assert.NoError(t, err)
-	assert.NotNil(t, cert)
+	assert.NotNil(t, testCert)
 	assert.Nil(t, nilCert)
 	assert.Error(t, nilBlockErr)
 }
 
 func TestX509CertToPem(t *testing.T) {
 	// given
-	cert, _ := heimdall.PemToX509Cert([]byte(mocks.TestCertPemBytes))
+	testCert, _ := cert.PemToX509Cert([]byte(mocks.TestCertPemBytes))
 
 	// when
-	pemBytes := heimdall.X509CertToPem(cert)
+	pemBytes := cert.X509CertToPem(testCert)
 
 	// then
 	assert.Equal(t, pemBytes, []byte(mocks.TestCertPemBytes))
@@ -66,10 +65,10 @@ func TestX509CertToPem(t *testing.T) {
 
 func TestDERCertToPem(t *testing.T) {
 	// given
-	cert, _ := heimdall.PemToX509Cert([]byte(mocks.TestCertPemBytes))
+	testCert, _ := cert.PemToX509Cert([]byte(mocks.TestCertPemBytes))
 
 	// when
-	pemBytes := heimdall.DERCertToPem(cert.Raw)
+	pemBytes := cert.DERCertToPem(testCert.Raw)
 
 	// then
 	assert.Equal(t, pemBytes, []byte(mocks.TestCertPemBytes))
@@ -77,25 +76,25 @@ func TestDERCertToPem(t *testing.T) {
 
 func TestX509CertToDER(t *testing.T) {
 	// given
-	cert, _ := heimdall.PemToX509Cert([]byte(mocks.TestCertPemBytes))
+	testCert, _ := cert.PemToX509Cert([]byte(mocks.TestCertPemBytes))
 
 	// when
-	derBytes := heimdall.X509CertToDER(cert)
+	derBytes := cert.X509CertToDER(testCert)
 
 	// then
 	assert.NotNil(t, derBytes)
-	assert.Equal(t, []byte(mocks.TestCertPemBytes), heimdall.DERCertToPem(derBytes))
+	assert.Equal(t, []byte(mocks.TestCertPemBytes), cert.DERCertToPem(derBytes))
 }
 
 func TestDERToX509Cert(t *testing.T) {
 	// given
-	cert, _ := heimdall.PemToX509Cert([]byte(mocks.TestCertPemBytes))
-	derBytes := heimdall.X509CertToDER(cert)
+	testCert, _ := cert.PemToX509Cert([]byte(mocks.TestCertPemBytes))
+	derBytes := cert.X509CertToDER(testCert)
 
 	// when
-	recoveredCert, err := heimdall.DERToX509Cert(derBytes)
+	recoveredCert, err := cert.DERToX509Cert(derBytes)
 
 	// then
 	assert.NoError(t, err)
-	assert.Equal(t, cert, recoveredCert)
+	assert.Equal(t, testCert, recoveredCert)
 }
