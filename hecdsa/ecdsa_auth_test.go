@@ -34,18 +34,19 @@ import (
 	"time"
 
 	"github.com/it-chain/heimdall"
+	"github.com/it-chain/heimdall/hashing"
 	"github.com/it-chain/heimdall/hecdsa"
 	"github.com/it-chain/heimdall/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
-func setUpSigner(t *testing.T) (hecdsa.Signer, *hecdsa.PriKey, hecdsa.SignerOpts) {
+func setUpSigner(t *testing.T) (hecdsa.Signer, *hecdsa.PriKey, *hecdsa.SignerOpts) {
 	ecdsaSigner := hecdsa.Signer{}
 
 	pri, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
-	signerOpt := hecdsa.SignerOpts("SHA384")
+	signerOpt := hecdsa.NewSignerOpts(hashing.SHA384)
 	assert.True(t, signerOpt.IsValid())
 
 	return ecdsaSigner, pri.(*hecdsa.PriKey), signerOpt

@@ -26,8 +26,9 @@ import (
 
 func TestSignerOpts_IsValid(t *testing.T) {
 	// given
-	validSignerOpt := hecdsa.SignerOpts("SHA384")
-	invalidSignerOpt := hecdsa.SignerOpts("invalid option")
+	validSignerOpt := hecdsa.NewSignerOpts(hashing.SHA384)
+	invalidHashOpt := hashing.StringToHashOpts("SHA399")
+	invalidSignerOpt := hecdsa.NewSignerOpts(invalidHashOpt)
 
 	// when
 	valid := validSignerOpt.IsValid()
@@ -40,12 +41,11 @@ func TestSignerOpts_IsValid(t *testing.T) {
 
 func TestSignerOpts_HashOpt(t *testing.T) {
 	// given
-	signerOpt := hecdsa.SignerOpts("SHA384")
+	signerOpt := hecdsa.NewSignerOpts(hashing.SHA384)
 
 	// when
 	hashOpt := signerOpt.HashOpt()
 
 	// then
-	assert.IsType(t, hashing.HashOpts(2), hashOpt)
-	assert.Equal(t, "SHA384", hashOpt.ToString())
+	assert.Equal(t, hashing.SHA384, hashOpt)
 }

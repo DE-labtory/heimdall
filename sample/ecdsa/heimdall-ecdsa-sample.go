@@ -35,6 +35,7 @@ import (
 	"github.com/it-chain/heimdall"
 	"github.com/it-chain/heimdall/config"
 	"github.com/it-chain/heimdall/encryption"
+	"github.com/it-chain/heimdall/hashing"
 	"github.com/it-chain/heimdall/hecdsa"
 	"github.com/it-chain/heimdall/kdf"
 	"github.com/it-chain/heimdall/keystore"
@@ -143,8 +144,7 @@ func main() {
 	// signing message (making signature)
 	log.Println("signing message...")
 	signer := hecdsa.Signer{}
-	// todo: signerOpt... 개선이 필요
-	signerOpt := hecdsa.SignerOpts("SHA384")
+	signerOpt := hecdsa.NewSignerOpts(hashing.SHA384)
 	signature, err := signer.Sign(hPri, message, signerOpt)
 	errorCheck(err)
 	log.Println("signing message success!")
