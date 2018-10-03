@@ -33,6 +33,7 @@ import (
 	"time"
 
 	"github.com/it-chain/heimdall"
+	"github.com/it-chain/heimdall/certstore"
 	"github.com/it-chain/heimdall/config"
 	"github.com/it-chain/heimdall/encryption"
 	"github.com/it-chain/heimdall/hashing"
@@ -103,7 +104,7 @@ func main() {
 
 	// storing root and client certificates
 	log.Println("storing root and client certificates...")
-	certStorer := hecdsa.CertStorer{}
+	certStorer := certstore.CertStorer{}
 	err = certStorer.StoreCert(rootCert, myConFig.CertDirPath)
 	errorCheck(err)
 	err = certStorer.StoreCert(clientCert, myConFig.CertDirPath)
@@ -112,7 +113,7 @@ func main() {
 
 	// loading client certificate
 	log.Println("loading client certificate...")
-	certLoader := hecdsa.CertLoader{}
+	certLoader := certstore.CertLoader{}
 	loadedClientCert, err := certLoader.LoadCert(hPri.ID(), myConFig.CertDirPath)
 	errorCheck(err)
 	if loadedClientCert.Equal(clientCert) {

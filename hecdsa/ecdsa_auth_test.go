@@ -34,6 +34,8 @@ import (
 	"time"
 
 	"github.com/it-chain/heimdall"
+
+	"github.com/it-chain/heimdall/certstore"
 	"github.com/it-chain/heimdall/hashing"
 	"github.com/it-chain/heimdall/hecdsa"
 	"github.com/it-chain/heimdall/mocks"
@@ -136,7 +138,7 @@ func TestVerifier_VerifyWithCert(t *testing.T) {
 func TestCertVerifier_VerifyCertChain(t *testing.T) {
 	// given
 	certVerifier := hecdsa.CertVerifier{}
-	certStorer := hecdsa.CertStorer{}
+	certStorer := certstore.CertStorer{}
 
 	//root cert
 	rootPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)

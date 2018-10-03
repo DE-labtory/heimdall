@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hecdsa_test
+package certstore_test
 
 import (
 	"crypto/ecdsa"
@@ -26,6 +26,7 @@ import (
 	"os"
 
 	"github.com/it-chain/heimdall"
+	"github.com/it-chain/heimdall/certstore"
 	"github.com/it-chain/heimdall/hecdsa"
 	"github.com/it-chain/heimdall/mocks"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +34,7 @@ import (
 
 func TestCertStorer_StoreCert(t *testing.T) {
 	// given
-	certStorer := hecdsa.CertStorer{}
+	certStorer := certstore.CertStorer{}
 
 	rootPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	rootPub := &rootPri.PublicKey
@@ -56,8 +57,8 @@ func TestCertStorer_StoreCert(t *testing.T) {
 
 func TestCertLoader_LoadCert(t *testing.T) {
 	// given
-	certStorer := hecdsa.CertStorer{}
-	certLoader := hecdsa.CertLoader{}
+	certStorer := certstore.CertStorer{}
+	certLoader := certstore.CertLoader{}
 
 	rootPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	rootPub := &rootPri.PublicKey
