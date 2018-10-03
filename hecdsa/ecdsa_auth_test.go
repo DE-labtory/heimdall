@@ -17,25 +17,13 @@
 package hecdsa_test
 
 import (
-	"testing"
-
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"testing"
 
-	"os"
-
-	"crypto/x509/pkix"
-	"io"
-	"math/big"
-	"net/http"
-	"net/http/httptest"
-	"time"
-
-	"github.com/it-chain/heimdall"
-
-	"github.com/it-chain/heimdall/certstore"
+	"github.com/it-chain/heimdall/cert"
 	"github.com/it-chain/heimdall/hashing"
 	"github.com/it-chain/heimdall/hecdsa"
 	"github.com/it-chain/heimdall/mocks"
@@ -125,7 +113,7 @@ func TestVerifier_VerifyWithCert(t *testing.T) {
 	mocks.TestRootCertTemplate.SubjectKeyId = hPri.SKI()
 	derBytes, err := x509.CreateCertificate(rand.Reader, &mocks.TestRootCertTemplate, &mocks.TestRootCertTemplate, rootPub, rootPri)
 	assert.NoError(t, err)
-	rootCert, _ := heimdall.DERToX509Cert(derBytes)
+	rootCert, _ := cert.DERToX509Cert(derBytes)
 
 	// when
 	valid, NoErr := ecdsaVerifier.VerifyWithCert(rootCert, signature, message, signerOpt)
@@ -133,108 +121,4 @@ func TestVerifier_VerifyWithCert(t *testing.T) {
 	// then
 	assert.NoError(t, NoErr)
 	assert.True(t, valid)
-}
-
-func TestCertVerifier_VerifyCertChain(t *testing.T) {
-	// given
-	certVerifier := hecdsa.CertVerifier{}
-	certStorer := certstore.CertStorer{}
-
-	//root cert
-	rootPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	rootPub := &rootPri.PublicKey
-	assert.NoError(t, err)
-	hRootPri := hecdsa.NewPriKey(rootPri)
-
-	mocks.TestRootCertTemplate.SubjectKeyId = hRootPri.SKI()
-	derBytes, err := x509.CreateCertificate(rand.Reader, &mocks.TestRootCertTemplate, &mocks.TestRootCertTemplate, rootPub, rootPri)
-	assert.NoError(t, err)
-	rootCert, _ := heimdall.DERToX509Cert(derBytes)
-
-	err = certStorer.StoreCert(rootCert, heimdall.TestCertDir)
-	assert.NoError(t, err)
-
-	// intermediate cert
-	interPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	interPub := &interPri.PublicKey
-	assert.NoError(t, err)
-	hInterPri := hecdsa.NewPriKey(interPri)
-
-	mocks.TestIntermediateCertTemplate.SubjectKeyId = hInterPri.SKI()
-	derBytes, err = x509.CreateCertificate(rand.Reader, &mocks.TestIntermediateCertTemplate, &mocks.TestRootCertTemplate, interPub, rootPri)
-	assert.NoError(t, err)
-	interCert, _ := heimdall.DERToX509Cert(derBytes)
-
-	err = certStorer.StoreCert(interCert, heimdall.TestCertDir)
-	assert.NoError(t, err)
-
-	// client cert
-	clientPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	clientPub := &clientPri.PublicKey
-	assert.NoError(t, err)
-	hClientPri := hecdsa.NewPriKey(clientPri)
-
-	mocks.TestIntermediateCertTemplate.SubjectKeyId = hClientPri.SKI()
-	derBytes, err = x509.CreateCertificate(rand.Reader, &mocks.TestCertTemplate, &mocks.TestIntermediateCertTemplate, clientPub, interPri)
-	assert.NoError(t, err)
-	clientCert, _ := heimdall.DERToX509Cert(derBytes)
-
-	// when
-	err = certVerifier.VerifyCertChain(clientCert, heimdall.TestCertDir)
-	assert.NoError(t, err)
-
-	defer os.RemoveAll(heimdall.TestCertDir)
-}
-
-func TestCertVerifier_VerifyCert(t *testing.T) {
-	// given
-	certVerifier := hecdsa.CertVerifier{}
-
-	// expired cert
-	expiredCert, _ := heimdall.PemToX509Cert([]byte(mocks.ExpiredCertForTest))
-	// revoked cert
-	revokedCert, _ := heimdall.PemToX509Cert([]byte(mocks.RevokedCertForTest))
-	// normal client cert
-	clientCert, _ := heimdall.PemToX509Cert([]byte(mocks.ClientCertForTest))
-
-	// root cert
-	rootPri, _ := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	rootPub := &rootPri.PublicKey
-	hRootPub := hecdsa.NewPubKey(rootPub)
-
-	mocks.TestRootCertTemplate.SubjectKeyId = hRootPub.SKI()
-	derBytes, err := x509.CreateCertificate(rand.Reader, &mocks.TestRootCertTemplate, &mocks.TestRootCertTemplate, rootPub, rootPri)
-	assert.NoError(t, err)
-	rootCert, _ := heimdall.DERToX509Cert(derBytes)
-
-	// revoked certificate setting
-	revokedCertificate := new(pkix.RevokedCertificate)
-	revokedCertificate.SerialNumber = big.NewInt(44)
-	revokedCertificate.RevocationTime = time.Now()
-	revokedCertificate.Extensions = nil
-
-	revokedCertList := []pkix.RevokedCertificate{*revokedCertificate}
-
-	// create CRL (Certificate Revocation List)
-	crlBytes, err := rootCert.CreateCRL(rand.Reader, rootPri, revokedCertList, time.Now(), time.Now().Add(time.Hour*24))
-	assert.NoError(t, err)
-	assert.NotNil(t, crlBytes)
-
-	// httptest server for testing
-	testCA := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, string(crlBytes))
-	}))
-
-	revokedCert.CRLDistributionPoints = []string{testCA.URL}
-	clientCert.CRLDistributionPoints = []string{testCA.URL}
-
-	// when
-	expiredErr := certVerifier.VerifyCert(expiredCert)
-	revokedErr := certVerifier.VerifyCert(revokedCert)
-	clientErr := certVerifier.VerifyCert(clientCert)
-
-	// then
-	assert.Error(t, expiredErr)
-	assert.Error(t, revokedErr)
-	assert.NoError(t, clientErr)
 }
