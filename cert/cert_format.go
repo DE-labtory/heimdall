@@ -12,34 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-package heimdall
+package cert
 
 import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
 )
-
-type Certstore interface {
-	CertStorer
-	CertLoader
-}
-
-type CertStorer interface {
-	StoreCert(cert *x509.Certificate) error
-}
-
-type CertLoader interface {
-	LoadCert(keyId KeyID) (cert *x509.Certificate, err error)
-}
-
-type CertVerifier interface {
-	VerifyCertChain(cert *x509.Certificate, certDirPath string) error
-	VerifyCert(cert *x509.Certificate) error
-}
 
 // PemToX509Cert converts PEM formatted certificate to x.509 certificate format.
 func PemToX509Cert(certPEMBlock []byte) (cert *x509.Certificate, err error) {

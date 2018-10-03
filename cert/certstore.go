@@ -29,9 +29,6 @@ import (
 	"github.com/it-chain/heimdall/hecdsa"
 )
 
-type CertStorer struct {
-}
-
 // StoreCert stores a certificate to certificate store directory.
 func (cs *CertStorer) StoreCert(cert *x509.Certificate, certDirPath string) error {
 	certPEMBlock := heimdall.X509CertToPem(cert)
@@ -73,9 +70,6 @@ func makeCertFilePath(certDirPath string, cert *x509.Certificate) (certFilePath 
 	certFilePath = filepath.Join(certDirPath, keyId+".crt")
 
 	return certFilePath, nil
-}
-
-type CertLoader struct {
 }
 
 // LoadCert loads a certificate by entered key ID.
