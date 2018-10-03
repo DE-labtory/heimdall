@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hecdsa
+package certstore
 
 import (
 	"crypto/ecdsa"
@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/it-chain/heimdall"
+	"github.com/it-chain/heimdall/hecdsa"
 )
 
 type CertStorer struct {
@@ -59,7 +60,15 @@ func makeCertFilePath(certDirPath string, cert *x509.Certificate) (certFilePath 
 		}
 	}
 
-	pub := NewPubKey(cert.PublicKey.(*ecdsa.PublicKey))
+	var pub heimdall.Key
+
+	switch cert.PublicKey.(type) {
+	case *ecdsa.PublicKey:
+		pub = hecdsa.NewPubKey(cert.PublicKey.(*ecdsa.PublicKey))
+	default:
+		return "", errors.New("public key in certificate not supported")
+	}
+
 	keyId := pub.ID()
 	certFilePath = filepath.Join(certDirPath, keyId+".crt")
 
