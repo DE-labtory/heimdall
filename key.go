@@ -26,10 +26,6 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 )
 
-type KeyGenerator interface {
-	GenerateKey(KeyGenOpts) (PriKey, error)
-}
-
 type KeyRecoverer interface {
 	RecoverKeyFromByte(keyBytes []byte, keyType KeyType, strFmtKeyGenOpt string) (Key, error)
 }
