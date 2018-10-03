@@ -30,8 +30,8 @@ import (
 )
 
 // StoreCert stores a certificate to certificate store directory.
-func (cs *CertStorer) StoreCert(cert *x509.Certificate, certDirPath string) error {
-	certPEMBlock := heimdall.X509CertToPem(cert)
+func Store(cert *x509.Certificate, certDirPath string) error {
+	certPEMBlock := X509CertToPem(cert)
 
 	certFilePath, err := makeCertFilePath(certDirPath, cert)
 	if err != nil {
@@ -73,7 +73,7 @@ func makeCertFilePath(certDirPath string, cert *x509.Certificate) (certFilePath 
 }
 
 // LoadCert loads a certificate by entered key ID.
-func (cl *CertLoader) LoadCert(keyId heimdall.KeyID, certDirPath string) (cert *x509.Certificate, err error) {
+func Load(keyId heimdall.KeyID, certDirPath string) (cert *x509.Certificate, err error) {
 	certFilePath, err := findCertFileByKeyId(certDirPath, keyId)
 	if err != nil {
 		return nil, err
