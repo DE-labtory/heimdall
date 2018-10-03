@@ -28,9 +28,7 @@ import (
 
 func TestSKIToKeyID(t *testing.T) {
 	// given
-	keyGenerator := hecdsa.KeyGenerator{}
-
-	pri, err := keyGenerator.GenerateKey(hecdsa.ECP384)
+	pri, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
 	ski := pri.SKI()
@@ -45,9 +43,7 @@ func TestSKIToKeyID(t *testing.T) {
 
 func TestSKIValidCheck(t *testing.T) {
 	// given
-	keyGenerator := hecdsa.KeyGenerator{}
-
-	pri, err := keyGenerator.GenerateKey(hecdsa.ECP384)
+	pri, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
 	ski := pri.SKI()
@@ -65,9 +61,7 @@ func TestSKIValidCheck(t *testing.T) {
 
 func TestKeyIDPrefixCheck(t *testing.T) {
 	// given
-	keyGenerator := hecdsa.KeyGenerator{}
-
-	pri, err := keyGenerator.GenerateKey(hecdsa.ECP384)
+	pri, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
 	ski := pri.SKI()

@@ -41,9 +41,8 @@ import (
 
 func setUpSigner(t *testing.T) (hecdsa.Signer, *hecdsa.PriKey, hecdsa.SignerOpts) {
 	ecdsaSigner := hecdsa.Signer{}
-	generator := hecdsa.KeyGenerator{}
 
-	pri, err := generator.GenerateKey(hecdsa.ECP384)
+	pri, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
 	signerOpt := hecdsa.SignerOpts("SHA384")

@@ -39,8 +39,7 @@ func TestKeyStorer_StoreKey(t *testing.T) {
 	keyStorer := keystore.NewKeyStorer(kdfOpt, encOpt, keyDeriver, keyEncryptor)
 	assert.NotNil(t, keyStorer)
 
-	generator := hecdsa.KeyGenerator{}
-	pri, err := generator.GenerateKey(hecdsa.ECP384)
+	pri, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
 	// when
@@ -62,8 +61,7 @@ func TestKeyLoader_LoadKey(t *testing.T) {
 	keyStorer := keystore.NewKeyStorer(kdfOpt, encOpt, keyDeriver, keyEncryptor)
 	assert.NotNil(t, keyStorer)
 
-	generator := hecdsa.KeyGenerator{}
-	pri, err := generator.GenerateKey(hecdsa.KeyGenOpts(hecdsa.ECP384))
+	pri, err := hecdsa.GenerateKey(hecdsa.KeyGenOpts(hecdsa.ECP384))
 	assert.NoError(t, err)
 
 	err = keyStorer.StoreKey(pri, "password", heimdall.TestKeyDir)
