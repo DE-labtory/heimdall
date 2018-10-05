@@ -17,102 +17,71 @@
 package encryption
 
 import (
+	"errors"
 	"strconv"
-	"strings"
 
 	"github.com/it-chain/heimdall"
 )
+
+var ErrAlgorithmNotSupported = errors.New("entered algorithm is not supported")
+var ErrKeyLengthNotSupported = errors.New("entered key length is not supported")
+var ErrOperationModeNotSupported = errors.New("entered operation mode is not supported")
 
 const (
 	// algorithm - Ex. AES, (T)DES
 	AES = "AES"
 	// operation(op) mode - Ex. CTR, CBC, CFB, GCM, OFB
 	CTR = "CTR"
-
-	// full encryption options
-	AES128CTR = iota
-	AES192CTR
-	AES256CTR
-	maxEncOpt
 )
-
-var encOpts = [...]string{
-	"AES_128_CTR",
-	"AES_192_CTR",
-	"AES_256_CTR",
-	"maxEncOpt",
-}
 
 var DefaultAlgo = AES
 var DefaultKeyLen = 192
 var DefaultOpMode = CTR
 
-type AESEncOpts struct {
-	keyLen int
-	opMode string
+type Opts struct {
+	Algorithm string
+	KeyLen    int
+	OpMode    string
 }
 
-func NewAESEncOpts(keyLen int, opMode string) heimdall.EncryptOpts {
-	return &AESEncOpts{
-		keyLen: keyLen,
-		opMode: opMode,
-	}
+func NewOpts(algorithm string, keyLen int, opMode string) (encOpt *Opts, err error) {
+	encOpt = new(Opts)
+	return encOpt, encOpt.initOpts(algorithm, keyLen, opMode)
 }
 
-// ToString returns string format of encryption algorithm with key length (ex. AES128)
-func (opt AESEncOpts) ToString() string {
-	return AES + heimdall.OptDelimiter + strconv.Itoa(opt.keyLen) + heimdall.OptDelimiter + opt.opMode
-}
-
-func (opt AESEncOpts) IsValid() bool {
-	strFmtEncOpt := opt.ToString()
-
-	for _, encOpt := range encOpts {
-		if strFmtEncOpt == encOpt {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (opt AESEncOpts) Algorithm() string {
-	return AES
-}
-
-func (opt AESEncOpts) KeyLen() int {
-	return opt.keyLen
-}
-
-func (opt AESEncOpts) ToInnerFileInfo() heimdall.EncInnerFileInfo {
-	return heimdall.EncInnerFileInfo{
-		Algo:   opt.Algorithm(),
-		KeyLen: opt.keyLen,
-		OpMode: opt.opMode,
-	}
-}
-
-func StringToEncOpt(strFmtOpt string) heimdall.EncryptOpts {
-	encAlgo := strings.Split(strFmtOpt, heimdall.OptDelimiter)[0]
-	switch encAlgo {
+func (opt *Opts) initOpts(algorithm string, keyLen int, opMode string) error {
+	// algorithm
+	switch algorithm {
 	case AES:
-		return stringToAESEncOpt(strFmtOpt)
-		// other algorithms
+		opt.Algorithm = algorithm
+	default:
+		return ErrAlgorithmNotSupported
+	}
+
+	// key length
+	switch keyLen {
+	case 128:
+		opt.KeyLen = keyLen
+	case 192:
+		opt.KeyLen = keyLen
+	case 256:
+		opt.KeyLen = keyLen
+	default:
+		return ErrKeyLengthNotSupported
+	}
+
+	// operation mode
+	switch opMode {
+	case CTR:
+		opt.OpMode = opMode
+	default:
+		return ErrOperationModeNotSupported
 	}
 
 	return nil
 }
 
-func stringToAESEncOpt(strFmtOpt string) heimdall.EncryptOpts {
-	encOpts := strings.Split(strFmtOpt, heimdall.OptDelimiter)
-
-	keyLen, err := strconv.Atoi(encOpts[1])
-	if err != nil {
-		return nil
-	}
-
-	return &AESEncOpts{
-		keyLen: keyLen,
-		opMode: encOpts[2],
-	}
+// ToString returns string format of encryption algorithm with key length (ex. AES128)
+func (opt *Opts) ToString() string {
+	return opt.Algorithm + heimdall.OptDelimiter + strconv.Itoa(opt.KeyLen) + heimdall.OptDelimiter + opt.OpMode
 }
