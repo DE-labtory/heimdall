@@ -29,21 +29,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestKeyStorer_StoreKey(t *testing.T) {
+func TestStoreKey(t *testing.T) {
 	// given
-	keyDeriver := &kdf.ScryptKeyDeriver{}
-	keyEncryptor := &encryption.AESCTREncryptor{}
-	kdfOpt := kdf.NewScryptOpts(kdf.DefaultScryptN, kdf.DefaultScryptR, kdf.DefaultScryptP)
-	encOpt := encryption.NewAESEncOpts(encryption.DefaultKeyLen, encryption.DefaultOpMode)
-
-	keyStorer := keystore.NewKeyStorer(kdfOpt, encOpt, keyDeriver, keyEncryptor)
-	assert.NotNil(t, keyStorer)
+	kdfOpt, err := kdf.NewOpts("SCRYPT", kdf.DefaultScryptParams)
+	assert.NoError(t, err)
+	encOpt, err := encryption.NewOpts("AES", encryption.DefaultKeyLen, encryption.DefaultOpMode)
+	assert.NoError(t, err)
 
 	pri, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
 	// when
-	err = keyStorer.StoreKey(pri, "password", heimdall.TestKeyDir)
+	err = keystore.StoreKey(pri, "password", heimdall.TestKeyDir, encOpt, kdfOpt)
 
 	// then
 	assert.NoError(t, err)
@@ -51,37 +48,29 @@ func TestKeyStorer_StoreKey(t *testing.T) {
 	defer os.RemoveAll(heimdall.TestKeyDir)
 }
 
-func TestKeyLoader_LoadKey(t *testing.T) {
+func TestLoadKey(t *testing.T) {
 	// given
-	keyDeriver := &kdf.ScryptKeyDeriver{}
-	keyEncryptor := &encryption.AESCTREncryptor{}
-	kdfOpt := kdf.NewScryptOpts(kdf.DefaultScryptN, kdf.DefaultScryptR, kdf.DefaultScryptP)
-	encOpt := encryption.NewAESEncOpts(encryption.DefaultKeyLen, encryption.DefaultOpMode)
-
-	keyStorer := keystore.NewKeyStorer(kdfOpt, encOpt, keyDeriver, keyEncryptor)
-	assert.NotNil(t, keyStorer)
+	kdfOpt, err := kdf.NewOpts(kdf.SCRYPT, kdf.DefaultScryptParams)
+	assert.NoError(t, err)
+	encOpt, err := encryption.NewOpts("AES", encryption.DefaultKeyLen, encryption.DefaultOpMode)
+	assert.NoError(t, err)
 
 	pri, err := hecdsa.GenerateKey(hecdsa.KeyGenOpts(hecdsa.ECP384))
 	assert.NoError(t, err)
 
-	err = keyStorer.StoreKey(pri, "password", heimdall.TestKeyDir)
+	err = keystore.StoreKey(pri, "password", heimdall.TestKeyDir, encOpt, kdfOpt)
 	assert.NoError(t, err)
 
 	keyRecoverer := &hecdsa.KeyRecoverer{}
-	keyDecryptor := &encryption.AESCTRDecryptor{}
-	keyDeriver = &kdf.ScryptKeyDeriver{}
-
-	keyLoader := keystore.NewKeyLoader(keyDecryptor, keyRecoverer, keyDeriver)
-	assert.NotNil(t, keyLoader)
 
 	// when
-	key, err := keyLoader.LoadKey(pri.ID(), "password", heimdall.TestKeyDir)
+	key, err := keystore.LoadKey(pri.ID(), "password", heimdall.TestKeyDir, keyRecoverer)
 
 	// then
 	assert.NoError(t, err)
 	assert.Equal(t, pri.ID(), key.ID())
 	assert.Equal(t, pri.KeyGenOpt(), key.KeyGenOpt())
-	assert.Equal(t, pri.KeyType(), key.KeyType())
+	assert.Equal(t, pri.IsPrivate(), key.IsPrivate())
 
 	defer os.RemoveAll(heimdall.TestKeyDir)
 }

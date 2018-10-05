@@ -113,15 +113,15 @@ func TestPriKey_KeyGenOpt(t *testing.T) {
 	assert.Equal(t, hecdsa.ECP384, keyGenOpt)
 }
 
-func TestPriKey_KeyType(t *testing.T) {
+func TestPriKey_IsPrivate(t *testing.T) {
 	// given
 	pri := setUpPriKey(t)
 
 	// when
-	keyType := pri.KeyType()
+	isPrivate := pri.IsPrivate()
 
 	// then
-	assert.Equal(t, heimdall.KeyType(heimdall.PRIVATE_KEY), keyType)
+	assert.True(t, isPrivate)
 }
 
 func TestPriKey_PublicKey(t *testing.T) {
@@ -199,15 +199,15 @@ func TestPubKey_KeyGenOpt(t *testing.T) {
 	assert.Equal(t, hecdsa.ECP384, keyGenOpt)
 }
 
-func TestPubKey_KeyType(t *testing.T) {
+func TestPubKey_IsPrivate(t *testing.T) {
 	// given
 	pub := setUpPriKey(t).PublicKey()
 
 	// when
-	keyType := pub.KeyType()
+	isPrivate := pub.IsPrivate()
 
 	// then
-	assert.Equal(t, heimdall.KeyType(heimdall.PUBLIC_KEY), keyType)
+	assert.False(t, isPrivate)
 }
 
 func TestKeyRecoverer_RecoverKeyFromByte(t *testing.T) {
@@ -221,8 +221,8 @@ func TestKeyRecoverer_RecoverKeyFromByte(t *testing.T) {
 	keyRecoverer := hecdsa.KeyRecoverer{}
 
 	// when
-	priKey, err := keyRecoverer.RecoverKeyFromByte(priBytes, pri.KeyType(), pri.KeyGenOpt().ToString())
-	pubKey, err2 := keyRecoverer.RecoverKeyFromByte(pubBytes, pub.KeyType(), pub.KeyGenOpt().ToString())
+	priKey, err := keyRecoverer.RecoverKeyFromByte(priBytes, pri.IsPrivate())
+	pubKey, err2 := keyRecoverer.RecoverKeyFromByte(pubBytes, pub.IsPrivate())
 
 	// then
 	assert.NoError(t, err)

@@ -34,10 +34,8 @@ import (
 
 	"github.com/it-chain/heimdall/cert"
 	"github.com/it-chain/heimdall/config"
-	"github.com/it-chain/heimdall/encryption"
 	"github.com/it-chain/heimdall/hashing"
 	"github.com/it-chain/heimdall/hecdsa"
-	"github.com/it-chain/heimdall/kdf"
 	"github.com/it-chain/heimdall/keystore"
 	"github.com/it-chain/heimdall/mocks"
 )
@@ -47,6 +45,7 @@ This sample shows data to be transmitted
 is signed and verified by ECDSA Key.
 */
 
+// todo: SignWithKeyInLocal() 사용 추가
 func main() {
 	// set configuration
 	myConFig, err := config.NewSimpleConfig(192)
@@ -66,11 +65,8 @@ func main() {
 	log.Println("storing key...")
 	kdfOpt := myConFig.KdfOpt
 	encOpt := myConFig.EncOpt
-	keyDeriver := &kdf.ScryptKeyDeriver{}
-	keyEncryptor := &encryption.AESCTREncryptor{}
-	keyStorer := keystore.NewKeyStorer(kdfOpt, encOpt, keyDeriver, keyEncryptor)
 
-	err = keyStorer.StoreKey(pri, "password", myConFig.KeyDirPath)
+	err = keystore.StoreKey(pri, "password", myConFig.KeyDirPath, encOpt, kdfOpt)
 	errorCheck(err)
 	log.Println("storing key is success!")
 
@@ -78,12 +74,9 @@ func main() {
 	log.Println("loading key...")
 	keyId := pri.ID()
 
-	keyDecryptor := &encryption.AESCTRDecryptor{}
 	keyRecoverer := &hecdsa.KeyRecoverer{}
-	loaderKeyDeriver := &kdf.ScryptKeyDeriver{}
 
-	keyLoader := keystore.NewKeyLoader(keyDecryptor, keyRecoverer, loaderKeyDeriver)
-	loadedPri, err := keyLoader.LoadKey(keyId, "password", myConFig.KeyDirPath)
+	loadedPri, err := keystore.LoadKey(keyId, "password", myConFig.KeyDirPath, keyRecoverer)
 	errorCheck(err)
 	if loadedPri == nil {
 		log.Println("loading key is failed!")
@@ -140,9 +133,8 @@ func main() {
 
 	// signing message (making signature)
 	log.Println("signing message...")
-	signer := hecdsa.Signer{}
 	signerOpt := hecdsa.NewSignerOpts(hashing.SHA384)
-	signature, err := signer.Sign(hPri, message, signerOpt)
+	signature, err := hecdsa.Sign(hPri, message, signerOpt)
 	errorCheck(err)
 	log.Println("signing message success!")
 
@@ -150,14 +142,13 @@ func main() {
 
 	// verifying signature with public key
 	log.Println("verifying signature with public key...")
-	verfier := hecdsa.Verifier{}
-	valid, err := verfier.Verify(hPri.PublicKey(), signature, message, signerOpt)
+	valid, err := hecdsa.Verify(hPri.PublicKey(), signature, message, signerOpt)
 	errorCheck(err)
 	log.Println("verifying with public key result: ", valid)
 
 	// verifying signature with certificate
 	log.Println("verifying signature with certificate...")
-	valid, err = verfier.VerifyWithCert(clientCert, signature, message, signerOpt)
+	valid, err = hecdsa.VerifyWithCert(clientCert, signature, message, signerOpt)
 	errorCheck(err)
 	log.Println("verifying with certificate result: ", valid)
 }

@@ -32,7 +32,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCertStorer_StoreCert(t *testing.T) {
+func TestStore(t *testing.T) {
 	// given
 	rootPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	rootPub := &rootPri.PublicKey
@@ -53,7 +53,7 @@ func TestCertStorer_StoreCert(t *testing.T) {
 	defer os.RemoveAll(heimdall.TestCertDir)
 }
 
-func TestCertLoader_LoadCert(t *testing.T) {
+func TestLoad(t *testing.T) {
 	// given
 	rootPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	rootPub := &rootPri.PublicKey

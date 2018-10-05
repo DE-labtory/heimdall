@@ -18,49 +18,55 @@
 package kdf_test
 
 import (
-	"crypto/rand"
 	"testing"
 
-	"github.com/it-chain/heimdall/encryption"
-	"github.com/it-chain/heimdall/hashing"
+	"crypto/rand"
+
 	"github.com/it-chain/heimdall/kdf"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestScryptKeyDeriver_DeriveKey(t *testing.T) {
-	// given
-	keyDeriver := kdf.ScryptKeyDeriver{}
-	scryptOpt := kdf.NewScryptOpts(kdf.DefaultScryptN, kdf.DefaultScryptR, kdf.DefaultScryptP)
+func TestDeriveKey(t *testing.T) {
+	tests := map[string]struct {
+		kdfName   string
+		kdfParams map[string]int
+		err       error
+	}{
+		"scrypt option": {
+			kdfName:   "SCRYPT",
+			kdfParams: kdf.DefaultScryptParams,
+			err:       nil,
+		},
+		"pbkdf2 option": {
+			kdfName:   "PBKDF2",
+			kdfParams: kdf.DefaultPbkdf2Params,
+			err:       nil,
+		},
+		"not supported option": {
+			kdfName:   "BCRYPT",
+			kdfParams: kdf.DefaultScryptParams,
+			err:       kdf.ErrKdfNotSupported,
+		},
+	}
 
-	pwdBytes := []byte("password")
+	pwd := []byte("password")
+	keyLen := 128
+
 	salt := make([]byte, 8)
 	_, err := rand.Read(salt)
 	assert.NoError(t, err)
 
-	// when
-	derivedKey, err := keyDeriver.DeriveKey(pwdBytes, salt, encryption.DefaultKeyLen, scryptOpt)
+	for testCase, test := range tests {
+		t.Logf("running test case [%s]", testCase)
 
-	// then
-	assert.NoError(t, err)
-	assert.NotNil(t, derivedKey)
-	assert.Len(t, derivedKey, encryption.DefaultKeyLen/8) // bit to byte
-}
+		// given
+		kdfOpt, _ := kdf.NewOpts(test.kdfName, test.kdfParams)
 
-func TestPbkdf2KeyDeriver_DeriveKey(t *testing.T) {
-	// given
-	keyDeriver := kdf.Pbkdf2KeyDeriver{}
-	pbkdf2Opt := kdf.NewPbkdf2Opts(kdf.DefaultPbkdf2Iteration, hashing.SHA384)
+		// when
+		_, err := kdf.DeriveKey(pwd, salt, keyLen, kdfOpt)
 
-	pwdBytes := []byte("password")
-	salt := make([]byte, 8)
-	_, err := rand.Read(salt)
-	assert.NoError(t, err)
+		// then
+		assert.Equal(t, test.err, err)
+	}
 
-	// when
-	derivedKey, err := keyDeriver.DeriveKey(pwdBytes, salt, encryption.DefaultKeyLen, pbkdf2Opt)
-
-	// then
-	assert.NoError(t, err)
-	assert.NotNil(t, derivedKey)
-	assert.Len(t, derivedKey, encryption.DefaultKeyLen/8) // bit to byte
 }

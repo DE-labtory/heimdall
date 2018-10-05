@@ -29,15 +29,15 @@ import (
 	"github.com/it-chain/heimdall/kdf"
 )
 
-var ErrInvalidSecLv = "invalid security level"
+var ErrInvalidSecLv = errors.New("invalid security level")
 
 type Config struct {
 	SecLv       int
 	KeyDirPath  string
 	CertDirPath string
 	KeyGenOpt   heimdall.KeyGenOpts
-	EncOpt      heimdall.EncryptOpts
-	KdfOpt      heimdall.KeyDerivationOpts
+	EncOpt      *encryption.Opts
+	KdfOpt      *kdf.Opts
 	SigAlgo     string
 	HashOpt     hashing.HashOpts
 }
@@ -55,13 +55,6 @@ func NewDefaultConfig() (conf *Config, err error) {
 }
 
 func (conf *Config) initSimpleConfig(secLv int) error {
-	conf.KeyDirPath = "./.keys"
-	conf.CertDirPath = "./.certs"
-	conf.SigAlgo = "ECDSA"
-
-	conf.EncOpt = encryption.NewAESEncOpts(secLv, "CTR")
-	conf.KdfOpt = kdf.NewScryptOpts(kdf.DefaultScryptN, kdf.DefaultScryptR, kdf.DefaultScryptP)
-
 	switch secLv {
 	case 128:
 		conf.KeyGenOpt = hecdsa.KeyGenOpts(hecdsa.ECP256)
@@ -73,8 +66,25 @@ func (conf *Config) initSimpleConfig(secLv int) error {
 		conf.KeyGenOpt = hecdsa.KeyGenOpts(hecdsa.ECP521)
 		conf.HashOpt = hashing.HashOpts(hashing.SHA512)
 	default:
-		return errors.New(ErrInvalidSecLv)
+		return ErrInvalidSecLv
 	}
+
+	conf.KeyDirPath = "./.keys"
+	conf.CertDirPath = "./.certs"
+	conf.SigAlgo = "ECDSA"
+
+	encOpt, err := encryption.NewOpts("AES", secLv, "CTR")
+	if err != nil {
+		return err
+	}
+	conf.EncOpt = encOpt
+
+	kdfOpt, err := kdf.NewOpts("SCRYPT", kdf.DefaultScryptParams)
+	if err != nil {
+		return err
+	}
+	conf.KdfOpt = kdfOpt
+
 	return nil
 }
 

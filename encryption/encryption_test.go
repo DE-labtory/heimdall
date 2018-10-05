@@ -27,7 +27,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAESCTREncryptor_EncryptKey(t *testing.T) {
+func TestEncryptKey(t *testing.T) {
 	// given
 	encKey := make([]byte, 24)
 	_, err := rand.Read(encKey)
@@ -36,17 +36,18 @@ func TestAESCTREncryptor_EncryptKey(t *testing.T) {
 	priKey, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
-	encryptor := encryption.AESCTREncryptor{}
+	encOpt, err := encryption.NewOpts("AES", 128, "CTR")
+	assert.NoError(t, err)
 
 	// when
-	encryptedPriKey, err := encryptor.EncryptKey(priKey, encKey)
+	encryptedPriKey, err := encryption.EncryptKey(priKey, encKey, encOpt)
 
 	// then
 	assert.NotNil(t, encryptedPriKey)
 	assert.NoError(t, err)
 }
 
-func TestAESCTRDecryptor_DecryptKey(t *testing.T) {
+func TestDecryptKey(t *testing.T) {
 	// given
 	encKey := make([]byte, 24)
 	_, err := rand.Read(encKey)
@@ -55,15 +56,15 @@ func TestAESCTRDecryptor_DecryptKey(t *testing.T) {
 	priKey, err := hecdsa.GenerateKey(hecdsa.ECP384)
 	assert.NoError(t, err)
 
-	encryptor := encryption.AESCTREncryptor{}
-	decryptor := encryption.AESCTRDecryptor{}
+	encOpt, err := encryption.NewOpts("AES", 128, "CTR")
+	assert.NoError(t, err)
 
-	encryptedPriKey, err := encryptor.EncryptKey(priKey, encKey)
+	encryptedPriKey, err := encryption.EncryptKey(priKey, encKey, encOpt)
 	assert.NotNil(t, encryptedPriKey)
 	assert.NoError(t, err)
 
 	// when
-	keyBytes, err := decryptor.DecryptKey(encryptedPriKey, encKey)
+	keyBytes, err := encryption.DecryptKey(encryptedPriKey, encKey, encOpt)
 
 	// then
 	assert.Equal(t, priKey.ToByte(), keyBytes)
