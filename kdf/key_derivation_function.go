@@ -20,24 +20,29 @@
 package kdf
 
 import (
-	"github.com/it-chain/heimdall"
+	"github.com/it-chain/heimdall/hashing"
 	"golang.org/x/crypto/pbkdf2"
 	"golang.org/x/crypto/scrypt"
 )
 
-type ScryptKeyDeriver struct {
+func DeriveKey(pwd []byte, salt []byte, keyLen int, kdfOpt *Opts) (dKey []byte, err error) {
+	switch kdfOpt.KdfName {
+	case SCRYPT:
+		return deriveKeyWithScrypt(pwd, salt, keyLen, kdfOpt.KdfParams)
+	case PBKDF2:
+		return deriveKeyWithPbkdf2(pwd, salt, keyLen, kdfOpt.KdfParams)
+	default:
+		return nil, ErrKdfNotSupported
+	}
 }
 
 // DeriveKey derives a key from input password.
-func (keyDeriver *ScryptKeyDeriver) DeriveKey(pwd []byte, salt []byte, keyLen int, opt heimdall.KeyDerivationOpts) (dKey []byte, err error) {
-	return scrypt.Key(pwd, salt, opt.(*ScryptOpts).n, opt.(*ScryptOpts).r, opt.(*ScryptOpts).p, keyLen/8)
+func deriveKeyWithScrypt(pwd []byte, salt []byte, keyLen int, scryptParams map[string]int) (dKey []byte, err error) {
+	return scrypt.Key(pwd, salt, scryptParams["N"], scryptParams["R"], scryptParams["P"], keyLen/8)
 }
 
-type Pbkdf2KeyDeriver struct {
-}
-
-func (keyDeriver *Pbkdf2KeyDeriver) DeriveKey(pwd []byte, salt []byte, keyLen int, opt heimdall.KeyDerivationOpts) (dKey []byte, err error) {
-	return pbkdf2.Key(pwd, salt, opt.(*Pbkdf2Opts).iteration, keyLen/8, opt.(*Pbkdf2Opts).hashOpt.HashFunction()), nil
+func deriveKeyWithPbkdf2(pwd []byte, salt []byte, keyLen int, pbkdf2Params map[string]int) (dKey []byte, err error) {
+	return pbkdf2.Key(pwd, salt, pbkdf2Params["iteration"], keyLen/8, hashing.HashOpts(pbkdf2Params["hashOpt"]).HashFunction()), nil
 }
 
 // TODO: json marshalling make integer type to float64 type,,,,
