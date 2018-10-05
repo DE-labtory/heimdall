@@ -30,6 +30,7 @@ import (
 
 	"github.com/it-chain/heimdall"
 	"github.com/it-chain/heimdall/hashing"
+	"github.com/it-chain/heimdall/keystore"
 )
 
 var ErrInvalidSignature = [...]error{
@@ -81,11 +82,19 @@ func unmarshalECDSASignature(signature []byte) (*big.Int, *big.Int, error) {
 	return ecdsaSig.R, ecdsaSig.S, nil
 }
 
-type Signer struct {
+func SignWithKeyInLocal(keyID heimdall.KeyID, keyDirPath, pwd string, message []byte, hashOpt hashing.HashOpts) ([]byte, error) {
+	recoverer := &KeyRecoverer{}
+	signerOpt := NewSignerOpts(hashOpt)
+	pri, err := keystore.LoadKey(keyID, pwd, keyDirPath, recoverer)
+	if err != nil {
+		return nil, err
+	}
+
+	return Sign(pri.(*PriKey), message, signerOpt)
 }
 
 // Sign generates signature for a data using private key.
-func (signer *Signer) Sign(pri heimdall.PriKey, message []byte, opts heimdall.SignerOpts) ([]byte, error) {
+func Sign(pri heimdall.PriKey, message []byte, opts heimdall.SignerOpts) ([]byte, error) {
 	digest, err := hashing.Hash(message, opts.HashOpt())
 	if err != nil {
 		return nil, err
@@ -107,11 +116,8 @@ func (signer *Signer) Sign(pri heimdall.PriKey, message []byte, opts heimdall.Si
 	return signature, nil
 }
 
-type Verifier struct {
-}
-
 // Verify verifies the signature using pubKey(public key) and digest of original message, then returns boolean value.
-func (verifier *Verifier) Verify(pub heimdall.PubKey, signature, message []byte, opts heimdall.SignerOpts) (bool, error) {
+func Verify(pub heimdall.PubKey, signature, message []byte, opts heimdall.SignerOpts) (bool, error) {
 	digest, err := hashing.Hash(message, opts.HashOpt())
 	if err != nil {
 		return false, err
@@ -127,7 +133,7 @@ func (verifier *Verifier) Verify(pub heimdall.PubKey, signature, message []byte,
 }
 
 // VerifyWithCert verify a signature with certificate.
-func (verifier *Verifier) VerifyWithCert(cert *x509.Certificate, signature, message []byte, opts heimdall.SignerOpts) (bool, error) {
+func VerifyWithCert(cert *x509.Certificate, signature, message []byte, opts heimdall.SignerOpts) (bool, error) {
 	pub := NewPubKey(cert.PublicKey.(*ecdsa.PublicKey))
-	return verifier.Verify(pub, signature, message, opts)
+	return Verify(pub, signature, message, opts)
 }
