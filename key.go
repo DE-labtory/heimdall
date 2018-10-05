@@ -27,7 +27,7 @@ import (
 )
 
 type KeyRecoverer interface {
-	RecoverKeyFromByte(keyBytes []byte, keyType KeyType, strFmtKeyGenOpt string) (Key, error)
+	RecoverKeyFromByte(keyBytes []byte, isPrivate bool) (Key, error)
 }
 
 type Key interface {

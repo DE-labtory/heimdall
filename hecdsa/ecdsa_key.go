@@ -19,7 +19,6 @@ package hecdsa
 import (
 	"crypto/ecdsa"
 
-	"crypto/elliptic"
 	"crypto/rand"
 
 	"crypto/sha256"
@@ -33,10 +32,6 @@ import (
 )
 
 var ErrECDSAKeyGenOpt = errors.New("invalid ECDSA key generating option")
-var ErrKeyBytesLength = errors.New("invalid key bytes length - wrong length of key bytes for the entered curve option")
-var ErrPriKeySize = errors.New("invalid private key - private key must be smaller than N of curve")
-var ErrPriKeyValue = errors.New("invalid private key - private key should not be zero or negative")
-var ErrPubKeyValue = errors.New("invalid public key - public key X component must not be nil")
 var ErrKeyType = errors.New("invalid key type - key type should be heimdall.PRIVATEKEY or heimdall.PUBLICKEY")
 
 func GenerateKey(keyGenOpt heimdall.KeyGenOpts) (heimdall.PriKey, error) {
@@ -137,51 +132,29 @@ func (pubKey *PubKey) IsPrivate() bool {
 type KeyRecoverer struct {
 }
 
-func (recoverer *KeyRecoverer) RecoverKeyFromByte(keyBytes []byte, keyType heimdall.KeyType, strFmtKeyGenOpt string) (heimdall.Key, error) {
-	curve := StringToKeyGenOpt(strFmtKeyGenOpt).ToCurve()
-
-	switch keyType {
-	case heimdall.PRIVATE_KEY:
-		pri := new(PriKey)
-		pri.internalPriKey = new(ecdsa.PrivateKey)
-
-		pri.internalPriKey.PublicKey.Curve = curve
-
-		if 8*len(keyBytes) != pri.internalPriKey.Params().BitSize {
-			return nil, ErrKeyBytesLength
-		}
-		pri.internalPriKey.D = new(big.Int).SetBytes(keyBytes)
-
-		if pri.internalPriKey.D.Cmp(pri.internalPriKey.Params().N) >= 0 {
-			return nil, ErrPriKeySize
+func (recoverer *KeyRecoverer) RecoverKeyFromByte(keyBytes []byte, isPrivate bool) (heimdall.Key, error) {
+	switch isPrivate {
+	case true:
+		internalPriKey, err := x509.ParseECPrivateKey(keyBytes)
+		if err != nil {
+			return nil, err
 		}
 
-		if pri.internalPriKey.D.Sign() <= 0 {
-			return nil, ErrPriKeyValue
-		}
-
-		pri.internalPriKey.PublicKey.X, pri.internalPriKey.PublicKey.Y = pri.internalPriKey.PublicKey.Curve.ScalarBaseMult(keyBytes)
-		if pri.internalPriKey.PublicKey.X == nil {
-			return nil, ErrPubKeyValue
-		}
+		pri := NewPriKey(internalPriKey)
 
 		return pri, nil
 
-	case heimdall.PUBLIC_KEY:
-		x, y := elliptic.Unmarshal(curve, keyBytes)
-
-		if x == nil {
-			return nil, ErrPubKeyValue
+	case false:
+		internalPubKey, err := x509.ParsePKIXPublicKey(keyBytes)
+		if err != nil {
+			return nil, err
 		}
 
-		pub := new(PubKey)
-		pub.internalPubKey = new(ecdsa.PublicKey)
-		pub.internalPubKey.X = x
-		pub.internalPubKey.Y = y
-		pub.internalPubKey.Curve = curve
+		pub := NewPubKey(internalPubKey.(*ecdsa.PublicKey))
 
 		return pub, nil
-	}
 
-	return nil, ErrKeyType
+	default:
+		return nil, ErrKeyType
+	}
 }
