@@ -19,25 +19,8 @@ package heimdall
 import "github.com/it-chain/heimdall/hashing"
 
 type KeyID = string
-type KeyType = int
 
 var OptDelimiter = "_"
-
-const (
-	PRIVATE_KEY = iota
-	PUBLIC_KEY
-)
-
-type KDFInnerFileInfo struct {
-	KDF    string
-	Params map[string]string
-}
-
-type EncInnerFileInfo struct {
-	Algo   string
-	KeyLen int
-	OpMode string
-}
 
 // options
 type Options interface {

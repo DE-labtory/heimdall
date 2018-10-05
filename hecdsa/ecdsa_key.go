@@ -26,6 +26,8 @@ import (
 	"errors"
 	"math/big"
 
+	"crypto/x509"
+
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/it-chain/heimdall"
 )
@@ -71,7 +73,8 @@ func (priKey *PriKey) SKI() []byte {
 }
 
 func (priKey *PriKey) ToByte() []byte {
-	return priKey.internalPriKey.D.Bytes()
+	keyBytes, _ := x509.MarshalECPrivateKey(priKey.internalPriKey)
+	return keyBytes
 }
 
 func (priKey *PriKey) KeyGenOpt() heimdall.KeyGenOpts {
@@ -79,8 +82,8 @@ func (priKey *PriKey) KeyGenOpt() heimdall.KeyGenOpts {
 	return StringToKeyGenOpt(pubKey.internalPubKey.Curve.Params().Name)
 }
 
-func (priKey *PriKey) KeyType() heimdall.KeyType {
-	return heimdall.PRIVATE_KEY
+func (priKey *PriKey) IsPrivate() bool {
+	return true
 }
 
 func (priKey *PriKey) PublicKey() heimdall.PubKey {
@@ -119,15 +122,16 @@ func (pubKey *PubKey) SKI() []byte {
 }
 
 func (pubKey *PubKey) ToByte() []byte {
-	return elliptic.Marshal(pubKey.internalPubKey.Curve, pubKey.internalPubKey.X, pubKey.internalPubKey.Y)
+	keyBytes, _ := x509.MarshalPKIXPublicKey(pubKey.internalPubKey)
+	return keyBytes
 }
 
 func (pubKey *PubKey) KeyGenOpt() heimdall.KeyGenOpts {
 	return StringToKeyGenOpt(pubKey.internalPubKey.Curve.Params().Name)
 }
 
-func (pubKey *PubKey) KeyType() heimdall.KeyType {
-	return heimdall.PUBLIC_KEY
+func (pubKey *PubKey) IsPrivate() bool {
+	return false
 }
 
 type KeyRecoverer struct {
