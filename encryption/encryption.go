@@ -25,14 +25,29 @@ import (
 	"crypto/rand"
 	"io"
 
+	"errors"
+
 	"github.com/it-chain/heimdall"
 )
 
-type AESCTREncryptor struct {
+func EncryptKey(pri heimdall.Key, key []byte, opts *Opts) (encryptedKey []byte, err error) {
+	switch opts.Algorithm {
+	case AES:
+		switch opts.OpMode {
+		case CTR:
+			return encryptKeyWithAESCTR(pri, key)
+		default:
+			return nil, ErrOperationModeNotSupported
+		}
+	default:
+		return nil, ErrAlgorithmNotSupported
+	}
+
+	return nil, errors.New("fatal error during EncryptKey()")
 }
 
-// EncryptPriKey encrypts private key.
-func (encryptor *AESCTREncryptor) EncryptKey(pri heimdall.Key, key []byte) (encryptedKey []byte, err error) {
+// AESCTREncryptKey encrypts private key.
+func encryptKeyWithAESCTR(pri heimdall.Key, key []byte) (encryptedKey []byte, err error) {
 	keyBytes := pri.ToByte()
 
 	encryptedKey, err = encryptWithAESCTR(keyBytes, key)
@@ -41,19 +56,6 @@ func (encryptor *AESCTREncryptor) EncryptKey(pri heimdall.Key, key []byte) (encr
 	}
 
 	return encryptedKey, nil
-}
-
-type AESCTRDecryptor struct {
-}
-
-// DecryptPriKey decrypts encrypted private key.
-func (decryptor *AESCTRDecryptor) DecryptKey(encryptedKey []byte, key []byte) ([]byte, error) {
-	decKey, err := decryptWithAESCTR(encryptedKey, key)
-	if err != nil {
-		return nil, err
-	}
-
-	return decKey, nil
 }
 
 // encryptWithAESCTR encrypts plaintext with key by AES algorithm.
@@ -73,6 +75,32 @@ func encryptWithAESCTR(plaintext []byte, key []byte) (ciphertext []byte, err err
 	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
 
 	return ciphertext, nil
+}
+
+func DecryptKey(encryptedKey, key []byte, opts *Opts) ([]byte, error) {
+	switch opts.Algorithm {
+	case AES:
+		switch opts.OpMode {
+		case CTR:
+			return decryptKeyWithAESCTR(encryptedKey, key)
+		default:
+			return nil, ErrOperationModeNotSupported
+		}
+	default:
+		return nil, ErrAlgorithmNotSupported
+	}
+
+	return nil, errors.New("fatal error during DecryptKey()")
+}
+
+// AESCTRDecryptKey decrypts encrypted private key.
+func decryptKeyWithAESCTR(encryptedKey []byte, key []byte) ([]byte, error) {
+	decKey, err := decryptWithAESCTR(encryptedKey, key)
+	if err != nil {
+		return nil, err
+	}
+
+	return decKey, nil
 }
 
 // decryptWithAESCTR decrypts ciphertext with key by AES algorithm.
