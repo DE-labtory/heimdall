@@ -17,13 +17,29 @@
 package kdf
 
 import (
-	"strconv"
+	"errors"
 
-	"github.com/it-chain/heimdall"
 	"github.com/it-chain/heimdall/hashing"
 )
 
 // todo: 각 파라미터별 제한 두기 (최소 / 최대)
+
+// Errors
+var ErrKdfNotSupported = errors.New("kdf not supported")
+
+var ErrScryptParamsNumber = errors.New("number of scrypt parameters should be 3")
+var ErrScryptNValueNotExist = errors.New("input parameters have no [N], scrypt parameters should have [N]")
+var ErrScryptNValueZeroOrNegative = errors.New("scrypt [N] should be non-zero and positive value")
+var ErrScryptRValueNotExist = errors.New("input parameters have no [R], scrypt parameters should have [R]")
+var ErrScryptRValueZeroOrNegative = errors.New("scrypt [R] should be non-zero and positive value")
+var ErrScryptPValueNotExist = errors.New("input parameters have no [P], scrypt parameters should have [P]")
+var ErrScryptPValueZeroOrNegative = errors.New("scrypt [P] should be non-zero and positive value")
+
+var ErrPbkdf2ParamsNumber = errors.New("number of pbkdf2 parameters should be 2")
+var ErrPbkdf2IterationValueNotExist = errors.New("input parameters have no [iteration], pbkdf2 parameters should have [iteration]")
+var ErrPbkdf2IterationValueZeroOrNegative = errors.New("pbkdf2 [iteration] should be non-zero and positive value")
+var ErrPbkdf2HashOptValueNotExist = errors.New("input parameters have no [hashOpt], pbkdf2 parameters should have [hashOpt]")
+var ErrPbkdf2HashOptValueZeroOrNegative = errors.New("invalid hash option [hashOpt]")
 
 // Default scrypt Parameters
 // references
@@ -38,12 +54,23 @@ var DefaultScryptR = 8
 // P(Parallelization parameter) : a positive integer satisfying p ≤ (232− 1) * hLen / MFLen.
 var DefaultScryptP = 1
 
+var DefaultScryptParams = map[string]int{
+	"N": DefaultScryptN,
+	"R": DefaultScryptR,
+	"P": DefaultScryptP,
+}
+
 // Default PBKDF2 iteration count
 // NIST recommended this should be large as verification server performance will allow
 // references
 // https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-63b.pdf
 // https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-132.pdf
 var DefaultPbkdf2Iteration = 10000000
+
+var DefaultPbkdf2Params = map[string]int{
+	"iteration": DefaultPbkdf2Iteration,
+	"hashOpt":   int(hashing.HashOpts(hashing.SHA384)),
+}
 
 // Default Salt Size (byte)
 var DefaultSaltSize = 8
@@ -57,126 +84,88 @@ const (
 	PBKDF2 = "PBKDF2"
 )
 
-var kdfs = [...]string{
-	"SCRYPT",
-	"PBKDF2",
+type Opts struct {
+	KdfName   string
+	KdfParams map[string]int
 }
 
-type ScryptOpts struct {
-	n int
-	r int
-	p int
+func NewOpts(kdfName string, kdfParams map[string]int) (*Opts, error) {
+	opt := new(Opts)
+	return opt, opt.initOpt(kdfName, kdfParams)
 }
 
-func NewScryptOpts(n, r, p int) heimdall.KeyDerivationOpts {
-	return &ScryptOpts{
-		n: n,
-		r: r,
-		p: p,
-	}
-}
-
-// todo: 멤버 (N, R, P) 각각 제한 수치 찾아서 구현
-func (opt ScryptOpts) IsValid() bool {
-	return true
-}
-
-func (opt ScryptOpts) KDF() string {
-	return SCRYPT
-}
-
-func (opt ScryptOpts) ParamsToMap() map[string]string {
-	params := make(map[string]string, 3)
-	params["N"] = strconv.Itoa(opt.n)
-	params["R"] = strconv.Itoa(opt.r)
-	params["P"] = strconv.Itoa(opt.p)
-
-	return params
-}
-
-func (opt ScryptOpts) ToInnerFileInfo() heimdall.KDFInnerFileInfo {
-	return heimdall.KDFInnerFileInfo{
-		KDF:    opt.KDF(),
-		Params: opt.ParamsToMap(),
-	}
-}
-
-type Pbkdf2Opts struct {
-	iteration int
-	hashOpt   hashing.HashOpts
-}
-
-func NewPbkdf2Opts(iteration int, hashOpt hashing.HashOpts) heimdall.KeyDerivationOpts {
-	return &Pbkdf2Opts{
-		iteration: iteration,
-		hashOpt:   hashOpt,
-	}
-}
-
-// todo: 멤버 각각 제한 수치 찾아서 구현
-func (opt Pbkdf2Opts) IsValid() bool {
-	return true
-}
-
-func (opt Pbkdf2Opts) KDF() string {
-	return PBKDF2
-}
-
-func (opt Pbkdf2Opts) ParamsToMap() map[string]string {
-	params := make(map[string]string, 2)
-	params["iteration"] = strconv.Itoa(opt.iteration)
-	params["hashOpt"] = strconv.Itoa(int(opt.hashOpt))
-
-	return params
-}
-
-func (opt Pbkdf2Opts) ToInnerFileInfo() heimdall.KDFInnerFileInfo {
-	return heimdall.KDFInnerFileInfo{
-		KDF:    opt.KDF(),
-		Params: opt.ParamsToMap(),
-	}
-}
-
-func MapToOpts(kdfInfo heimdall.KDFInnerFileInfo) heimdall.KeyDerivationOpts {
-	switch kdfInfo.KDF {
+func (opt *Opts) initOpt(kdfName string, kdfParams map[string]int) error {
+	switch kdfName {
 	case SCRYPT:
-		return mapToScryptOpts(kdfInfo.Params)
+		opt.KdfName = kdfName
+		return opt.initScryptParams(kdfParams)
 	case PBKDF2:
-		return mapToPbkdf2Opts(kdfInfo.Params)
+		opt.KdfName = kdfName
+		return opt.initPbkdf2Params(kdfParams)
+	default:
+		return ErrKdfNotSupported
 	}
 
 	return nil
 }
 
-func mapToScryptOpts(scryptParams map[string]string) heimdall.KeyDerivationOpts {
-	n, err := strconv.Atoi(scryptParams["N"])
-	if err != nil {
-		return nil
+// todo: 좀 더 자세한 제한 수치 (N, R, P)
+func (opt *Opts) initScryptParams(kdfParams map[string]int) error {
+	if len(kdfParams) != 3 {
+		return ErrScryptParamsNumber
 	}
 
-	r, err := strconv.Atoi(scryptParams["R"])
-	if err != nil {
-		return nil
+	N, exists := kdfParams["N"]
+	if !exists {
+		return ErrScryptNValueNotExist
+	}
+	if N <= 0 {
+		return ErrScryptNValueZeroOrNegative
 	}
 
-	p, err := strconv.Atoi(scryptParams["P"])
-	if err != nil {
-		return nil
+	R, exists := kdfParams["R"]
+	if !exists {
+		return ErrScryptRValueNotExist
+	}
+	if R <= 0 {
+		return ErrScryptRValueZeroOrNegative
 	}
 
-	return NewScryptOpts(n, r, p)
+	P, exists := kdfParams["P"]
+	if !exists {
+		return ErrScryptPValueNotExist
+	}
+	if P <= 0 {
+		return ErrScryptPValueZeroOrNegative
+	}
+
+	opt.KdfParams = kdfParams
+	return nil
 }
 
-func mapToPbkdf2Opts(pbkdf2Params map[string]string) heimdall.KeyDerivationOpts {
-	iteration, err := strconv.Atoi(pbkdf2Params["iteration"])
-	if err != nil {
-		return nil
+// todo: 자세한 제한 수치 (iteration, hashOpt)
+func (opt *Opts) initPbkdf2Params(kdfParams map[string]int) error {
+	if len(kdfParams) != 2 {
+		return ErrPbkdf2ParamsNumber
 	}
 
-	hashOpt, err := strconv.Atoi(pbkdf2Params["hashOpt"])
-	if err != nil {
-		return nil
+	iteration, exists := kdfParams["iteration"]
+	if !exists {
+		return ErrPbkdf2IterationValueNotExist
+	}
+	if iteration <= 0 {
+		return ErrPbkdf2IterationValueZeroOrNegative
 	}
 
-	return NewPbkdf2Opts(iteration, hashing.HashOpts(hashOpt))
+	hashOpt, exists := kdfParams["hashOpt"]
+	if !exists {
+		return ErrPbkdf2HashOptValueNotExist
+	}
+
+	if !hashing.HashOpts(hashOpt).IsValid() {
+		return ErrPbkdf2HashOptValueZeroOrNegative
+	}
+
+	opt.KdfParams = kdfParams
+	return nil
 }
