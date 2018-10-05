@@ -37,7 +37,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCertVerifier_VerifyCertChain(t *testing.T) {
+func TestVerifyChain(t *testing.T) {
 	// given
 	//root cert
 	rootPri, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
@@ -85,7 +85,7 @@ func TestCertVerifier_VerifyCertChain(t *testing.T) {
 	defer os.RemoveAll(heimdall.TestCertDir)
 }
 
-func TestCertVerifier_VerifyCert(t *testing.T) {
+func TestVerify(t *testing.T) {
 	// given
 
 	// expired cert

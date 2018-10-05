@@ -20,8 +20,6 @@ package config_test
 import (
 	"testing"
 
-	"errors"
-
 	"github.com/it-chain/heimdall"
 	"github.com/it-chain/heimdall/config"
 	"github.com/it-chain/heimdall/hashing"
@@ -58,7 +56,7 @@ func TestNewSimpleConfig(t *testing.T) {
 			secLv:     111,
 			keyGenOpt: nil,
 			hashOpt:   hashing.HashOpts(0),
-			err:       errors.New(config.ErrInvalidSecLv),
+			err:       config.ErrInvalidSecLv,
 		},
 	}
 

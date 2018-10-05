@@ -23,102 +23,66 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewAESEncOpts(t *testing.T) {
-	// given
-	encKeyLen := 256
-	encOpMode := "CTR"
+func TestNewOpts(t *testing.T) {
+	tests := map[string]struct {
+		algorithm string
+		keyLen    int
+		opMode    string
+		err       error
+	}{
+		"valid": {
+			algorithm: "AES",
+			keyLen:    256,
+			opMode:    "CTR",
+			err:       nil,
+		},
+		"invalid algorithm": {
+			algorithm: "TDES",
+			keyLen:    256,
+			opMode:    "CTR",
+			err:       encryption.ErrAlgorithmNotSupported,
+		},
+		"invalid key length": {
+			algorithm: "AES",
+			keyLen:    112,
+			opMode:    "CTR",
+			err:       encryption.ErrKeyLengthNotSupported,
+		},
+		"invalid operation mode": {
+			algorithm: "AES",
+			keyLen:    256,
+			opMode:    "ECB",
+			err:       encryption.ErrOperationModeNotSupported,
+		},
+	}
 
-	// when
-	encOpt := encryption.NewAESEncOpts(encKeyLen, encOpMode)
+	for testName, test := range tests {
+		t.Logf("running test case [%s]", testName)
 
-	// then
-	assert.NotNil(t, encOpt)
+		// given
+		algo := test.algorithm
+		keyLen := test.keyLen
+		opMode := test.opMode
+
+		// when
+		_, err := encryption.NewOpts(algo, keyLen, opMode)
+
+		// then
+		assert.Equal(t, test.err, err)
+	}
 }
 
-func TestAESEncOpts_ToString(t *testing.T) {
+func TestOpts_ToString(t *testing.T) {
 	// given
+	encAlgo := "AES"
 	encKeyLen := 256
 	encOpMode := "CTR"
-	encOpt := encryption.NewAESEncOpts(encKeyLen, encOpMode)
+	encOpt, err := encryption.NewOpts(encAlgo, encKeyLen, encOpMode)
+	assert.NoError(t, err)
 
 	// when
-	strEncOpt := encOpt.(*encryption.AESEncOpts).ToString()
+	strEncOpt := encOpt.ToString()
 
 	// when
 	assert.Equal(t, "AES_256_CTR", strEncOpt)
-}
-
-func TestAESEncOpts_IsValid(t *testing.T) {
-	// given
-	encKeyLen := 256
-	encOpMode := "CTR"
-	invalidEncKeyLen := 111
-	validEncOpt := encryption.NewAESEncOpts(encKeyLen, encOpMode)
-	invalidEncOpt := encryption.NewAESEncOpts(invalidEncKeyLen, encOpMode)
-
-	// when
-	valid := validEncOpt.IsValid()
-	invalid := invalidEncOpt.IsValid()
-
-	// then
-	assert.True(t, valid)
-	assert.False(t, invalid)
-}
-
-func TestAESEncOpts_Algorithm(t *testing.T) {
-	// given
-	encKeyLen := 256
-	encOpMode := "CTR"
-	encOpt := encryption.NewAESEncOpts(encKeyLen, encOpMode)
-
-	// when
-	algo := encOpt.Algorithm()
-
-	// then
-	assert.Equal(t, encryption.AES, algo)
-}
-
-func TestAESEncOpts_KeyLen(t *testing.T) {
-	// given
-	encKeyLen := 256
-	encOpMode := "CTR"
-	encOpt := encryption.NewAESEncOpts(encKeyLen, encOpMode)
-
-	// when
-	keyLen := encOpt.KeyLen()
-
-	// then
-	assert.Equal(t, encKeyLen, keyLen)
-}
-
-func TestAESEncOpts_ToInnerFileInfo(t *testing.T) {
-	// given
-	encKeyLen := 256
-	encOpMode := "CTR"
-	encOpt := encryption.NewAESEncOpts(encKeyLen, encOpMode)
-
-	// when
-	fileEncInfo := encOpt.ToInnerFileInfo()
-
-	// then
-	assert.Equal(t, encryption.AES, fileEncInfo.Algo)
-	assert.Equal(t, encKeyLen, fileEncInfo.KeyLen)
-	assert.Equal(t, encOpMode, fileEncInfo.OpMode)
-}
-
-func TestStringToEncOpt(t *testing.T) {
-	// given
-	strEncOpt := "AES_256_CTR"
-	invalidStrEncOpt := "ECDSA_256_CTR"
-	invalidStrAESEncOpt := "AES_2&5_CTR"
-
-	// when
-	encOpt := encryption.StringToEncOpt(strEncOpt)
-	invalidEncOpt := encryption.StringToEncOpt(invalidStrEncOpt)
-	invalidEncOpt2 := encryption.StringToEncOpt(invalidStrAESEncOpt)
-
-	// then
-	assert.NotNil(t, encOpt)
-	assert.Nil(t, invalidEncOpt)
-	assert.Nil(t, invalidEncOpt2)
 }
