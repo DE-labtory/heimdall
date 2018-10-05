@@ -56,17 +56,3 @@ type SignerOpts interface {
 	HashOpt() hashing.HashOpts
 	//crypto.SignerOpts
 }
-
-type KeyDerivationOpts interface {
-	Options
-	KDF() string
-	ParamsToMap() map[string]string
-	ToInnerFileInfo() KDFInnerFileInfo
-}
-
-type EncryptOpts interface {
-	Options
-	Algorithm() string
-	KeyLen() int
-	ToInnerFileInfo() EncInnerFileInfo
-}
