@@ -35,7 +35,7 @@ type Key interface {
 	SKI() []byte
 	ToByte() []byte
 	KeyGenOpt() KeyGenOpts
-	KeyType() KeyType
+	IsPrivate() bool
 }
 
 type PriKey interface {
