@@ -67,9 +67,8 @@ func (priKey *PriKey) SKI() []byte {
 	return pubKey.SKI()
 }
 
-func (priKey *PriKey) ToByte() []byte {
-	keyBytes, _ := x509.MarshalECPrivateKey(priKey.internalPriKey)
-	return keyBytes
+func (priKey *PriKey) ToByte() ([]byte, error) {
+	return x509.MarshalECPrivateKey(priKey.internalPriKey)
 }
 
 func (priKey *PriKey) KeyGenOpt() heimdall.KeyGenOpts {
@@ -116,9 +115,8 @@ func (pubKey *PubKey) SKI() []byte {
 	return ski
 }
 
-func (pubKey *PubKey) ToByte() []byte {
-	keyBytes, _ := x509.MarshalPKIXPublicKey(pubKey.internalPubKey)
-	return keyBytes
+func (pubKey *PubKey) ToByte() ([]byte, error) {
+	return x509.MarshalPKIXPublicKey(pubKey.internalPubKey)
 }
 
 func (pubKey *PubKey) KeyGenOpt() heimdall.KeyGenOpts {

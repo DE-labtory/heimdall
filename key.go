@@ -33,7 +33,7 @@ type KeyRecoverer interface {
 type Key interface {
 	ID() KeyID
 	SKI() []byte
-	ToByte() []byte
+	ToByte() ([]byte, error)
 	KeyGenOpt() KeyGenOpts
 	IsPrivate() bool
 }
