@@ -22,90 +22,48 @@ package hecdsa
 import (
 	"crypto/elliptic"
 
-	"regexp"
-	"strconv"
+	"errors"
 )
 
-// KeyGenOpts represents ECDSA key generation options by integer.
-type KeyGenOpts int
+var ErrCurveNotSupported = errors.New("curve not supported")
 
-// Curve name -> secpXXXr1 = NIST P-XXX
 const (
-	ECP224 KeyGenOpts = iota
-	ECP256
-	ECP384
-	ECP521
-	invalidECDSAOpt
+	ECP224 = "P-224"
+	ECP256 = "P-256"
+	ECP384 = "P-384"
+	ECP521 = "P-521"
 )
 
-var curves = [...]string{
-	"P-224",
-	"P-256",
-	"P-384",
-	"P-521",
-	"invalid ECDSA key generation option",
+type KeyGenOpt struct {
+	Curve elliptic.Curve
 }
 
-// ToString obtains curve's name as string format from ECDSAKeyGen option type.
-func (opt KeyGenOpts) ToString() string {
-	return curves[opt]
+func NewKeyGenOpt(strCurve string) (*KeyGenOpt, error) {
+	opt := new(KeyGenOpt)
+	return opt, opt.initKeyGenOpt(strCurve)
 }
 
-// ValidCheck checks the curve option is valid or not.
-func (opt KeyGenOpts) IsValid() bool {
-	return opt >= 0 && opt < invalidECDSAOpt
-}
-
-// GetKeySize returns the curve's field size.
-func (opt KeyGenOpts) KeySize() int {
-	re := regexp.MustCompile("[0-9]{3,4}")
-	keySize, err := strconv.Atoi(re.FindString(opt.ToString()))
-	if err != nil {
-		return -1
-	}
-
-	return keySize
-}
-
-// ToCurve get elliptic curve corresponding to curve option.
-func (opt KeyGenOpts) ToCurve() elliptic.Curve {
-	switch opt {
-	case ECP224:
-		return elliptic.P224()
-	case ECP256:
-		return elliptic.P256()
-	case ECP384:
-		return elliptic.P384()
-	case ECP521:
-		return elliptic.P521()
+func (opt *KeyGenOpt) initKeyGenOpt(strCurve string) error {
+	switch strCurve {
+	case "P-224":
+		opt.Curve = elliptic.P224()
+	case "P-256":
+		opt.Curve = elliptic.P256()
+	case "P-384":
+		opt.Curve = elliptic.P384()
+	case "P-521":
+		opt.Curve = elliptic.P521()
 	default:
-		return nil
+		return ErrCurveNotSupported
 	}
+
+	return nil
 }
 
-// StringToKeyGenOpt obtains ECDSA key generation option from string (curve name).
-func StringToKeyGenOpt(strFormatOpt string) KeyGenOpts {
-	for idx, opts := range curves {
-		if strFormatOpt == opts {
-			return KeyGenOpts(idx)
-		}
-	}
-
-	return invalidECDSAOpt
+func (opt *KeyGenOpt) ToString() string {
+	return opt.Curve.Params().Name
 }
 
-// CurveToCurveOpt obtains ECDSA key generation option from elliptic.Curve type.
-func CurveToKeyGenOpt(curve elliptic.Curve) KeyGenOpts {
-	switch curve {
-	case elliptic.P224():
-		return ECP224
-	case elliptic.P256():
-		return ECP256
-	case elliptic.P384():
-		return ECP384
-	case elliptic.P521():
-		return ECP521
-	}
-
-	return invalidECDSAOpt
+func (opt *KeyGenOpt) KeySize() int {
+	return opt.Curve.Params().BitSize
 }
