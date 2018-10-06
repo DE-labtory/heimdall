@@ -47,14 +47,14 @@ var ErrPbkdf2HashOptValueZeroOrNegative = errors.New("invalid hash option [hashO
 // https://godoc.org/golang.org/x/crypto/scrypt
 // https://blog.filippo.io/the-scrypt-parameters/
 // N is CPU/Memory cost parameter. It should highest power of 2 that key derived in 100ms.
-var DefaultScryptN = 1048576 // 1 << 20 (2^20)
+var DefaultScryptN = "1048576" // 1 << 20 (2^20)
 // R(blocksize parameter) : fine-tune sequential memory read size and performance. (8 is commonly used)
-var DefaultScryptR = 8
+var DefaultScryptR = "8"
 
 // P(Parallelization parameter) : a positive integer satisfying p ≤ (232− 1) * hLen / MFLen.
-var DefaultScryptP = 1
+var DefaultScryptP = "1"
 
-var DefaultScryptParams = map[string]int{
+var DefaultScryptParams = map[string]string{
 	"N": DefaultScryptN,
 	"R": DefaultScryptR,
 	"P": DefaultScryptP,
@@ -65,11 +65,11 @@ var DefaultScryptParams = map[string]int{
 // references
 // https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-63b.pdf
 // https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-132.pdf
-var DefaultPbkdf2Iteration = 10000000
+var DefaultPbkdf2Iteration = "10000000"
 
-var DefaultPbkdf2Params = map[string]int{
+var DefaultPbkdf2Params = map[string]string{
 	"iteration": DefaultPbkdf2Iteration,
-	"hashOpt":   int(hashing.HashOpts(hashing.SHA384)),
+	"hashOpt":   hashing.SHA384,
 }
 
 // Default Salt Size (byte)
@@ -86,15 +86,15 @@ const (
 
 type Opts struct {
 	KdfName   string
-	KdfParams map[string]int
+	KdfParams map[string]string
 }
 
-func NewOpts(kdfName string, kdfParams map[string]int) (*Opts, error) {
+func NewOpts(kdfName string, kdfParams map[string]string) (*Opts, error) {
 	opt := new(Opts)
 	return opt, opt.initOpt(kdfName, kdfParams)
 }
 
-func (opt *Opts) initOpt(kdfName string, kdfParams map[string]int) error {
+func (opt *Opts) initOpt(kdfName string, kdfParams map[string]string) error {
 	switch kdfName {
 	case SCRYPT:
 		opt.KdfName = kdfName
@@ -110,62 +110,48 @@ func (opt *Opts) initOpt(kdfName string, kdfParams map[string]int) error {
 }
 
 // todo: 좀 더 자세한 제한 수치 (N, R, P)
-func (opt *Opts) initScryptParams(kdfParams map[string]int) error {
+func (opt *Opts) initScryptParams(kdfParams map[string]string) error {
 	if len(kdfParams) != 3 {
 		return ErrScryptParamsNumber
 	}
 
-	N, exists := kdfParams["N"]
+	_, exists := kdfParams["N"]
 	if !exists {
 		return ErrScryptNValueNotExist
 	}
-	if N <= 0 {
-		return ErrScryptNValueZeroOrNegative
-	}
 
-	R, exists := kdfParams["R"]
+	_, exists = kdfParams["R"]
 	if !exists {
 		return ErrScryptRValueNotExist
 	}
-	if R <= 0 {
-		return ErrScryptRValueZeroOrNegative
-	}
 
-	P, exists := kdfParams["P"]
+	_, exists = kdfParams["P"]
 	if !exists {
 		return ErrScryptPValueNotExist
 	}
-	if P <= 0 {
-		return ErrScryptPValueZeroOrNegative
-	}
 
 	opt.KdfParams = kdfParams
+
 	return nil
 }
 
 // todo: 자세한 제한 수치 (iteration, hashOpt)
-func (opt *Opts) initPbkdf2Params(kdfParams map[string]int) error {
+func (opt *Opts) initPbkdf2Params(kdfParams map[string]string) error {
 	if len(kdfParams) != 2 {
 		return ErrPbkdf2ParamsNumber
 	}
 
-	iteration, exists := kdfParams["iteration"]
+	_, exists := kdfParams["iteration"]
 	if !exists {
 		return ErrPbkdf2IterationValueNotExist
 	}
-	if iteration <= 0 {
-		return ErrPbkdf2IterationValueZeroOrNegative
-	}
 
-	hashOpt, exists := kdfParams["hashOpt"]
+	_, exists = kdfParams["hashOpt"]
 	if !exists {
 		return ErrPbkdf2HashOptValueNotExist
 	}
 
-	if !hashing.HashOpts(hashOpt).IsValid() {
-		return ErrPbkdf2HashOptValueZeroOrNegative
-	}
-
 	opt.KdfParams = kdfParams
+
 	return nil
 }
