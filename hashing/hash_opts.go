@@ -21,62 +21,43 @@ package hashing
 
 import (
 	"crypto/sha512"
+	"errors"
 	"hash"
 )
 
-// HashOpts represents hashing options with integer.
-type HashOpts uint
-
 const (
-	SHA224 HashOpts = iota
-	SHA256
-	SHA384
-	SHA512
-	MaxHashOpt
+	SHA224 = "SHA224"
+	SHA256 = "SHA256"
+	SHA384 = "SHA384"
+	SHA512 = "SHA512"
 )
 
-var hashes = [...]string{
-	"SHA224",
-	"SHA256",
-	"SHA384",
-	"SHA512",
+var ErrNotSupportedHashFunc = errors.New("not supported hash function")
+
+type HashOpt struct {
+	Name     string
+	HashFunc func() hash.Hash
 }
 
-// ToString obtains hashing's name as string format from hashing option type.
-func (opt HashOpts) ToString() string {
-	if !opt.IsValid() {
-		return "invalid hashing option - not supported"
-	}
-
-	return hashes[opt]
+func NewHashOpt(name string) (*HashOpt, error) {
+	hashOpt := new(HashOpt)
+	return hashOpt, hashOpt.initHashOpt(name)
 }
 
-// ValidCheck checks the hashing option is valid or not.
-func (opt HashOpts) IsValid() bool {
-	return opt >= 0 && opt < MaxHashOpt
-}
-
-func (opt HashOpts) HashFunction() func() hash.Hash {
-	switch opt {
-	case SHA224:
-		return sha512.New512_224
-	case SHA256:
-		return sha512.New512_256
-	case SHA384:
-		return sha512.New384
-	case SHA512:
-		return sha512.New
+func (opt *HashOpt) initHashOpt(name string) error {
+	switch name {
+	case "SHA224":
+		opt.HashFunc = sha512.New512_224
+	case "SHA256":
+		opt.HashFunc = sha512.New512_256
+	case "SHA384":
+		opt.HashFunc = sha512.New384
+	case "SHA512":
+		opt.HashFunc = sha512.New
 	default:
-		return nil
+		return ErrNotSupportedHashFunc
 	}
-}
+	opt.Name = name
 
-func StringToHashOpts(strFormatOpt string) HashOpts {
-	for idx, opts := range hashes {
-		if strFormatOpt == opts {
-			return HashOpts(idx)
-		}
-	}
-
-	return MaxHashOpt
+	return nil
 }
