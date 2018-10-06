@@ -27,6 +27,8 @@ import (
 
 	"crypto/x509"
 
+	"crypto/elliptic"
+
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/it-chain/heimdall"
 )
@@ -105,12 +107,15 @@ func (pubKey *PubKey) ID() heimdall.KeyID {
 
 func (pubKey *PubKey) SKI() []byte {
 	// get keyBytes from key
-	keyBytes := pubKey.ToByte()
+	keyBitString := elliptic.Marshal(pubKey.internalPubKey.Curve, pubKey.internalPubKey.X, pubKey.internalPubKey.Y)
 
 	// get ski from keyBytes
 	hash := sha256.New()
-	hash.Write(keyBytes)
-	ski := hash.Sum(nil)
+	hash.Write(keyBitString)
+	hashValue := hash.Sum(nil)
+
+	ski := make([]byte, 20)
+	ski = hashValue[:20]
 
 	return ski
 }
