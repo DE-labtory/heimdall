@@ -19,83 +19,44 @@ package hecdsa_test
 import (
 	"testing"
 
-	"crypto/elliptic"
-
 	"github.com/it-chain/heimdall/hecdsa"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStringToKeyGenOpt(t *testing.T) {
+func TestNewKeyGenOpt(t *testing.T) {
 	// given
-	StrFmtOpt := "P-384"
+	inputStrFmtOpt := "P-384"
 
 	// when
-	keyGenOpt := hecdsa.StringToKeyGenOpt(StrFmtOpt)
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(inputStrFmtOpt)
 
 	// then
-	assert.IsType(t, hecdsa.KeyGenOpts(1), keyGenOpt)
-	assert.NotNil(t, keyGenOpt)
+	assert.Equal(t, inputStrFmtOpt, keyGenOpt.ToString())
+	assert.NoError(t, err)
 }
 
-func TestCurveToKeyGenOpt(t *testing.T) {
+func TestKeyGenOpt_ToString(t *testing.T) {
 	// given
-	curve := elliptic.P384()
-
-	// when
-	keyGenOpt := hecdsa.CurveToKeyGenOpt(curve)
-
-	// then
-	assert.IsType(t, hecdsa.KeyGenOpts(1), keyGenOpt)
-	assert.NotNil(t, keyGenOpt)
-}
-
-func TestKeyGenOpts_ToString(t *testing.T) {
-	// given
-	keyGenOpt := hecdsa.KeyGenOpts(hecdsa.ECP384)
+	inputStrFmtOpt := "P-384"
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(inputStrFmtOpt)
+	assert.NoError(t, err)
 
 	// when
 	strFmtOpt := keyGenOpt.ToString()
 
 	// then
-	assert.IsType(t, string(""), strFmtOpt)
-	assert.NotNil(t, strFmtOpt)
+	assert.Equal(t, inputStrFmtOpt, strFmtOpt)
 }
 
-func TestKeyGenOpts_IsValid(t *testing.T) {
+func TestKeyGenOpt_KeySize(t *testing.T) {
 	// given
-	validKeyGenOpt := hecdsa.KeyGenOpts(hecdsa.ECP384)
-	invalidKeyGenOpt := hecdsa.KeyGenOpts(-1)
-	invalidKeyGenOpt2 := hecdsa.StringToKeyGenOpt("P-999")
-
-	// when
-	valid := validKeyGenOpt.IsValid()
-	invalid := invalidKeyGenOpt.IsValid()
-	invalid2 := invalidKeyGenOpt2.IsValid()
-
-	// then
-	assert.True(t, valid)
-	assert.False(t, invalid)
-	assert.False(t, invalid2)
-}
-
-func TestKeyGenOpts_KeySize(t *testing.T) {
-	// given
-	keyGenOpt := hecdsa.KeyGenOpts(hecdsa.ECP384)
+	inputStrFmtOpt := "P-384"
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(inputStrFmtOpt)
+	assert.NoError(t, err)
 
 	// when
 	keySize := keyGenOpt.KeySize()
 
 	// then
-	assert.NotEqual(t, -1, keySize)
-}
-
-func TestKeyGenOpts_ToCurve(t *testing.T) {
-	// given
-	keyGenOpt := hecdsa.KeyGenOpts(hecdsa.ECP384)
-
-	// when
-	curve := keyGenOpt.ToCurve()
-
-	// then
-	assert.Equal(t, elliptic.P384(), curve)
+	assert.Equal(t, 384, keySize)
 }

@@ -29,7 +29,7 @@ import (
 func TestDeriveKey(t *testing.T) {
 	tests := map[string]struct {
 		kdfName   string
-		kdfParams map[string]int
+		kdfParams map[string]string
 		err       error
 	}{
 		"scrypt option": {
@@ -63,7 +63,7 @@ func TestDeriveKey(t *testing.T) {
 		kdfOpt, _ := kdf.NewOpts(test.kdfName, test.kdfParams)
 
 		// when
-		_, err := kdf.DeriveKey(pwd, salt, keyLen, kdfOpt)
+		_, err = kdf.DeriveKey(pwd, salt, keyLen, kdfOpt)
 
 		// then
 		assert.Equal(t, test.err, err)

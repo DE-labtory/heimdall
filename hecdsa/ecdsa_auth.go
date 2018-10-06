@@ -82,7 +82,7 @@ func unmarshalECDSASignature(signature []byte) (*big.Int, *big.Int, error) {
 	return ecdsaSig.R, ecdsaSig.S, nil
 }
 
-func SignWithKeyInLocal(keyID heimdall.KeyID, keyDirPath, pwd string, message []byte, hashOpt hashing.HashOpts) ([]byte, error) {
+func SignWithKeyInLocal(keyID heimdall.KeyID, keyDirPath, pwd string, message []byte, hashOpt *hashing.HashOpt) ([]byte, error) {
 	recoverer := &KeyRecoverer{}
 	signerOpt := NewSignerOpts(hashOpt)
 	pri, err := keystore.LoadKey(keyID, pwd, keyDirPath, recoverer)

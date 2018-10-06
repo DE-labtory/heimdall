@@ -133,7 +133,9 @@ func main() {
 
 	// signing message (making signature)
 	log.Println("signing message...")
-	signerOpt := hecdsa.NewSignerOpts(hashing.SHA384)
+	hashOpt, err := hashing.NewHashOpt(hashing.SHA384)
+	errorCheck(err)
+	signerOpt := hecdsa.NewSignerOpts(hashOpt)
 	signature, err := hecdsa.Sign(hPri, message, signerOpt)
 	errorCheck(err)
 	log.Println("signing message success!")

@@ -24,28 +24,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSignerOpts_IsValid(t *testing.T) {
+func TestSignerOpts_Algorithm(t *testing.T) {
 	// given
-	validSignerOpt := hecdsa.NewSignerOpts(hashing.SHA384)
-	invalidHashOpt := hashing.StringToHashOpts("SHA399")
-	invalidSignerOpt := hecdsa.NewSignerOpts(invalidHashOpt)
+	hashOpt, err := hashing.NewHashOpt(hashing.SHA384)
+	assert.NoError(t, err)
+
+	signerOpt := hecdsa.NewSignerOpts(hashOpt)
 
 	// when
-	valid := validSignerOpt.IsValid()
-	invalid := invalidSignerOpt.IsValid()
+	algo := signerOpt.Algorithm()
 
 	// then
-	assert.True(t, valid)
-	assert.False(t, invalid)
+	assert.Equal(t, "ECDSA", algo)
 }
 
 func TestSignerOpts_HashOpt(t *testing.T) {
 	// given
-	signerOpt := hecdsa.NewSignerOpts(hashing.SHA384)
+	hashOpt, err := hashing.NewHashOpt(hashing.SHA384)
+	assert.NoError(t, err)
+
+	signerOpt := hecdsa.NewSignerOpts(hashOpt)
 
 	// when
-	hashOpt := signerOpt.HashOpt()
+	hashOptFromSignerOpt := signerOpt.HashOpt()
 
 	// then
-	assert.Equal(t, hashing.SHA384, hashOpt)
+	assert.Equal(t, hashOpt, hashOptFromSignerOpt)
 }

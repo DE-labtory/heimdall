@@ -39,7 +39,7 @@ type Config struct {
 	EncOpt      *encryption.Opts
 	KdfOpt      *kdf.Opts
 	SigAlgo     string
-	HashOpt     hashing.HashOpts
+	HashOpt     *hashing.HashOpt
 }
 
 // NewSimpleConfig makes configuration by input security level
@@ -57,14 +57,41 @@ func NewDefaultConfig() (conf *Config, err error) {
 func (conf *Config) initSimpleConfig(secLv int) error {
 	switch secLv {
 	case 128:
-		conf.KeyGenOpt = hecdsa.KeyGenOpts(hecdsa.ECP256)
-		conf.HashOpt = hashing.HashOpts(hashing.SHA256)
+		keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP256)
+		if err != nil {
+			return err
+		}
+		conf.KeyGenOpt = keyGenOpt
+
+		hashOpt, err := hashing.NewHashOpt(hashing.SHA256)
+		if err != nil {
+			return err
+		}
+		conf.HashOpt = hashOpt
 	case 192:
-		conf.KeyGenOpt = hecdsa.KeyGenOpts(hecdsa.ECP384)
-		conf.HashOpt = hashing.HashOpts(hashing.SHA384)
+		keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+		if err != nil {
+			return err
+		}
+		conf.KeyGenOpt = keyGenOpt
+
+		hashOpt, err := hashing.NewHashOpt(hashing.SHA384)
+		if err != nil {
+			return err
+		}
+		conf.HashOpt = hashOpt
 	case 256:
-		conf.KeyGenOpt = hecdsa.KeyGenOpts(hecdsa.ECP521)
-		conf.HashOpt = hashing.HashOpts(hashing.SHA512)
+		keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP521)
+		if err != nil {
+			return err
+		}
+		conf.KeyGenOpt = keyGenOpt
+
+		hashOpt, err := hashing.NewHashOpt(hashing.SHA512)
+		if err != nil {
+			return err
+		}
+		conf.HashOpt = hashOpt
 	default:
 		return ErrInvalidSecLv
 	}

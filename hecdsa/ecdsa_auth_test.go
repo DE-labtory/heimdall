@@ -38,7 +38,9 @@ import (
 )
 
 func setUpLocalKey(t *testing.T) (keyID heimdall.KeyID, keyDirPath, pwd string, tearDown func()) {
-	pri, err := hecdsa.GenerateKey(hecdsa.ECP384)
+	ecdsaKeyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+	assert.NoError(t, err)
+	pri, err := hecdsa.GenerateKey(ecdsaKeyGenOpt)
 	assert.NoError(t, err)
 
 	encOpt, err := encryption.NewOpts(encryption.AES, encryption.DefaultKeyLen, encryption.DefaultOpMode)
@@ -59,7 +61,8 @@ func TestSignWithKeyInLocal(t *testing.T) {
 	keyID, keyDirPath, pwd, tearDown := setUpLocalKey(t)
 	defer tearDown()
 
-	hashOpt := hashing.SHA384
+	hashOpt, err := hashing.NewHashOpt(hashing.SHA384)
+	assert.NoError(t, err)
 	message := []byte("hello world")
 
 	// when
@@ -73,7 +76,9 @@ func TestSignWithKeyInLocal(t *testing.T) {
 func TestVerify(t *testing.T) {
 	// given
 	pri := setUpPriKey(t)
-	signerOpt := hecdsa.NewSignerOpts(hashing.SHA384)
+	hashOpt, err := hashing.NewHashOpt(hashing.SHA384)
+	assert.NoError(t, err)
+	signerOpt := hecdsa.NewSignerOpts(hashOpt)
 	otherPri := setUpPriKey(t)
 	otherPub := otherPri.PublicKey()
 
@@ -105,7 +110,9 @@ func TestVerify(t *testing.T) {
 
 func TestVerifyWithCert(t *testing.T) {
 	// given
-	signerOpt := hecdsa.NewSignerOpts(hashing.SHA384)
+	hashOpt, err := hashing.NewHashOpt(hashing.SHA384)
+	assert.NoError(t, err)
+	signerOpt := hecdsa.NewSignerOpts(hashOpt)
 
 	message := []byte("hello")
 
