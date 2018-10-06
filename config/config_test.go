@@ -20,7 +20,6 @@ package config_test
 import (
 	"testing"
 
-	"github.com/it-chain/heimdall"
 	"github.com/it-chain/heimdall/config"
 	"github.com/it-chain/heimdall/hashing"
 	"github.com/it-chain/heimdall/hecdsa"
@@ -29,34 +28,34 @@ import (
 
 func TestNewSimpleConfig(t *testing.T) {
 	tests := map[string]struct {
-		secLv     int
-		keyGenOpt heimdall.KeyGenOpts
-		hashOpt   hashing.HashOpts
-		err       error
+		secLv        int
+		strKeyGenOpt string
+		strHashOpt   string
+		err          error
 	}{
 		"security level 128": {
-			secLv:     128,
-			keyGenOpt: hecdsa.KeyGenOpts(hecdsa.ECP256),
-			hashOpt:   hashing.HashOpts(hashing.SHA256),
-			err:       nil,
+			secLv:        128,
+			strKeyGenOpt: hecdsa.ECP256,
+			strHashOpt:   hashing.SHA256,
+			err:          nil,
 		},
 		"security level 192": {
-			secLv:     192,
-			keyGenOpt: hecdsa.KeyGenOpts(hecdsa.ECP384),
-			hashOpt:   hashing.HashOpts(hashing.SHA384),
-			err:       nil,
+			secLv:        192,
+			strKeyGenOpt: hecdsa.ECP384,
+			strHashOpt:   hashing.SHA384,
+			err:          nil,
 		},
 		"security level 256": {
-			secLv:     256,
-			keyGenOpt: hecdsa.KeyGenOpts(hecdsa.ECP521),
-			hashOpt:   hashing.HashOpts(hashing.SHA512),
-			err:       nil,
+			secLv:        256,
+			strKeyGenOpt: hecdsa.ECP521,
+			strHashOpt:   hashing.SHA512,
+			err:          nil,
 		},
 		"invalid": {
-			secLv:     111,
-			keyGenOpt: nil,
-			hashOpt:   hashing.HashOpts(0),
-			err:       config.ErrInvalidSecLv,
+			secLv:        111,
+			strKeyGenOpt: "P-111",
+			strHashOpt:   "SHA111",
+			err:          config.ErrInvalidSecLv,
 		},
 	}
 
@@ -70,9 +69,11 @@ func TestNewSimpleConfig(t *testing.T) {
 		conf, err := config.NewSimpleConfig(secLv)
 
 		// then
-		assert.Equal(t, test.keyGenOpt, conf.KeyGenOpt)
-		assert.Equal(t, test.hashOpt, conf.HashOpt)
-		assert.Equal(t, test.err, err)
+		if err == nil {
+			assert.Equal(t, test.strKeyGenOpt, conf.KeyGenOpt.ToString())
+			assert.Equal(t, test.strHashOpt, conf.HashOpt.Name)
+			assert.Equal(t, test.err, err)
+		}
 	}
 }
 

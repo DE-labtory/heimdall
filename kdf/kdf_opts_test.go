@@ -34,4 +34,7 @@ func TestNewOpt(t *testing.T) {
 	// then
 	assert.NoError(t, err)
 	assert.NotNil(t, kdfOpt)
+	assert.Equal(t, kdf.DefaultScryptN, kdfOpt.KdfParams["N"])
+	assert.Equal(t, kdf.DefaultScryptR, kdfOpt.KdfParams["R"])
+	assert.Equal(t, kdf.DefaultScryptP, kdfOpt.KdfParams["P"])
 }

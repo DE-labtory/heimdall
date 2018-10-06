@@ -33,7 +33,9 @@ func TestEncryptKey(t *testing.T) {
 	_, err := rand.Read(encKey)
 	assert.NoError(t, err)
 
-	priKey, err := hecdsa.GenerateKey(hecdsa.ECP384)
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+	assert.NoError(t, err)
+	priKey, err := hecdsa.GenerateKey(keyGenOpt)
 	assert.NoError(t, err)
 
 	encOpt, err := encryption.NewOpts("AES", 128, "CTR")
@@ -53,7 +55,9 @@ func TestDecryptKey(t *testing.T) {
 	_, err := rand.Read(encKey)
 	assert.NoError(t, err)
 
-	priKey, err := hecdsa.GenerateKey(hecdsa.ECP384)
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+	assert.NoError(t, err)
+	priKey, err := hecdsa.GenerateKey(keyGenOpt)
 	assert.NoError(t, err)
 
 	encOpt, err := encryption.NewOpts("AES", 128, "CTR")
@@ -63,10 +67,13 @@ func TestDecryptKey(t *testing.T) {
 	assert.NotNil(t, encryptedPriKey)
 	assert.NoError(t, err)
 
+	keyBytes, err := priKey.ToByte()
+	assert.NoError(t, err)
+
 	// when
-	keyBytes, err := encryption.DecryptKey(encryptedPriKey, encKey, encOpt)
+	decryptedKeyBytes, err := encryption.DecryptKey(encryptedPriKey, encKey, encOpt)
 
 	// then
-	assert.Equal(t, priKey.ToByte(), keyBytes)
+	assert.Equal(t, keyBytes, decryptedKeyBytes)
 	assert.NoError(t, err)
 }

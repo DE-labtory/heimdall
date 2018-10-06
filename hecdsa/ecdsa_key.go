@@ -33,16 +33,10 @@ import (
 	"github.com/it-chain/heimdall"
 )
 
-var ErrECDSAKeyGenOpt = errors.New("invalid ECDSA key generating option")
 var ErrKeyType = errors.New("invalid key type - key type should be heimdall.PRIVATEKEY or heimdall.PUBLICKEY")
 
 func GenerateKey(keyGenOpt heimdall.KeyGenOpts) (heimdall.PriKey, error) {
-	valid := keyGenOpt.IsValid()
-	if !valid {
-		return nil, ErrECDSAKeyGenOpt
-	}
-
-	pri, err := ecdsa.GenerateKey(keyGenOpt.(KeyGenOpts).ToCurve(), rand.Reader)
+	pri, err := ecdsa.GenerateKey(keyGenOpt.(*KeyGenOpt).Curve, rand.Reader)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +69,9 @@ func (priKey *PriKey) ToByte() ([]byte, error) {
 
 func (priKey *PriKey) KeyGenOpt() heimdall.KeyGenOpts {
 	pubKey := PubKey{&priKey.internalPriKey.PublicKey}
-	return StringToKeyGenOpt(pubKey.internalPubKey.Curve.Params().Name)
+	keyGenOpt, _ := NewKeyGenOpt(pubKey.internalPubKey.Curve.Params().Name)
+
+	return keyGenOpt
 }
 
 func (priKey *PriKey) IsPrivate() bool {
@@ -125,7 +121,8 @@ func (pubKey *PubKey) ToByte() ([]byte, error) {
 }
 
 func (pubKey *PubKey) KeyGenOpt() heimdall.KeyGenOpts {
-	return StringToKeyGenOpt(pubKey.internalPubKey.Curve.Params().Name)
+	keyGenOpt, _ := NewKeyGenOpt(pubKey.internalPubKey.Curve.Params().Name)
+	return keyGenOpt
 }
 
 func (pubKey *PubKey) IsPrivate() bool {

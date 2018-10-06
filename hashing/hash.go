@@ -26,12 +26,12 @@ import (
 var ErrTargetDataNil = errors.New("hashing target data should not be nil")
 
 // Hash hashes the input data.
-func Hash(data []byte, opt HashOpts) ([]byte, error) {
+func Hash(data []byte, opt *HashOpt) ([]byte, error) {
 	if data == nil {
 		return nil, ErrTargetDataNil
 	}
 
-	hashFunc := opt.HashFunction()()
+	hashFunc := opt.HashFunc()
 
 	hashFunc.Write(data)
 	return hashFunc.Sum(nil), nil

@@ -21,10 +21,10 @@ import (
 )
 
 type SignerOpts struct {
-	hashOpt hashing.HashOpts
+	hashOpt *hashing.HashOpt
 }
 
-func NewSignerOpts(hashOpt hashing.HashOpts) *SignerOpts {
+func NewSignerOpts(hashOpt *hashing.HashOpt) *SignerOpts {
 	return &SignerOpts{
 		hashOpt: hashOpt,
 	}
@@ -34,10 +34,6 @@ func (signerOpt *SignerOpts) Algorithm() string {
 	return "ECDSA"
 }
 
-func (signerOpt *SignerOpts) IsValid() bool {
-	return signerOpt.hashOpt.IsValid()
-}
-
-func (signerOpt *SignerOpts) HashOpt() hashing.HashOpts {
+func (signerOpt *SignerOpts) HashOpt() *hashing.HashOpt {
 	return signerOpt.hashOpt
 }

@@ -23,19 +23,16 @@ type KeyID = string
 var OptDelimiter = "_"
 
 // options
-type Options interface {
-	IsValid() bool
-}
 
+// KeyGenOpts provides key generation options such as elliptic curve or rsa bits etc.
 type KeyGenOpts interface {
-	Options
 	ToString() string
 	KeySize() int
 }
 
+// SignerOpts provides signer option for signing
 type SignerOpts interface {
-	Options
 	Algorithm() string
-	HashOpt() hashing.HashOpts
+	HashOpt() *hashing.HashOpt
 	//crypto.SignerOpts
 }

@@ -28,7 +28,9 @@ import (
 )
 
 func setUpPriKey(t *testing.T) *hecdsa.PriKey {
-	pri, err := hecdsa.GenerateKey(hecdsa.ECP384)
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+	assert.NoError(t, err)
+	pri, err := hecdsa.GenerateKey(keyGenOpt)
 	assert.NoError(t, err)
 
 	return pri.(*hecdsa.PriKey)
@@ -36,19 +38,15 @@ func setUpPriKey(t *testing.T) *hecdsa.PriKey {
 
 func TestGenerateKey(t *testing.T) {
 	// given
-	keyGenOpt := hecdsa.ECP384
-	invalidKeyGenOpt := hecdsa.KeyGenOpts(100)
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+	assert.NoError(t, err)
 
 	// when
 	pri, err := hecdsa.GenerateKey(keyGenOpt)
-	nilPri, err2 := hecdsa.GenerateKey(invalidKeyGenOpt)
 
 	// then
 	assert.NoError(t, err)
 	assert.NotNil(t, pri)
-
-	assert.Error(t, err2)
-	assert.Nil(t, nilPri)
 }
 
 func TestNewPriKey(t *testing.T) {
@@ -89,6 +87,7 @@ func TestPriKey_SKI(t *testing.T) {
 
 	// then
 	assert.NotEqual(t, otherSki, ski)
+	assert.Equal(t, 20, len(ski))
 }
 
 func TestPriKey_ToByte(t *testing.T) {
@@ -96,9 +95,10 @@ func TestPriKey_ToByte(t *testing.T) {
 	pri := setUpPriKey(t)
 
 	// when
-	priBytes := pri.ToByte()
+	priBytes, err := pri.ToByte()
 
 	// then
+	assert.NoError(t, err)
 	assert.NotNil(t, priBytes)
 }
 
@@ -110,7 +110,7 @@ func TestPriKey_KeyGenOpt(t *testing.T) {
 	keyGenOpt := pri.KeyGenOpt()
 
 	// then
-	assert.Equal(t, hecdsa.ECP384, keyGenOpt)
+	assert.Equal(t, hecdsa.ECP384, keyGenOpt.ToString())
 }
 
 func TestPriKey_IsPrivate(t *testing.T) {
@@ -175,6 +175,7 @@ func TestPubKey_SKI(t *testing.T) {
 
 	// then
 	assert.NotEqual(t, otherSki, ski)
+	assert.Equal(t, 20, len(ski))
 }
 
 func TestPubKey_ToByte(t *testing.T) {
@@ -182,10 +183,11 @@ func TestPubKey_ToByte(t *testing.T) {
 	pub := setUpPriKey(t).PublicKey()
 
 	// when
-	pubBytes := pub.ToByte()
+	pubBytes, err := pub.ToByte()
 
 	// then
 	assert.NotNil(t, pubBytes)
+	assert.NoError(t, err)
 }
 
 func TestPubKey_KeyGenOpt(t *testing.T) {
@@ -196,7 +198,7 @@ func TestPubKey_KeyGenOpt(t *testing.T) {
 	keyGenOpt := pub.KeyGenOpt()
 
 	// then
-	assert.Equal(t, hecdsa.ECP384, keyGenOpt)
+	assert.Equal(t, hecdsa.ECP384, keyGenOpt.ToString())
 }
 
 func TestPubKey_IsPrivate(t *testing.T) {
@@ -215,8 +217,10 @@ func TestKeyRecoverer_RecoverKeyFromByte(t *testing.T) {
 	pri := setUpPriKey(t)
 	pub := pri.PublicKey()
 
-	priBytes := pri.ToByte()
-	pubBytes := pub.ToByte()
+	priBytes, err := pri.ToByte()
+	assert.NoError(t, err)
+	pubBytes, err := pub.ToByte()
+	assert.NoError(t, err)
 
 	keyRecoverer := hecdsa.KeyRecoverer{}
 

@@ -24,24 +24,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHashManager_Hash(t *testing.T) {
+func TestHash(t *testing.T) {
+	// given
 	data := []byte("This data will be hashed by hashManager")
+	hashOpt, err := hashing.NewHashOpt(hashing.SHA512)
+	assert.NoError(t, err)
+	otherHashOpt, err := hashing.NewHashOpt(hashing.SHA384)
+	assert.NoError(t, err)
 
 	// no input data case
-	digest, err := hashing.Hash(nil, hashing.SHA512)
+	digest, err := hashing.Hash(nil, hashOpt)
 	assert.Nil(t, digest)
 	assert.Error(t, err)
 
 	// normal case
-	digest, err = hashing.Hash(data, hashing.SHA512)
+	digest, err = hashing.Hash(data, hashOpt)
 	assert.NoError(t, err)
 	assert.NotNil(t, digest)
 
 	// compare between hashed data by the same hashing function
-	anotherDigest, err := hashing.Hash(data, hashing.SHA512)
+	anotherDigest, err := hashing.Hash(data, hashOpt)
 	assert.Equal(t, digest, anotherDigest)
 
 	// compare between hashed data by the different hashing function
-	anotherDigest, err = hashing.Hash(data, hashing.SHA256)
+	anotherDigest, err = hashing.Hash(data, otherHashOpt)
 	assert.NotEqual(t, digest, anotherDigest)
 }

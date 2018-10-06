@@ -48,7 +48,10 @@ func EncryptKey(pri heimdall.Key, key []byte, opts *Opts) (encryptedKey []byte, 
 
 // AESCTREncryptKey encrypts private key.
 func encryptKeyWithAESCTR(pri heimdall.Key, key []byte) (encryptedKey []byte, err error) {
-	keyBytes := pri.ToByte()
+	keyBytes, err := pri.ToByte()
+	if err != nil {
+		return nil, err
+	}
 
 	encryptedKey, err = encryptWithAESCTR(keyBytes, key)
 	if err != nil {

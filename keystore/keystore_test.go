@@ -36,7 +36,9 @@ func TestStoreKey(t *testing.T) {
 	encOpt, err := encryption.NewOpts("AES", encryption.DefaultKeyLen, encryption.DefaultOpMode)
 	assert.NoError(t, err)
 
-	pri, err := hecdsa.GenerateKey(hecdsa.ECP384)
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+	assert.NoError(t, err)
+	pri, err := hecdsa.GenerateKey(keyGenOpt)
 	assert.NoError(t, err)
 
 	// when
@@ -55,7 +57,9 @@ func TestLoadKey(t *testing.T) {
 	encOpt, err := encryption.NewOpts("AES", encryption.DefaultKeyLen, encryption.DefaultOpMode)
 	assert.NoError(t, err)
 
-	pri, err := hecdsa.GenerateKey(hecdsa.KeyGenOpts(hecdsa.ECP384))
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+	assert.NoError(t, err)
+	pri, err := hecdsa.GenerateKey(keyGenOpt)
 	assert.NoError(t, err)
 
 	err = keystore.StoreKey(pri, "password", heimdall.TestKeyDir, encOpt, kdfOpt)

@@ -58,11 +58,7 @@ type EncryptionHints struct {
 func StoreKey(key heimdall.Key, pwd string, keyDirPath string, encOpt *encryption.Opts, kdfOpt *kdf.Opts) error {
 	ski := key.SKI()
 	keyId := key.ID()
-
 	keyGenOpt := key.KeyGenOpt()
-	if !keyGenOpt.IsValid() {
-		return ErrInvalidKeyGenOpt
-	}
 
 	keyFilePath, err := makeKeyFilePath(keyId, keyDirPath)
 	if err != nil {
