@@ -34,14 +34,12 @@ import (
 	"github.com/it-chain/heimdall/kdf"
 )
 
-var ErrInvalidKeyGenOpt = errors.New("invalid ECDSA key generation option - not supported curve")
 var ErrWrongKeyID = errors.New("wrong key id - failed to find key using key ID")
 var ErrEmptyKeyPath = errors.New("invalid keyPath - keyPath empty")
 
 // struct for encrypted key's file format.
 type KeyFile struct {
 	SKI          []byte
-	KeyGenOpt    string
 	IsPrivate    bool
 	EncryptedKey string
 	Hints        *EncryptionHints
@@ -58,7 +56,6 @@ type EncryptionHints struct {
 func StoreKey(key heimdall.Key, pwd string, keyDirPath string, encOpt *encryption.Opts, kdfOpt *kdf.Opts) error {
 	ski := key.SKI()
 	keyId := key.ID()
-	keyGenOpt := key.KeyGenOpt()
 
 	keyFilePath, err := makeKeyFilePath(keyId, keyDirPath)
 	if err != nil {
@@ -83,7 +80,7 @@ func StoreKey(key heimdall.Key, pwd string, keyDirPath string, encOpt *encryptio
 
 	encHints := makeEncryptionHints(encOpt, kdfOpt, salt)
 
-	jsonKeyFile, err := makeJsonKeyFile(encHints, ski, keyGenOpt, encryptedKeyBytes, key.IsPrivate())
+	jsonKeyFile, err := makeJsonKeyFile(encHints, ski, encryptedKeyBytes, key.IsPrivate())
 	if err != nil {
 		return err
 	}
@@ -119,10 +116,9 @@ func makeEncryptionHints(encOpt *encryption.Opts, kdfOpt *kdf.Opts, kdfSalt []by
 }
 
 // makeJsonKeyFile marshals keyFile struct to json format.
-func makeJsonKeyFile(encHints *EncryptionHints, ski []byte, keyGenOpt heimdall.KeyGenOpts, encryptedKeyBytes []byte, isPrivate bool) ([]byte, error) {
+func makeJsonKeyFile(encHints *EncryptionHints, ski []byte, encryptedKeyBytes []byte, isPrivate bool) ([]byte, error) {
 	keyFile := KeyFile{
 		SKI:          ski,
-		KeyGenOpt:    keyGenOpt.ToString(),
 		IsPrivate:    isPrivate,
 		EncryptedKey: hex.EncodeToString(encryptedKeyBytes),
 		Hints:        encHints,
