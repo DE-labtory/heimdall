@@ -28,4 +28,6 @@ import (
 var WorkingDir, _ = os.Getwd()
 var RootDir = filepath.Dir(WorkingDir)
 var TestKeyDir = filepath.Join(WorkingDir, "./.testKeys")
+var TestPriKeyDir = filepath.Join(WorkingDir, "./.private_key")
+var TestPubKeyDir = filepath.Join(WorkingDir, "./.public_keys")
 var TestCertDir = filepath.Join(WorkingDir, "./.testCerts")

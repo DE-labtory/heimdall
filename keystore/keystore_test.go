@@ -29,6 +29,97 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestStorePriKey(t *testing.T) {
+	// given
+	kdfOpt, err := kdf.NewOpts("SCRYPT", kdf.DefaultScryptParams)
+	assert.NoError(t, err)
+	encOpt, err := encryption.NewOpts("AES", encryption.DefaultKeyLen, encryption.DefaultOpMode)
+	assert.NoError(t, err)
+
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+	assert.NoError(t, err)
+	pri, err := hecdsa.GenerateKey(keyGenOpt)
+	assert.NoError(t, err)
+
+	// when
+	err = keystore.StorePriKey(pri, "password", heimdall.TestPriKeyDir, encOpt, kdfOpt)
+
+	// then
+	assert.NoError(t, err)
+
+	defer os.RemoveAll(heimdall.TestPriKeyDir)
+}
+
+func TestStorePubKey(t *testing.T) {
+	// given
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+	assert.NoError(t, err)
+	pri, err := hecdsa.GenerateKey(keyGenOpt)
+	assert.NoError(t, err)
+
+	// when
+	err = keystore.StorePubKey(pri.PublicKey(), heimdall.TestPubKeyDir)
+
+	// then
+	assert.NoError(t, err)
+
+	defer os.RemoveAll(heimdall.TestPubKeyDir)
+}
+
+func TestLoadPriKey(t *testing.T) {
+	// given
+	kdfOpt, err := kdf.NewOpts(kdf.SCRYPT, kdf.DefaultScryptParams)
+	assert.NoError(t, err)
+	encOpt, err := encryption.NewOpts("AES", encryption.DefaultKeyLen, encryption.DefaultOpMode)
+	assert.NoError(t, err)
+
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+	assert.NoError(t, err)
+	pri, err := hecdsa.GenerateKey(keyGenOpt)
+	assert.NoError(t, err)
+
+	err = keystore.StorePriKey(pri, "password", heimdall.TestPriKeyDir, encOpt, kdfOpt)
+	assert.NoError(t, err)
+
+	keyRecoverer := &hecdsa.KeyRecoverer{}
+
+	// when
+	key, err := keystore.LoadPriKey(heimdall.TestPriKeyDir, "password", keyRecoverer)
+
+	// then
+	assert.NoError(t, err)
+	assert.Equal(t, pri.ID(), key.ID())
+	assert.Equal(t, pri.KeyGenOpt(), key.KeyGenOpt())
+	assert.Equal(t, pri.IsPrivate(), key.IsPrivate())
+
+	defer os.RemoveAll(heimdall.TestPriKeyDir)
+}
+
+func TestLoadPubKey(t *testing.T) {
+	// given
+	keyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
+	assert.NoError(t, err)
+	pri, err := hecdsa.GenerateKey(keyGenOpt)
+	pub := pri.PublicKey()
+	assert.NoError(t, err)
+
+	err = keystore.StorePubKey(pub, heimdall.TestPubKeyDir)
+	assert.NoError(t, err)
+
+	keyRecoverer := &hecdsa.KeyRecoverer{}
+
+	// when
+	key, err := keystore.LoadPubKey(pub.ID(), heimdall.TestPubKeyDir, keyRecoverer)
+
+	// then
+	assert.NoError(t, err)
+	assert.Equal(t, pub.ID(), key.ID())
+	assert.Equal(t, pub.KeyGenOpt(), key.KeyGenOpt())
+	assert.Equal(t, pub.IsPrivate(), key.IsPrivate())
+
+	defer os.RemoveAll(heimdall.TestPubKeyDir)
+}
+
 func TestStoreKey(t *testing.T) {
 	// given
 	kdfOpt, err := kdf.NewOpts("SCRYPT", kdf.DefaultScryptParams)
