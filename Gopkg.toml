@@ -24,6 +24,7 @@
 #   go-tests = true
 #   unused-packages = true
 
+required = ["github.com/it-chain/iLogger"]
 
 [[constraint]]
   name = "github.com/stretchr/testify"
