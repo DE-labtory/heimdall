@@ -28,37 +28,30 @@ import (
 
 	"github.com/it-chain/heimdall"
 	"github.com/it-chain/heimdall/cert"
-	"github.com/it-chain/heimdall/encryption"
 	"github.com/it-chain/heimdall/hashing"
 	"github.com/it-chain/heimdall/hecdsa"
-	"github.com/it-chain/heimdall/kdf"
 	"github.com/it-chain/heimdall/keystore"
 	"github.com/it-chain/heimdall/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
-func setUpLocalKey(t *testing.T) (keyID heimdall.KeyID, keyDirPath, pwd string, tearDown func()) {
+func setUpLocalKey(t *testing.T) (keyDirPath string, tearDown func()) {
 	ecdsaKeyGenOpt, err := hecdsa.NewKeyGenOpt(hecdsa.ECP384)
 	assert.NoError(t, err)
 	pri, err := hecdsa.GenerateKey(ecdsaKeyGenOpt)
 	assert.NoError(t, err)
 
-	encOpt, err := encryption.NewOpts(encryption.AES, encryption.DefaultKeyLen, encryption.DefaultOpMode)
-	assert.NoError(t, err)
-	kdfOpt, err := kdf.NewOpts(kdf.SCRYPT, kdf.DefaultScryptParams)
+	err = keystore.StorePriKeyWithoutPwd(pri, heimdall.TestPriKeyDir)
 	assert.NoError(t, err)
 
-	err = keystore.StoreKey(pri, "password", heimdall.TestKeyDir, encOpt, kdfOpt)
-	assert.NoError(t, err)
-
-	return pri.ID(), heimdall.TestKeyDir, "password", func() {
-		defer os.RemoveAll(heimdall.TestKeyDir)
+	return heimdall.TestPriKeyDir, func() {
+		defer os.RemoveAll(heimdall.TestPriKeyDir)
 	}
 }
 
 func TestSignWithKeyInLocal(t *testing.T) {
 	// given
-	keyID, keyDirPath, pwd, tearDown := setUpLocalKey(t)
+	keyDirPath, tearDown := setUpLocalKey(t)
 	defer tearDown()
 
 	hashOpt, err := hashing.NewHashOpt(hashing.SHA384)
@@ -66,7 +59,7 @@ func TestSignWithKeyInLocal(t *testing.T) {
 	message := []byte("hello world")
 
 	// when
-	signature, err := hecdsa.SignWithKeyInLocal(keyID, keyDirPath, pwd, message, hashOpt)
+	signature, err := hecdsa.SignWithKeyInLocal(keyDirPath, message, hashOpt)
 
 	// then
 	assert.NoError(t, err)
