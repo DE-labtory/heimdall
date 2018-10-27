@@ -32,10 +32,12 @@ import (
 	"github.com/it-chain/heimdall"
 	"github.com/it-chain/heimdall/encryption"
 	"github.com/it-chain/heimdall/kdf"
+	"github.com/it-chain/iLogger"
 )
 
 var ErrWrongKeyID = errors.New("wrong key id - failed to find key using key ID")
 var ErrEmptyKeyPath = errors.New("invalid keyPath - keyPath empty")
+var ErrMultiplePriKey = errors.New("private key in directory should be one")
 
 // struct for encrypted key's file format.
 type KeyFile struct {
@@ -95,6 +97,118 @@ func StoreKey(key heimdall.Key, pwd string, keyDirPath string, encOpt *encryptio
 	return nil
 }
 
+func StorePriKeyWithoutPwd(key heimdall.PriKey, keyDirPath string) error {
+	keyId := key.ID()
+
+	keyFilePath, err := makeKeyFilePath(keyId, keyDirPath)
+	if err != nil {
+		return err
+	}
+
+	files, err := ioutil.ReadDir(keyDirPath)
+	if err != nil {
+		return err
+	} else if len(files) > 0 {
+		iLogger.Info(nil, "input key will overwrite existing key")
+
+		for _, file := range files {
+			os.Remove(filepath.Join(keyDirPath, file.Name()))
+		}
+	}
+
+	keyBytes, err := key.ToByte()
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(keyFilePath); os.IsNotExist(err) {
+		err = ioutil.WriteFile(keyFilePath, keyBytes, 0700)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// StorePriKey stores private key with password.
+func StorePriKey(key heimdall.PriKey, pwd, keyDirPath string, encOpt *encryption.Opts, kdfOpt *kdf.Opts) error {
+	ski := key.SKI()
+	keyId := key.ID()
+
+	keyFilePath, err := makeKeyFilePath(keyId, keyDirPath)
+	if err != nil {
+		return err
+	}
+
+	files, err := ioutil.ReadDir(keyDirPath)
+	if err != nil {
+		return err
+	} else if len(files) > 0 {
+		iLogger.Info(nil, "input key will overwrite existing key")
+
+		for _, file := range files {
+			os.Remove(filepath.Join(keyDirPath, file.Name()))
+		}
+	}
+
+	salt := make([]byte, 8)
+	_, err = rand.Read(salt)
+	if err != nil {
+		return err
+	}
+
+	dKey, err := kdf.DeriveKey([]byte(pwd), salt, encOpt.KeyLen, kdfOpt)
+	if err != nil {
+		return err
+	}
+
+	encryptedKeyBytes, err := encryption.EncryptKey(key, dKey, encOpt)
+	if err != nil {
+		return err
+	}
+
+	encHints := makeEncryptionHints(encOpt, kdfOpt, salt)
+
+	jsonKeyFile, err := makeJsonKeyFile(encHints, ski, encryptedKeyBytes, key.IsPrivate())
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(keyFilePath); os.IsNotExist(err) {
+		err = ioutil.WriteFile(keyFilePath, jsonKeyFile, 0700)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// StorePubKey stores public key.
+func StorePubKey(key heimdall.PubKey, keyDirPath string) error {
+	keyId := key.ID()
+
+	keyFilePath, err := makeKeyFilePath(keyId, keyDirPath)
+	if err != nil {
+		return err
+	}
+
+	keyBytes, err := key.ToByte()
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(keyFilePath); os.IsNotExist(err) {
+		err = ioutil.WriteFile(keyFilePath, keyBytes, 0700)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // makeKeyFilePath makes key file path (absolute) of the key file.
 func makeKeyFilePath(keyFileName string, keyDirPath string) (string, error) {
 	if _, err := os.Stat(keyDirPath); os.IsNotExist(err) {
@@ -107,6 +221,7 @@ func makeKeyFilePath(keyFileName string, keyDirPath string) (string, error) {
 	return filepath.Join(keyDirPath, keyFileName), nil
 }
 
+// makeEncryptionHints makes encryption hints for decryption later.
 func makeEncryptionHints(encOpt *encryption.Opts, kdfOpt *kdf.Opts, kdfSalt []byte) *EncryptionHints {
 	return &EncryptionHints{
 		EncOpt:  encOpt,
@@ -127,6 +242,122 @@ func makeJsonKeyFile(encHints *EncryptionHints, ski []byte, encryptedKeyBytes []
 	return json.Marshal(keyFile)
 }
 
+func LoadPriKeyWithoutPwd(keyDirPath string, recoverer heimdall.KeyRecoverer) (heimdall.PriKey, error) {
+	if _, err := os.Stat(keyDirPath); os.IsNotExist(err) {
+		return nil, err
+	}
+
+	files, err := ioutil.ReadDir(keyDirPath)
+	if err != nil {
+		return nil, err
+	} else if len(files) > 1 {
+		return nil, ErrMultiplePriKey
+	} else if len(files) < 1 {
+		return nil, ErrEmptyKeyPath
+	}
+
+	keyPath := filepath.Join(keyDirPath, files[0].Name())
+	keyBytes, err := loadKeyFile(keyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	key, err := recoverer.RecoverKeyFromByte(keyBytes, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return key.(heimdall.PriKey), nil
+}
+
+// LoadPriKey loads private key with password.
+func LoadPriKey(keyDirPath, pwd string, recoverer heimdall.KeyRecoverer) (heimdall.PriKey, error) {
+	var keyFile KeyFile
+
+	if _, err := os.Stat(keyDirPath); os.IsNotExist(err) {
+		return nil, err
+	}
+
+	files, err := ioutil.ReadDir(keyDirPath)
+	if err != nil {
+		return nil, err
+	} else if len(files) > 1 {
+		return nil, ErrMultiplePriKey
+	} else if len(files) < 1 {
+		return nil, ErrEmptyKeyPath
+	}
+
+	keyPath := filepath.Join(keyDirPath, files[0].Name())
+	jsonKeyFile, err := loadKeyFile(keyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = json.Unmarshal(jsonKeyFile, &keyFile); err != nil {
+		return nil, err
+	}
+
+	kdfOpt, err := kdf.NewOpts(keyFile.Hints.KDFOpt.KdfName, keyFile.Hints.KDFOpt.KdfParams)
+	if err != nil {
+		return nil, err
+	}
+
+	encOpt, err := encryption.NewOpts(keyFile.Hints.EncOpt.Algorithm, keyFile.Hints.EncOpt.KeyLen, keyFile.Hints.EncOpt.OpMode)
+	if err != nil {
+		return nil, err
+	}
+
+	dKey, err := kdf.DeriveKey([]byte(pwd), keyFile.Hints.KDFSalt, encOpt.KeyLen, kdfOpt)
+	if err != nil {
+		return nil, err
+	}
+
+	encryptedKeyBytes, err := hex.DecodeString(keyFile.EncryptedKey)
+	if err != nil {
+		return nil, err
+	}
+
+	keyBytes, err := encryption.DecryptKey(encryptedKeyBytes, dKey, encOpt)
+	if err != nil {
+		return nil, err
+	}
+
+	key, err := recoverer.RecoverKeyFromByte(keyBytes, keyFile.IsPrivate)
+	if err != nil {
+		return nil, err
+	}
+
+	return key.(heimdall.PriKey), nil
+}
+
+// LoadPubKey loads public key by key ID.
+func LoadPubKey(keyId heimdall.KeyID, keyDirPath string, recoverer heimdall.KeyRecoverer) (heimdall.PubKey, error) {
+	if _, err := os.Stat(keyDirPath); os.IsNotExist(err) {
+		return nil, err
+	}
+
+	if err := heimdall.KeyIDPrefixCheck(keyId); err != nil {
+		return nil, err
+	}
+
+	keyPath, err := findKeyById(keyId, keyDirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	keyBytes, err := loadKeyFile(keyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	key, err := recoverer.RecoverKeyFromByte(keyBytes, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return key, nil
+}
+
 // LoadKey loads private key by key ID and password.
 func LoadKey(keyId heimdall.KeyID, pwd string, keyDirPath string, recoverer heimdall.KeyRecoverer) (heimdall.Key, error) {
 	var keyFile KeyFile
@@ -144,7 +375,7 @@ func LoadKey(keyId heimdall.KeyID, pwd string, keyDirPath string, recoverer heim
 		return nil, err
 	}
 
-	jsonKeyFile, err := loadJsonKeyFile(keyPath)
+	jsonKeyFile, err := loadKeyFile(keyPath)
 	if err != nil {
 		return nil, err
 	}
@@ -214,15 +445,15 @@ func findKeyById(keyId string, keyDirPath string) (keyPath string, err error) {
 }
 
 // loadJsonKeyFile reads json formatted KeyFile struct from file.
-func loadJsonKeyFile(keyPath string) (jsonKeyFile []byte, err error) {
+func loadKeyFile(keyPath string) (keyBytes []byte, err error) {
 	if len(keyPath) == 0 {
 		return nil, ErrEmptyKeyPath
 	}
 
-	jsonKeyFile, err = ioutil.ReadFile(keyPath)
+	keyBytes, err = ioutil.ReadFile(keyPath)
 	if err != nil {
 		return nil, err
 	}
 
-	return jsonKeyFile, nil
+	return keyBytes, nil
 }
