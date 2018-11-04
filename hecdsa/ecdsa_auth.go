@@ -30,7 +30,6 @@ import (
 
 	"github.com/it-chain/heimdall"
 	"github.com/it-chain/heimdall/hashing"
-	"github.com/it-chain/heimdall/keystore"
 )
 
 var ErrInvalidSignature = [...]error{
@@ -82,10 +81,8 @@ func unmarshalECDSASignature(signature []byte) (*big.Int, *big.Int, error) {
 	return ecdsaSig.R, ecdsaSig.S, nil
 }
 
-func SignWithKeyInLocal(keyDirPath string, message []byte, hashOpt *hashing.HashOpt) ([]byte, error) {
-	recoverer := &KeyRecoverer{}
-	signerOpt := NewSignerOpts(hashOpt)
-	pri, err := keystore.LoadPriKeyWithoutPwd(keyDirPath, recoverer)
+func SignWithKeyInLocal(keyDirPath string, message []byte, signerOpt heimdall.SignerOpts) ([]byte, error) {
+	pri, err := LoadPriKeyWithoutPwd(keyDirPath)
 	if err != nil {
 		return nil, err
 	}
