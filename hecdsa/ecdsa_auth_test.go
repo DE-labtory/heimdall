@@ -30,7 +30,6 @@ import (
 	"github.com/it-chain/heimdall/cert"
 	"github.com/it-chain/heimdall/hashing"
 	"github.com/it-chain/heimdall/hecdsa"
-	"github.com/it-chain/heimdall/keystore"
 	"github.com/it-chain/heimdall/mocks"
 	"github.com/stretchr/testify/assert"
 )
@@ -41,7 +40,7 @@ func setUpLocalKey(t *testing.T) (keyDirPath string, tearDown func()) {
 	pri, err := hecdsa.GenerateKey(ecdsaKeyGenOpt)
 	assert.NoError(t, err)
 
-	err = keystore.StorePriKeyWithoutPwd(pri, heimdall.TestPriKeyDir)
+	err = hecdsa.StorePriKeyWithoutPwd(pri, heimdall.TestPriKeyDir)
 	assert.NoError(t, err)
 
 	return heimdall.TestPriKeyDir, func() {
@@ -55,11 +54,12 @@ func TestSignWithKeyInLocal(t *testing.T) {
 	defer tearDown()
 
 	hashOpt, err := hashing.NewHashOpt(hashing.SHA384)
+	signerOpt := hecdsa.NewSignerOpts(hashOpt)
 	assert.NoError(t, err)
 	message := []byte("hello world")
 
 	// when
-	signature, err := hecdsa.SignWithKeyInLocal(keyDirPath, message, hashOpt)
+	signature, err := hecdsa.SignWithKeyInLocal(keyDirPath, message, signerOpt)
 
 	// then
 	assert.NoError(t, err)
