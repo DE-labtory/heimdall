@@ -36,7 +36,6 @@ import (
 	"github.com/it-chain/heimdall/config"
 	"github.com/it-chain/heimdall/hashing"
 	"github.com/it-chain/heimdall/hecdsa"
-	"github.com/it-chain/heimdall/keystore"
 	"github.com/it-chain/heimdall/mocks"
 )
 
@@ -66,17 +65,13 @@ func main() {
 	kdfOpt := myConFig.KdfOpt
 	encOpt := myConFig.EncOpt
 
-	err = keystore.StoreKey(pri, "password", myConFig.KeyDirPath, encOpt, kdfOpt)
+	err = hecdsa.StorePriKey(pri, "password", myConFig.KeyDirPath, encOpt, kdfOpt)
 	errorCheck(err)
 	log.Println("storing key is success!")
 
 	// loading key
 	log.Println("loading key...")
-	keyId := pri.ID()
-
-	keyRecoverer := &hecdsa.KeyRecoverer{}
-
-	loadedPri, err := keystore.LoadKey(keyId, "password", myConFig.KeyDirPath, keyRecoverer)
+	loadedPri, err := hecdsa.LoadPriKey(myConFig.KeyDirPath, "password")
 	errorCheck(err)
 	if loadedPri == nil {
 		log.Println("loading key is failed!")
