@@ -24,3 +24,7 @@ Binaries for programs and plugins
 # key
 .keys
 .heimdall/
+
+# vendor
+
+/vendor
