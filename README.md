@@ -1,8 +1,8 @@
 # Heimdall
-[![Build Status](https://travis-ci.org/it-chain/heimdall.svg?branch=master)](https://travis-ci.org/it-chain/heimdall)
+[![Build Status](https://travis-ci.org/DE-labtory/heimdall.svg?branch=master)](https://travis-ci.org/DE-labtory/heimdall)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Language](https://img.shields.io/badge/language-go-orange.svg)](https://golang.org)
-[![Coverage Status](https://coveralls.io/repos/github/it-chain/heimdall/badge.svg?branch=master)](https://coveralls.io/github/it-chain/heimdall?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/DE-labtory/heimdall/badge.svg?branch=master)](https://coveralls.io/github/DE-labtory/heimdall?branch=master)
 <p align="center">
 <img src="./logo.png" width="210" height="210" />
 </p>
@@ -24,7 +24,7 @@
 ### Installation
 
 ```
-go get -u github.com/it-chain/heimdall
+go get -u github.com/DE-labtory/heimdall
 ```
 
 ### Usage

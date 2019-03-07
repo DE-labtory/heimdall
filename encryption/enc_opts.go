@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 It-chain
+ * Copyright 2018 DE-labtory
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/it-chain/heimdall"
+	"github.com/DE-labtory/heimdall"
 )
 
 var ErrAlgorithmNotSupported = errors.New("entered algorithm is not supported")

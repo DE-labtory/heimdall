@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 It-chain
+ * Copyright 2018 DE-labtory
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ package config
 import (
 	"errors"
 
-	"github.com/it-chain/heimdall"
-	"github.com/it-chain/heimdall/encryption"
-	"github.com/it-chain/heimdall/hashing"
-	"github.com/it-chain/heimdall/hecdsa"
-	"github.com/it-chain/heimdall/kdf"
+	"github.com/DE-labtory/heimdall"
+	"github.com/DE-labtory/heimdall/encryption"
+	"github.com/DE-labtory/heimdall/hashing"
+	"github.com/DE-labtory/heimdall/hecdsa"
+	"github.com/DE-labtory/heimdall/kdf"
 )
 
 var ErrInvalidSecLv = errors.New("invalid security level")

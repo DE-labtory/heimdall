@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 It-chain
+ * Copyright 2018 DE-labtory
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package kdf
 import (
 	"errors"
 
-	"github.com/it-chain/heimdall/hashing"
+	"github.com/DE-labtory/heimdall/hashing"
 )
 
 // todo: 각 파라미터별 제한 두기 (최소 / 최대)
