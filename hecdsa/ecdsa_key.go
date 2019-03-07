@@ -29,8 +29,8 @@ import (
 
 	"crypto/elliptic"
 
-	"github.com/btcsuite/btcutil/base58"
 	"github.com/DE-labtory/heimdall"
+	"github.com/btcsuite/btcutil/base58"
 )
 
 var ErrKeyType = errors.New("invalid key type - key type should be heimdall.PRIVATEKEY or heimdall.PUBLICKEY")
