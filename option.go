@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 It-chain
+ * Copyright 2018 DE-labtory
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package heimdall
 
-import "github.com/it-chain/heimdall/hashing"
+import "github.com/DE-labtory/heimdall/hashing"
 
 type KeyID = string
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 It-chain
+ * Copyright 2018 DE-labtory
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/it-chain/heimdall"
-	"github.com/it-chain/heimdall/encryption"
-	"github.com/it-chain/heimdall/kdf"
-	"github.com/it-chain/iLogger"
+	"github.com/DE-labtory/heimdall"
+	"github.com/DE-labtory/heimdall/encryption"
+	"github.com/DE-labtory/heimdall/kdf"
+	"github.com/DE-labtory/iLogger"
 )
 
 var ErrWrongKeyID = errors.New("wrong key id - failed to find key using key ID")

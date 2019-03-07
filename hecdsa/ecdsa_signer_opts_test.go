@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 It-chain
+ * Copyright 2018 DE-labtory
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package hecdsa_test
 import (
 	"testing"
 
-	"github.com/it-chain/heimdall/hashing"
-	"github.com/it-chain/heimdall/hecdsa"
+	"github.com/DE-labtory/heimdall/hashing"
+	"github.com/DE-labtory/heimdall/hecdsa"
 	"github.com/stretchr/testify/assert"
 )
 
